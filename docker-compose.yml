@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: butir_postgres
+    environment:
+      POSTGRES_USER: butir
+      POSTGRES_PASSWORD: butir
+      POSTGRES_DB: butir
+    ports:
+      - "5432:5432"
+    volumes:
+      - butir_pgdata:/var/lib/postgresql/data
+
+volumes:
+  butir_pgdata:
