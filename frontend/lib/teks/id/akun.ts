@@ -58,7 +58,7 @@ const akun = {
       keterangan: "Pilih bahasa tampilan antarmuka.",
       indonesia: "Bahasa Indonesia",
       inggris: "English",
-      catatan: "Penerjemahan sedang berlangsung bertahap, sehingga sebagian halaman masih tampil dalam Bahasa Indonesia.",
+      catatan: "Soal, pembahasan, dan hasil debat dibuat oleh AI dari materi Anda, sehingga tidak ikut diterjemahkan.",
     },
     sesi: {
       judul: "Sesi",

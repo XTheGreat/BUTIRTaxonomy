@@ -37,7 +37,7 @@ const shell: typeof id = {
     },
   },
   topbar: {
-    pengajar: "Instructor",
+    pengajar: "Teacher",
     bukaBilahSamping: "Open sidebar",
     breadcrumb: "Breadcrumb",
     debatBerlangsung: "Debate in Progress",
