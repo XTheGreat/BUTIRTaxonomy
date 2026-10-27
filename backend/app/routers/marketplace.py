@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.core.deps import get_current_admin, get_current_guru
+from app.core.galat import Galat
 from app.database import get_db
 from app.models.butir_soal import ButirSoal
 from app.models.kisi_kisi import KisiKisi
@@ -77,7 +78,7 @@ async def terbitkan(data: ListingBaru, guru: User = Depends(get_current_guru), d
     if ids and (
         await db.execute(select(ButirSoal.id).where(ButirSoal.id.in_(ids), ButirSoal.status == "arsip").limit(1))
     ).first():
-        raise HTTPException(status_code=422, detail="Soal dari Arsip tidak boleh dijual di Marketplace.")
+        raise Galat(422, "marketplace_soal_arsip_tak_dijual", "Soal dari Arsip tidak boleh dijual di Marketplace.")
     butir = (
         await db.execute(
             select(ButirSoal)
@@ -86,9 +87,10 @@ async def terbitkan(data: ListingBaru, guru: User = Depends(get_current_guru), d
         )
     ).scalars().all()
     if len(butir) != len(ids):
-        raise HTTPException(
-            status_code=422,
-            detail="Hanya butir berstatus diterima milik Anda yang boleh dijual. Periksa kembali pilihan butir.",
+        raise Galat(
+            422,
+            "marketplace_butir_tak_boleh_dijual",
+            "Hanya butir berstatus diterima milik Anda yang boleh dijual. Periksa kembali pilihan butir.",
         )
     urut = {i: n for n, i in enumerate(ids)}
     butir.sort(key=lambda b: urut[b.id])
@@ -123,7 +125,7 @@ async def jelajahi(
 async def detail_listing(listing_id: uuid.UUID, guru: User = Depends(get_current_guru), db: AsyncSession = Depends(get_db)):
     l = (await db.execute(select(ListingBank).where(ListingBank.id == listing_id))).scalar_one_or_none()
     if l is None or (not l.aktif and l.penjual_id != guru.id):
-        raise HTTPException(status_code=404, detail="Listing tidak ditemukan")
+        raise Galat(404, "marketplace_listing_tidak_ditemukan", "Listing tidak ditemukan")
     return await _isi_listing(db, l, guru, rinci=True)
 
 
@@ -133,7 +135,7 @@ async def ubah_listing(
 ):
     l = (await db.execute(select(ListingBank).where(ListingBank.id == listing_id))).scalar_one_or_none()
     if l is None or l.penjual_id != guru.id:
-        raise HTTPException(status_code=404, detail="Listing tidak ditemukan")
+        raise Galat(404, "marketplace_listing_tidak_ditemukan", "Listing tidak ditemukan")
     for kolom in ("judul", "deskripsi", "harga_rp", "aktif"):
         nilai = getattr(data, kolom)
         if nilai is not None:
@@ -173,9 +175,9 @@ async def _salin_ke_pembeli(db: AsyncSession, t: TransaksiMarketplace, l: Listin
 async def beli(listing_id: uuid.UUID, guru: User = Depends(get_current_guru), db: AsyncSession = Depends(get_db)):
     l = (await db.execute(select(ListingBank).where(ListingBank.id == listing_id))).scalar_one_or_none()
     if l is None or not l.aktif:
-        raise HTTPException(status_code=404, detail="Listing tidak ditemukan atau sudah tidak dijual")
+        raise Galat(404, "marketplace_listing_tidak_dijual", "Listing tidak ditemukan atau sudah tidak dijual")
     if l.penjual_id == guru.id:
-        raise HTTPException(status_code=409, detail="Anda tidak dapat membeli bank soal milik sendiri")
+        raise Galat(409, "marketplace_beli_milik_sendiri", "Anda tidak dapat membeli bank soal milik sendiri")
     sudah = (
         await db.execute(
             select(TransaksiMarketplace.id).where(
@@ -186,7 +188,7 @@ async def beli(listing_id: uuid.UUID, guru: User = Depends(get_current_guru), db
         )
     ).first()
     if sudah:
-        raise HTTPException(status_code=409, detail="Anda sudah membeli atau sedang memproses pembelian bank soal ini")
+        raise Galat(409, "marketplace_sudah_dibeli", "Anda sudah membeli atau sedang memproses pembelian bank soal ini")
 
     komisi, pendapatan = _hitung_bagi(l.harga_rp)
     t = TransaksiMarketplace(
@@ -254,9 +256,9 @@ async def semua_transaksi(
 async def _transaksi_menunggu(db: AsyncSession, transaksi_id: uuid.UUID):
     t = (await db.execute(select(TransaksiMarketplace).where(TransaksiMarketplace.id == transaksi_id))).scalar_one_or_none()
     if t is None:
-        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
+        raise Galat(404, "marketplace_transaksi_tidak_ditemukan", "Transaksi tidak ditemukan")
     if t.status != "menunggu_pembayaran":
-        raise HTTPException(status_code=409, detail=f"Transaksi sudah berstatus {t.status}")
+        raise Galat(409, "marketplace_transaksi_sudah_berstatus", f"Transaksi sudah berstatus {t.status}", status=t.status)
     l = (await db.execute(select(ListingBank).where(ListingBank.id == t.listing_id))).scalar_one()
     return t, l
 
