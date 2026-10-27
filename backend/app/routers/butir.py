@@ -1,6 +1,6 @@
 from app.config import get_settings
 import uuid
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, and_, func, case
 from app.database import get_db
@@ -20,6 +20,7 @@ from app.schemas.butir import (
     RiwayatPercobaanResponse,
 )
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.services.agents.orchestrator import (
     ALASAN_DIHENTIKAN,
     antrekan_retry,
@@ -34,12 +35,12 @@ async def _butir_milik_guru(db: AsyncSession, butir_id: uuid.UUID, guru: User) -
         await db.execute(select(ButirSoal).where(ButirSoal.id == butir_id))
     ).scalar_one_or_none()
     if not butir:
-        raise HTTPException(status_code=404, detail="Butir tidak ditemukan")
+        raise Galat(404, "butir_tidak_ditemukan", "Butir tidak ditemukan")
     kk = (
         await db.execute(select(KisiKisi).where(KisiKisi.id == butir.kisi_kisi_id))
     ).scalar_one_or_none()
     if not kk or kk.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan butir Anda")
+        raise Galat(403, "butir_bukan_milik_guru", "Bukan butir Anda")
     return butir
 
 
@@ -232,7 +233,7 @@ async def retry_semua_tertunda(
     )
     butir_list = result.scalars().all()
     if not butir_list:
-        raise HTTPException(status_code=400, detail="Tidak ada butir tertunda untuk diulang")
+        raise Galat(400, "butir_tidak_ada_tertunda", "Tidak ada butir tertunda untuk diulang")
 
     ids = await antrekan_retry(db, butir_list, mulai_ulang)
     background_tasks.add_task(jalankan_antrean_retry, ids)
@@ -249,7 +250,7 @@ async def retry_butir(
 ):
     butir = await _butir_milik_guru(db, butir_id, guru)
     if butir.status != "tertunda":
-        raise HTTPException(status_code=409, detail="Hanya butir berstatus tertunda yang bisa diulang")
+        raise Galat(409, "butir_bukan_tertunda", "Hanya butir berstatus tertunda yang bisa diulang")
 
     ids = await antrekan_retry(db, [butir], mulai_ulang)
     background_tasks.add_task(jalankan_antrean_retry, ids)
@@ -264,7 +265,7 @@ async def stop_butir(
 ):
     butir = await _butir_milik_guru(db, butir_id, guru)
     if butir.status not in ("draft", "debating"):
-        raise HTTPException(status_code=409, detail="Butir ini tidak sedang diproses")
+        raise Galat(409, "butir_tidak_sedang_diproses", "Butir ini tidak sedang diproses")
 
     butir.status = "tertunda"
     butir.alasan_tertunda = ALASAN_DIHENTIKAN
@@ -389,8 +390,8 @@ async def update_butir(
 ):
     butir = await _butir_milik_guru(db, butir_id, guru)
     if butir.status in ("draft", "debating"):
-        raise HTTPException(
-            status_code=409, detail="Butir masih diproses debat dan belum bisa diubah"
+        raise Galat(
+            409, "butir_masih_diproses_debat", "Butir masih diproses debat dan belum bisa diubah"
         )
 
     update_data = data.model_dump(exclude_unset=True)
@@ -402,9 +403,10 @@ async def update_butir(
         butir.status == "diterima" and (not butir.pertanyaan or kunci_tidak_valid)
     ):
         await db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="Butir belum lengkap: pertanyaan, pilihan, dan kunci jawaban harus valid",
+        raise Galat(
+            400,
+            "butir_belum_lengkap",
+            "Butir belum lengkap: pertanyaan, pilihan, dan kunci jawaban harus valid",
         )
 
     await db.commit()

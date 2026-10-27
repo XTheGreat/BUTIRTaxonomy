@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import case, delete, func, select
 from app.database import get_db
@@ -15,6 +15,7 @@ from app.schemas.kisi_kisi import (
     MateriRingkas,
 )
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.services.cakupan import kata_kunci, pilih_potongan
 
 router = APIRouter(prefix="/api/kisi-kisi", tags=["kisi-kisi"])
@@ -23,9 +24,9 @@ router = APIRouter(prefix="/api/kisi-kisi", tags=["kisi-kisi"])
 async def _kisi_milik_guru(db: AsyncSession, kisi_kisi_id: uuid.UUID, guru: User) -> KisiKisi:
     kk = (await db.execute(select(KisiKisi).where(KisiKisi.id == kisi_kisi_id))).scalar_one_or_none()
     if not kk:
-        raise HTTPException(status_code=404, detail="Kisi-kisi tidak ditemukan")
+        raise Galat(404, "kisi_kisi_tidak_ditemukan", "Kisi-kisi tidak ditemukan")
     if kk.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan kisi-kisi Anda")
+        raise Galat(403, "kisi_kisi_bukan_milik_guru", "Bukan kisi-kisi Anda")
     return kk
 
 
@@ -34,9 +35,11 @@ async def _pastikan_belum_dijalankan(db: AsyncSession, kisi_kisi_id: uuid.UUID, 
         await db.execute(select(ButirSoal.id).where(ButirSoal.kisi_kisi_id == kisi_kisi_id).limit(1))
     ).first()
     if ada:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Kisi-kisi ini sudah dijalankan dan tidak bisa {tindakan}. Buat kisi-kisi baru.",
+        raise Galat(
+            409,
+            "kisi_kisi_sudah_dijalankan",
+            f"Kisi-kisi ini sudah dijalankan dan tidak bisa {tindakan}. Buat kisi-kisi baru.",
+            tindakan=tindakan,
         )
 
 
@@ -44,7 +47,12 @@ async def _periksa_materi_milik_guru(db: AsyncSession, materi_ids: list[uuid.UUI
     for materi_id in materi_ids:
         materi = (await db.execute(select(Materi).where(Materi.id == materi_id))).scalar_one_or_none()
         if not materi or materi.guru_id != guru.id:
-            raise HTTPException(status_code=404, detail=f"Materi {materi_id} tidak ditemukan")
+            raise Galat(
+                404,
+                "kisi_kisi_materi_tidak_ditemukan",
+                f"Materi {materi_id} tidak ditemukan",
+                materi_id=str(materi_id),
+            )
 
 
 async def _hubungkan_materi(db: AsyncSession, kisi_kisi_id: uuid.UUID, materi_ids: list[uuid.UUID]) -> None:

@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.materi import Materi, MateriChunk
 from app.schemas.materi import MateriResponse
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.services.chunking import chunk_text
 from app.services.pdf_converter import convert_pdf_to_markdown
 from app.services.docx_converter import convert_docx_to_markdown
@@ -35,16 +36,19 @@ async def upload_materi(
     original_filename = os.path.basename((file.filename or "materi").replace("\\", "/")) or "materi"
     ekstensi = os.path.splitext(original_filename)[1].lower()
     if ekstensi not in FORMAT_DIDUKUNG:
-        raise HTTPException(
-            status_code=400,
-            detail="Format berkas tidak didukung. Gunakan PDF, DOCX, TXT, atau MD.",
+        raise Galat(
+            400,
+            "materi_format_tidak_didukung",
+            "Format berkas tidak didukung. Gunakan PDF, DOCX, TXT, atau MD.",
         )
 
     content_bytes = await file.read(MAKS_UKURAN_BYTE + 1)
     if len(content_bytes) > MAKS_UKURAN_BYTE:
-        raise HTTPException(
-            status_code=413,
-            detail=f"Ukuran berkas melebihi batas {MAKS_UKURAN_BYTE // (1024 * 1024)} MB.",
+        raise Galat(
+            413,
+            "materi_berkas_terlalu_besar",
+            f"Ukuran berkas melebihi batas {MAKS_UKURAN_BYTE // (1024 * 1024)} MB.",
+            batas_mb=MAKS_UKURAN_BYTE // (1024 * 1024),
         )
 
     try:
@@ -58,16 +62,21 @@ async def upload_materi(
             except UnicodeDecodeError:
                 text_content = content_bytes.decode("latin-1")
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise Galat(400, "materi_berkas_ditolak", str(e), alasan=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Gagal memproses berkas {ekstensi.upper()[1:]}: {e}"
+        raise Galat(
+            400,
+            "materi_gagal_memproses_berkas",
+            f"Gagal memproses berkas {ekstensi.upper()[1:]}: {e}",
+            format=ekstensi.upper()[1:],
+            e=str(e),
         )
 
     if not text_content or not text_content.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Berkas tidak memiliki isi teks yang dapat diproses."
+        raise Galat(
+            400,
+            "materi_berkas_tanpa_teks",
+            "Berkas tidak memiliki isi teks yang dapat diproses.",
         )
 
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}_{original_filename}")
@@ -116,9 +125,9 @@ async def get_chunks_count(
     result = await db.execute(select(Materi).where(Materi.id == materi_id))
     materi = result.scalar_one_or_none()
     if not materi:
-        raise HTTPException(status_code=404, detail="Materi tidak ditemukan")
+        raise Galat(404, "materi_tidak_ditemukan", "Materi tidak ditemukan")
     if materi.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan materi Anda")
+        raise Galat(403, "materi_bukan_milik_guru", "Bukan materi Anda")
 
     chunks = await db.execute(
         select(MateriChunk).where(MateriChunk.materi_id == materi_id)
@@ -135,9 +144,9 @@ async def delete_materi(
     result = await db.execute(select(Materi).where(Materi.id == materi_id))
     materi = result.scalar_one_or_none()
     if not materi:
-        raise HTTPException(status_code=404, detail="Materi tidak ditemukan")
+        raise Galat(404, "materi_tidak_ditemukan", "Materi tidak ditemukan")
     if materi.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan materi Anda")
+        raise Galat(403, "materi_bukan_milik_guru", "Bukan materi Anda")
 
     if materi.file_path and os.path.exists(materi.file_path):
         os.remove(materi.file_path)

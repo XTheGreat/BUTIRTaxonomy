@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.kisi_kisi import KisiKisi
 from app.models.butir_soal import ButirSoal
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.services.agents.orchestrator import (
     jalankan_generasi,
     stop_generasi_kisi_kisi,
@@ -29,15 +30,15 @@ async def trigger_generation(
     result = await db.execute(select(KisiKisi).where(KisiKisi.id == kisi_kisi_id))
     kk = result.scalar_one_or_none()
     if not kk:
-        raise HTTPException(status_code=404, detail="Kisi-kisi tidak ditemukan")
+        raise Galat(404, "generasi_kisi_kisi_tidak_ditemukan", "Kisi-kisi tidak ditemukan")
     if kk.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan kisi-kisi Anda")
+        raise Galat(403, "generasi_bukan_kisi_kisi_guru", "Bukan kisi-kisi Anda")
 
     existing_butir = await db.execute(
         select(ButirSoal).where(ButirSoal.kisi_kisi_id == kisi_kisi_id)
     )
     if existing_butir.scalars().first():
-        raise HTTPException(status_code=409, detail="Generasi untuk kisi-kisi ini sudah pernah dijalankan")
+        raise Galat(409, "generasi_sudah_dijalankan", "Generasi untuk kisi-kisi ini sudah pernah dijalankan")
 
     await pastikan_kuota_soal(db, guru, kk.jumlah_butir)
     background_tasks.add_task(jalankan_generasi, kisi_kisi_id)
@@ -57,9 +58,9 @@ async def get_generation_status(
     result = await db.execute(select(KisiKisi).where(KisiKisi.id == kisi_kisi_id))
     kk = result.scalar_one_or_none()
     if not kk:
-        raise HTTPException(status_code=404, detail="Kisi-kisi tidak ditemukan")
+        raise Galat(404, "generasi_kisi_kisi_tidak_ditemukan", "Kisi-kisi tidak ditemukan")
     if kk.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan kisi-kisi Anda")
+        raise Galat(403, "generasi_bukan_kisi_kisi_guru", "Bukan kisi-kisi Anda")
 
     butir_result = await db.execute(
         select(ButirSoal)
@@ -99,9 +100,9 @@ async def stop_generasi(
     result = await db.execute(select(KisiKisi).where(KisiKisi.id == kisi_kisi_id))
     kk = result.scalar_one_or_none()
     if not kk:
-        raise HTTPException(status_code=404, detail="Kisi-kisi tidak ditemukan")
+        raise Galat(404, "generasi_kisi_kisi_tidak_ditemukan", "Kisi-kisi tidak ditemukan")
     if kk.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan kisi-kisi Anda")
+        raise Galat(403, "generasi_bukan_kisi_kisi_guru", "Bukan kisi-kisi Anda")
 
     await stop_generasi_kisi_kisi(kisi_kisi_id)
     return {
