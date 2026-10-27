@@ -1,10 +1,11 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.galat import Galat
 from app.core.deps import get_current_admin, get_current_guru
 from app.database import get_db
 from app.models.user import User
@@ -58,10 +59,14 @@ async def ubah_paket(
     db: AsyncSession = Depends(get_db),
 ):
     if data.paket not in PAKET_VALID:
-        raise HTTPException(status_code=422, detail=f"Paket harus salah satu dari: {', '.join(PAKET_VALID)}")
+        raise Galat(
+            422, "paket_pilihan_tidak_valid",
+            f"Paket harus salah satu dari: {', '.join(PAKET_VALID)}",
+            daftar=", ".join(PAKET_VALID),
+        )
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if user is None:
-        raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan")
+        raise Galat(404, "paket_pengguna_tidak_ditemukan", "Pengguna tidak ditemukan")
     user.paket = data.paket
     await db.commit()
     return {"id": str(user.id), "paket": user.paket}

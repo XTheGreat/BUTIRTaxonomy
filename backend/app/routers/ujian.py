@@ -3,7 +3,7 @@ import re
 import uuid
 import secrets
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import case, func, select
@@ -22,6 +22,7 @@ from app.schemas.ujian import (
     RakitOtomatisResponse,
     RilisHasilRequest,
 )
+from app.core.galat import Galat
 from app.core.deps import get_current_guru
 from app.services.exam_assembly import rakit_paket
 from app.services.export_dokumen import buat_dokumen
@@ -56,7 +57,7 @@ async def get_peserta_count(
         await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     ).scalar_one_or_none()
     if not paket or paket.guru_id != guru.id:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     result = await db.execute(
         select(func.count(func.distinct(JawabanSiswa.nama_siswa)))
         .where(JawabanSiswa.paket_ujian_id == ujian_id)
@@ -133,9 +134,9 @@ async def create_ujian(
         )
         butir = result.scalar_one_or_none()
         if not butir:
-            raise HTTPException(status_code=404, detail=f"Butir {bid} tidak ditemukan")
+            raise Galat(404, "ujian_butir_tidak_ditemukan", f"Butir {bid} tidak ditemukan", id=str(bid))
         if butir.status not in ("diterima", "arsip"):
-            raise HTTPException(status_code=400, detail=f"Butir {bid} belum diterima")
+            raise Galat(400, "ujian_butir_belum_diterima", f"Butir {bid} belum diterima", id=str(bid))
 
     paket = PaketUjian(
         guru_id=guru.id,
@@ -168,9 +169,9 @@ async def get_ujian(
     result = await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "ujian_bukan_milik_anda", "Bukan ujian Anda")
     return PaketUjianResponse.model_validate(paket)
 
 
@@ -183,16 +184,16 @@ async def export_ujian(
     db: AsyncSession = Depends(get_db),
 ):
     if format not in ("pdf", "docx"):
-        raise HTTPException(status_code=400, detail="Format ekspor harus pdf atau docx")
+        raise Galat(400, "ujian_format_ekspor_tidak_valid", "Format ekspor harus pdf atau docx")
     await pastikan_ekspor(db, guru)
 
     paket = (
         await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     ).scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "ujian_bukan_milik_anda", "Bukan ujian Anda")
 
     baris = (
         await db.execute(
@@ -221,9 +222,9 @@ async def _ujian_milik_guru(db: AsyncSession, ujian_id: uuid.UUID, guru: User) -
         await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     ).scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "ujian_bukan_milik_anda", "Bukan ujian Anda")
     return paket
 
 
@@ -294,7 +295,7 @@ async def lepas_sesi_peserta(
         )
     ).scalar_one_or_none()
     if not peserta:
-        raise HTTPException(status_code=404, detail="Peserta tidak ditemukan")
+        raise Galat(404, "ujian_peserta_tidak_ditemukan", "Peserta tidak ditemukan")
     peserta.token_hash = None
     await db.commit()
     return {"detail": f"Sesi {peserta.nama_siswa} dilepas. Siswa dapat masuk kembali dengan nama yang sama."}
@@ -311,15 +312,15 @@ async def atur_rilis_hasil(
         await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     ).scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "ujian_bukan_milik_anda", "Bukan ujian Anda")
     if paket.status != "aktif":
-        raise HTTPException(status_code=409, detail="Ujian belum diterbitkan")
+        raise Galat(409, "ujian_belum_diterbitkan", "Ujian belum diterbitkan")
     if paket.rilis_hasil != "manual":
-        raise HTTPException(
-            status_code=409,
-            detail="Ujian ini memakai rilis otomatis: siswa melihat hasil begitu mengumpulkan",
+        raise Galat(
+            409, "ujian_rilis_otomatis",
+            "Ujian ini memakai rilis otomatis: siswa melihat hasil begitu mengumpulkan",
         )
 
     paket.hasil_dirilis_pada = datetime.now(timezone.utc) if data.dirilis else None
@@ -338,15 +339,13 @@ async def terbitkan_ujian(
     result = await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "ujian_bukan_milik_anda", "Bukan ujian Anda")
     if paket.status != "draft":
-        raise HTTPException(status_code=409, detail="Ujian ini sudah diterbitkan")
+        raise Galat(409, "ujian_sudah_diterbitkan", "Ujian ini sudah diterbitkan")
     if data.waktu_selesai <= data.waktu_mulai:
-        raise HTTPException(
-            status_code=400, detail="Waktu selesai harus setelah waktu mulai"
-        )
+        raise Galat(400, "ujian_waktu_selesai_sebelum_mulai", "Waktu selesai harus setelah waktu mulai")
 
     paket.status = "aktif"
     paket.rilis_hasil = data.rilis_hasil
