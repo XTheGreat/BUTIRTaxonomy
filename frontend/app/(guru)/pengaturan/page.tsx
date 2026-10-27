@@ -5,6 +5,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import FormAkun from "@/components/pengaturan/FormAkun";
 import FormPassword from "@/components/pengaturan/FormPassword";
+import FormPreferensi from "@/components/pengaturan/FormPreferensi";
 import { getCurrentUser, logout } from "@/lib/auth";
 import { useBahasa, useTeks, type Bahasa } from "@/lib/teks";
 import type { User } from "@/lib/types";
@@ -46,6 +47,14 @@ export default function PengaturanPage() {
         <dl className="border-b border-[var(--line)]">
           <Baris label={t.akun.pengaturan.akun.peran} nilai={peran} />
         </dl>
+      </section>
+
+      <section aria-labelledby="pengaturan-preferensi" className="mb-10">
+        <h2 id="pengaturan-preferensi" className="font-serif text-xl text-[var(--ink)]">
+          {t.akun.pengaturan.preferensi.judul}
+        </h2>
+        <p className="mt-1 text-sm text-[var(--ink-muted)]">{t.akun.pengaturan.preferensi.keterangan}</p>
+        <FormPreferensi />
       </section>
 
       <section aria-labelledby="pengaturan-password" className="mb-10">

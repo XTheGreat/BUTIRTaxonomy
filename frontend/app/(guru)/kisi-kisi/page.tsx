@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
+import { bacaPreferensi } from "@/lib/preferensi";
 import { formatWaktu } from "@/lib/format";
 import { CekCakupan, KisiKisiRingkas, Materi } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
@@ -24,15 +25,8 @@ export default function KisiKisiPage() {
   const router = useRouter();
   const [materiList, setMateriList] = useState<Materi[]>([]);
   const [selectedMateri, setSelectedMateri] = useState<string[]>([]);
-  const [jumlahButir, setJumlahButir] = useState(5);
-  const [bloom, setBloom] = useState<Record<string, number>>({
-    C1: 0,
-    C2: 20,
-    C3: 30,
-    C4: 30,
-    C5: 20,
-    C6: 0,
-  });
+  const [jumlahButir, setJumlahButir] = useState(() => bacaPreferensi().jumlahButir);
+  const [bloom, setBloom] = useState<Record<string, number>>(() => bacaPreferensi().distribusiBloom);
   const [namaKisi, setNamaKisi] = useState("");
   const [cakupanBab, setCakupanBab] = useState("");
   const [error, setError] = useState("");
@@ -129,8 +123,9 @@ export default function KisiKisiPage() {
   function kosongkanForm() {
     setEditId(null);
     setSelectedMateri([]);
-    setJumlahButir(5);
-    setBloom({ C1: 0, C2: 20, C3: 30, C4: 30, C5: 20, C6: 0 });
+    const preferensi = bacaPreferensi();
+    setJumlahButir(preferensi.jumlahButir);
+    setBloom(preferensi.distribusiBloom);
     setCakupanBab("");
     setNamaKisi("");
   }

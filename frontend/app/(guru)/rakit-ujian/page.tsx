@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
+import { bacaPreferensi } from "@/lib/preferensi";
 import { ArsipSoal, ButirSoal } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
@@ -40,19 +41,12 @@ export default function RakitUjianPage() {
   const [kelompokList, setKelompokList] = useState<KelompokBank[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [judul, setJudul] = useState("");
-  const [durasi, setDurasi] = useState(60);
+  const [durasi, setDurasi] = useState(() => bacaPreferensi().durasiMenit);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [jumlahTarget, setJumlahTarget] = useState(10);
-  const [bloom, setBloom] = useState<Record<string, number>>({
-    C1: 0,
-    C2: 20,
-    C3: 30,
-    C4: 30,
-    C5: 20,
-    C6: 0,
-  });
+  const [bloom, setBloom] = useState<Record<string, number>>(() => bacaPreferensi().distribusiBloom);
   const [cakupanPaket, setCakupanPaket] = useState("");
   const [targetBobot, setTargetBobot] = useState("");
   const [rakitInfo, setRakitInfo] = useState<RakitInfo | null>(null);
