@@ -15,19 +15,19 @@ interface StatusConfig {
 const statusConfigs: Record<string, StatusConfig> = {
   diterima: {
 
-    text: "text-[#1F6B3A]",
+    text: "text-[var(--status-diterima)]",
   },
   ditandai: {
 
-    text: "text-[#8A5A00]",
+    text: "text-[var(--status-ditandai)]",
   },
   ditolak: {
 
-    text: "text-[#A4262C]",
+    text: "text-[var(--status-ditolak)]",
   },
   debating: {
 
-    text: "text-[var(--accent)]",
+    text: "text-[var(--accent-text)]",
   },
   tertunda: {
 
@@ -39,7 +39,7 @@ const statusConfigs: Record<string, StatusConfig> = {
   },
   aktif: {
 
-    text: "text-[#1F6B3A]",
+    text: "text-[var(--status-diterima)]",
   },
   selesai: {
 

@@ -66,7 +66,7 @@ export default function LogLLMPage() {
               id="rentang"
               value={hari}
               onChange={(e) => setHari(parseInt(e.target.value))}
-              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1.5 text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1.5 text-sm focus:outline-none focus:border-[var(--accent-text)]"
             >
               <option value={7}>{t.hari(7)}</option>
               <option value={30}>{t.hari(30)}</option>
@@ -77,7 +77,7 @@ export default function LogLLMPage() {
       />
 
       {galat && (
-        <div className="mb-4 text-xs leading-relaxed text-[#A4262C]">{galat}</div>
+        <div className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">{galat}</div>
       )}
 
       {loading && !ringkasan ? (
@@ -88,7 +88,7 @@ export default function LogLLMPage() {
         ringkasan && (
           <div className="space-y-8">
             {ringkasan.admin && ringkasan.peringatan.length > 0 && (
-              <div className="p-3 border border-[#8A5A00]/30 bg-[#FBF1D9] text-xs text-[#8A5A00] space-y-1">
+              <div className="p-3 border border-[var(--status-ditandai)]/30 bg-[var(--status-ditandai-bg)] text-xs text-[var(--status-ditandai)] space-y-1">
                 {ringkasan.peringatan.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
@@ -155,7 +155,7 @@ export default function LogLLMPage() {
                       <tr key={p.peran}>
                         <td className="px-3 py-2 font-serif">{PERAN_LABEL[p.peran] ?? p.peran}</td>
                         {p.galat ? (
-                          <td colSpan={3} className="px-3 py-2 text-xs text-[#A4262C]">
+                          <td colSpan={3} className="px-3 py-2 text-xs text-[var(--status-ditolak)]">
                             {p.galat}
                           </td>
                         ) : (
@@ -164,7 +164,7 @@ export default function LogLLMPage() {
                             <td className="px-3 py-2 font-mono text-xs">
                               {p.provider}
                               {p.fallback && (
-                                <span className="ml-2 text-[#8A5A00]" title={t.penugasan.fallbackTitle}>
+                                <span className="ml-2 text-[var(--status-ditandai)]" title={t.penugasan.fallbackTitle}>
                                   (fallback)
                                 </span>
                               )}
@@ -206,11 +206,11 @@ export default function LogLLMPage() {
                         <tr key={`${r.provider}-${r.model}-${r.peran}`}>
                           <td className="px-3 py-2">
                             {r.provider} <span className="text-[var(--ink-muted)]">/ {r.model}</span>
-                            {r.lewat_fallback > 0 && <span className="ml-2 text-[#8A5A00]">{t.rekap.fallback(r.lewat_fallback)}</span>}
+                            {r.lewat_fallback > 0 && <span className="ml-2 text-[var(--status-ditandai)]">{t.rekap.fallback(r.lewat_fallback)}</span>}
                           </td>
                           <td className="px-3 py-2 font-serif text-sm">{PERAN_LABEL[r.peran] ?? r.peran}</td>
                           <td className="px-3 py-2 text-right">{angka(r.permintaan)}</td>
-                          <td className={`px-3 py-2 text-right ${r.gagal > 0 ? "text-[#A4262C]" : ""}`}>{angka(r.gagal)}</td>
+                          <td className={`px-3 py-2 text-right ${r.gagal > 0 ? "text-[var(--status-ditolak)]" : ""}`}>{angka(r.gagal)}</td>
                           <td className="px-3 py-2 text-right">{angka(r.rate_limit)}</td>
                           <td className="px-3 py-2 text-right">{angka(r.token_total)}</td>
                           <td className="px-3 py-2 text-right">{detik(r.latensi_rata_rata_ms)}</td>
@@ -231,7 +231,7 @@ export default function LogLLMPage() {
                     aria-label={t.terbaru.saringStatus}
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent)]"
+                    className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent-text)]"
                   >
                     <option value="">{t.terbaru.semuaStatus}</option>
                     {Object.entries(STATUS_LABEL).map(([k, v]) => (
@@ -244,7 +244,7 @@ export default function LogLLMPage() {
                     aria-label={t.terbaru.saringPeran}
                     value={filterPeran}
                     onChange={(e) => setFilterPeran(e.target.value)}
-                    className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent)]"
+                    className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent-text)]"
                   >
                     <option value="">{t.terbaru.semuaPeran}</option>
                     {Object.entries(PERAN_LABEL).map(([k, v]) => (
@@ -281,10 +281,10 @@ export default function LogLLMPage() {
                           </td>
                           <td className="px-3 py-2">
                             {b.model}
-                            {b.fallback && <span className="ml-2 text-[#8A5A00]">fallback</span>}
+                            {b.fallback && <span className="ml-2 text-[var(--status-ditandai)]">fallback</span>}
                           </td>
                           <td className="px-3 py-2" title={b.galat ?? undefined}>
-                            <span className={b.status === "sukses" ? "text-[#1F6B3A]" : "text-[#A4262C]"}>
+                            <span className={b.status === "sukses" ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"}>
                               {STATUS_LABEL[b.status] ?? b.status}
                               {b.kode_http && b.status !== "sukses" ? ` ${b.kode_http}` : ""}
                             </span>

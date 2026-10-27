@@ -16,13 +16,13 @@ export default function BloomChip({ level, target, className = "" }: BloomChipPr
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       <span
-        className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-['Times_New_Roman',Times,serif] font-semibold bg-[var(--surface)] text-[var(--accent)] border border-[var(--line)]"
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-['Times_New_Roman',Times,serif] font-semibold bg-[var(--surface)] text-[var(--accent-text)] border border-[var(--line)]"
       >
         {level}
       </span>
       {bergeser && (
         <span
-          className="font-mono text-[10px] font-semibold text-[var(--accent)] whitespace-nowrap"
+          className="font-mono text-[10px] font-semibold text-[var(--accent-text)] whitespace-nowrap"
           title={t.bergeser(target!, level)}
         >
           {t.target(target!)}

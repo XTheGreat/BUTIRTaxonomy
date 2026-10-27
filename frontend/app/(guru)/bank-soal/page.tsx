@@ -110,7 +110,7 @@ export default function BankSoalPage() {
       />
 
       {pesanHapus && (
-        <div className="p-3 mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div className="p-3 mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {pesanHapus}
         </div>
       )}
@@ -224,19 +224,19 @@ export default function BankSoalPage() {
                             onClick={() =>
                               setExpandedId(isExpanded ? null : butir.id)
                             }
-                            className="text-xs text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
+                            className="text-xs text-[var(--accent-text)] hover:underline font-medium focus-visible:outline-none"
                           >
                             {isExpanded ? t.bankSoal.tutup : t.bankSoal.lihatSoal}
                           </button>
                           <button
                             onClick={() => setEditing(butir)}
-                            className="text-xs text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
+                            className="text-xs text-[var(--accent-text)] hover:underline font-medium focus-visible:outline-none"
                           >
                             {t.bankSoal.edit}
                           </button>
                           <button
                             onClick={() => handleDelete(butir.id)}
-                            className="text-xs text-[var(--ink-muted)] hover:text-[#A4262C] transition-colors underline focus-visible:outline-none"
+                            className="text-xs text-[var(--ink-muted)] hover:text-[var(--status-ditolak)] transition-colors underline focus-visible:outline-none"
                           >
                             {t.bankSoal.hapus}
                           </button>
@@ -269,7 +269,7 @@ export default function BankSoalPage() {
                                       key={key}
                                       className={`flex items-start gap-3 p-2.5 rounded text-sm transition-colors ${
                                         isKey
-                                          ? "border border-transparent text-[#1F6B3A] font-medium"
+                                          ? "border border-transparent text-[var(--status-diterima)] font-medium"
                                           : "bg-[var(--canvas)] border border-[var(--line)] text-[var(--ink)]"
                                       }`}
                                     >
@@ -281,7 +281,7 @@ export default function BankSoalPage() {
                                       </span>
                                       {isKey && (
                                         <span
-                                          className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
+                                          className="inline-flex items-center text-[var(--status-diterima)] shrink-0 pt-0.5"
                                           title={t.umum.kunciJawaban}
                                         >
                                           <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />

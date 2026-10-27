@@ -1,7 +1,7 @@
 import { useBahasa, type Bahasa } from "@/lib/teks";
 import { bahasaAktifSekarang } from "@/lib/teks/aktif";
 
-const LOKAL: Record<Bahasa, string> = { id: "id-ID", en: "en-US" };
+const LOKAL: Record<Bahasa, string> = { id: "id-ID", en: "en-US", zh: "zh-CN" };
 
 // Tanpa argumen `bahasa`, memakai bahasa aktif saat ini, sehingga pemanggil lama ikut berganti bahasa.
 export function formatWaktu(iso: string | null, bahasa: Bahasa = bahasaAktifSekarang()): string {

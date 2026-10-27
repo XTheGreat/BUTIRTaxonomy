@@ -209,12 +209,12 @@ export default function KisiKisiPage() {
       />
 
       {pesan && (
-        <div className="mb-4 text-xs leading-relaxed text-[#1F6B3A]">
+        <div className="mb-4 text-xs leading-relaxed text-[var(--status-diterima)]">
           {pesan}
         </div>
       )}
       {editId && (
-        <div className="mb-4 p-3 rounded bg-[#FBF1D9] border border-[#8A5A00]/30 text-xs text-[#8A5A00] flex items-center justify-between gap-3">
+        <div className="mb-4 p-3 rounded bg-[var(--status-ditandai-bg)] border border-[var(--status-ditandai)]/30 text-xs text-[var(--status-ditandai)] flex items-center justify-between gap-3">
           <span>{tk.sedangMengubah}</span>
           <button type="button" onClick={kosongkanForm} className="underline font-medium shrink-0">
             {tk.batalUbah}
@@ -247,7 +247,7 @@ export default function KisiKisiPage() {
               />
               <p>
                 {tk.materiRujukan.kosong}{" "}
-                <Link href="/materi" className="text-[var(--accent)] underline font-medium hover:underline">
+                <Link href="/materi" className="text-[var(--accent-text)] underline font-medium hover:underline">
                   {tk.materiRujukan.linkUnggah}
                 </Link>
                 .
@@ -302,13 +302,13 @@ export default function KisiKisiPage() {
                 type="button"
                 disabled={bloomTotal === 0}
                 onClick={() => setBloom({ C1: 0, C2: 0, C3: 0, C4: 0, C5: 0, C6: 0 })}
-                className="font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
+                className="font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
               >
                 {tk.distribusi.kosongkanSemua}
               </button>
               <div
                 className={`font-sans text-xs font-medium tabular-nums transition-colors ${
-                  bloomTotal === 100 ? "text-[#1F6B3A]" : "text-[#A4262C]"
+                  bloomTotal === 100 ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"
                 }`}
               >
                 {tk.distribusi.total} <span className="font-semibold">{bloomTotal}%</span>
@@ -319,7 +319,7 @@ export default function KisiKisiPage() {
           <BloomPieChart bloom={bloom} total={bloomTotal} />
 
           {bloomTotal !== 100 && (
-            <p className="text-xs text-[#A4262C] mb-3">
+            <p className="text-xs text-[var(--status-ditolak)] mb-3">
               {tk.distribusi.totalTidakPas(bloomTotal)}
             </p>
           )}
@@ -331,14 +331,14 @@ export default function KisiKisiPage() {
                 className="bg-[var(--canvas)] border border-[var(--line)] p-2.5 flex flex-col justify-between rounded-lg transition-shadow"
               >
                 <div className="flex items-center justify-between gap-1.5 mb-2">
-                  <span className="font-mono text-[11px] font-semibold text-[var(--accent)] px-1.5 py-0.5 bg-[var(--surface)] border border-[var(--line)] rounded">
+                  <span className="font-mono text-[11px] font-semibold text-[var(--accent-text)] px-1.5 py-0.5 bg-[var(--surface)] border border-[var(--line)] rounded">
                     {level}
                   </span>
                   <span className="text-[11px] font-sans text-[var(--ink-muted)] truncate" title={BLOOM_LABELS[level]}>
                     {BLOOM_LABELS[level]}
                   </span>
                 </div>
-                <div className="flex items-baseline justify-end gap-1 px-2 py-1 bg-[var(--surface)] border border-[var(--line)] rounded focus-within:border-[var(--accent)] focus-within:bg-[var(--canvas)] focus-within:ring-1 focus-within:ring-[var(--accent)] transition-all">
+                <div className="flex items-baseline justify-end gap-1 px-2 py-1 bg-[var(--surface)] border border-[var(--line)] rounded focus-within:border-[var(--accent-text)] focus-within:bg-[var(--canvas)] focus-within:ring-1 focus-within:ring-[var(--accent-text)] transition-all">
                   <input
                     type="number"
                     min={0}
@@ -376,7 +376,7 @@ export default function KisiKisiPage() {
         </div>
 
         {error && (
-          <div className="text-xs leading-relaxed text-[#A4262C]">
+          <div className="text-xs leading-relaxed text-[var(--status-ditolak)]">
             {error}
           </div>
         )}
@@ -432,7 +432,7 @@ export default function KisiKisiPage() {
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
                       {Object.entries(k.distribusi_bloom).map(([lv, v], i, semua) => (
                         <span key={lv} className="inline-flex items-center gap-1">
-                          <span className="font-mono text-[10px] font-semibold text-[var(--accent)]">{lv}</span>
+                          <span className="font-mono text-[10px] font-semibold text-[var(--accent-text)]">{lv}</span>
                           <span className="min-w-[28px] border border-[var(--line-strong)] rounded-sm bg-[var(--canvas)] px-1 text-center font-mono text-[10px] leading-4 tabular-nums text-[var(--ink)]">
                             {v}%
                           </span>
@@ -458,27 +458,27 @@ export default function KisiKisiPage() {
                         <button
                           type="button"
                           onClick={() => setAksiBaris({ tipe: "mulai", item: k })}
-                          className="text-[var(--accent)] hover:underline font-medium"
+                          className="text-[var(--accent-text)] hover:underline font-medium"
                         >
                           {tk.tersimpan.mulaiGenerasi}
                         </button>
                         <button
                           type="button"
                           onClick={() => mulaiUbah(k)}
-                          className="text-[var(--accent)] hover:underline font-medium"
+                          className="text-[var(--accent-text)] hover:underline font-medium"
                         >
                           {tk.tersimpan.ubah}
                         </button>
                         <button
                           type="button"
                           onClick={() => setAksiBaris({ tipe: "hapus", item: k })}
-                          className="text-[var(--ink-muted)] hover:text-[#A4262C] underline"
+                          className="text-[var(--ink-muted)] hover:text-[var(--status-ditolak)] underline"
                         >
                           {t.persiapan.umum.hapus}
                         </button>
                       </>
                     ) : (
-                      <Link href={`/generasi/${k.id}`} className="text-[var(--accent)] hover:underline font-medium">
+                      <Link href={`/generasi/${k.id}`} className="text-[var(--accent-text)] hover:underline font-medium">
                         {tk.tersimpan.lihatProgres}
                       </Link>
                     )}
@@ -539,7 +539,7 @@ function PratinjauCakupan({ cek }: { cek: CekCakupan | null }) {
   return (
     <div
       className={`text-xs leading-relaxed ${
-        cocok ? "text-[#1F6B3A]" : "text-[#8A5A00]"
+        cocok ? "text-[var(--status-diterima)]" : "text-[var(--status-ditandai)]"
       }`}
     >
       {cocok

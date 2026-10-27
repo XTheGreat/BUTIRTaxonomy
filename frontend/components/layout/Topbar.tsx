@@ -127,7 +127,7 @@ export default function Topbar({
         {activeGenId && !pathname.includes(activeGenId) && (
           <Link
             href={`/generasi/${activeGenId}`}
-            className="flex items-center gap-2 px-2.5 py-1 text-xs border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors select-none font-medium"
+            className="flex items-center gap-2 px-2.5 py-1 text-xs border border-[var(--accent)] text-[var(--accent-text)] hover:bg-[var(--accent)]/10 transition-colors select-none font-medium"
             title={t.shell.topbar.debatBerlangsungJudul}
           >
             <span>{t.shell.topbar.debatBerlangsung}</span>

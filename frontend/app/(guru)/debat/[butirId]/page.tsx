@@ -21,9 +21,9 @@ const JEDA_MS = 2500;
 type TeksDebat = Kamus["telaah"]["debat"];
 
 const WARNA_VERDICT: Record<string, string> = {
-  diterima: "#1F6B3A",
-  revisi: "#8A5A00",
-  ditolak: "#A4262C",
+  diterima: "var(--status-diterima)",
+  revisi: "var(--status-ditandai)",
+  ditolak: "var(--status-ditolak)",
 };
 
 const infoAgen = (d: TeksDebat, agen: string): { nama: string; kegiatan: string } | undefined =>
@@ -59,7 +59,7 @@ function IsiPenyusun({ o }: { o: Record<string, any> }) {
       </p>
       <ul className="space-y-1">
         {Object.entries((o.pilihan as Record<string, string>) || {}).map(([k, v], i) => (
-          <li key={k} className={`flex gap-3 text-sm ${k === kunci ? "font-medium text-[#1F6B3A]" : "text-[var(--ink)]"}`}>
+          <li key={k} className={`flex gap-3 text-sm ${k === kunci ? "font-medium text-[var(--status-diterima)]" : "text-[var(--ink)]"}`}>
             <span className="w-5 shrink-0 font-mono text-xs font-semibold pt-0.5">{k}.</span>
             <span className="font-serif">
               <Ketik text={String(v)} tunda={120 * (i + 1)} />
@@ -123,7 +123,7 @@ function IsiPenjawab({ o, kunci }: { o: Record<string, any>; kunci?: string }) {
           <span className="font-mono text-xs text-[var(--ink-muted)]">{d.keyakinan(o.tingkat_keyakinan)}</span>
         )}
         {kunci && jawab && (
-          <span className="text-xs font-semibold" style={{ color: jawab === kunci ? "#1F6B3A" : "#A4262C" }}>
+          <span className="text-xs font-semibold" style={{ color: jawab === kunci ? "var(--status-diterima)" : "var(--status-ditolak)" }}>
             {jawab === kunci ? d.sesuaiKunci : d.tidakSesuaiKunci(kunci)}
           </span>
         )}
@@ -140,7 +140,7 @@ function IsiPenjawab({ o, kunci }: { o: Record<string, any>; kunci?: string }) {
 function IsiArbiter({ o }: { o: Record<string, any> }) {
   const d = useTeks().telaah.debat;
   const labelPutusan: Record<string, string> = d.putusanLabel;
-  const v = { label: labelPutusan[o.verdict] ?? (o.verdict || "-"), warna: WARNA_VERDICT[o.verdict] ?? "#5A6070" };
+  const v = { label: labelPutusan[o.verdict] ?? (o.verdict || "-"), warna: WARNA_VERDICT[o.verdict] ?? "var(--status-netral)" };
   return (
     <div className="space-y-2">
       <p className="flex items-center gap-2 text-sm">
@@ -158,7 +158,7 @@ function IsiArbiter({ o }: { o: Record<string, any> }) {
         <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs text-[var(--ink-muted)]">
           {o.level_bloom_final && (
             <span>
-              {d.level} <span className="font-semibold text-[var(--accent)]">{o.level_bloom_final}</span>
+              {d.level} <span className="font-semibold text-[var(--accent-text)]">{o.level_bloom_final}</span>
             </span>
           )}
           {o.bobot_poin_final != null && <span>{d.bobot} {o.bobot_poin_final}</span>}
@@ -278,7 +278,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
       />
 
       {galat && !data && (
-        <div role="alert" className="mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}
@@ -327,8 +327,8 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
                   <div className="flex flex-wrap items-center gap-3 border border-dashed border-[var(--line-strong)] px-4 py-2.5 text-xs text-[var(--ink-muted)]">
                     {diarsipkan.has(r) ? (
                       <>
-                        <span className="font-medium text-[#1F6B3A]">{d.tersimpanDiArsip(r)}</span>
-                        <Link href="/arsip" className="underline underline-offset-4 text-[var(--accent)]">
+                        <span className="font-medium text-[var(--status-diterima)]">{d.tersimpanDiArsip(r)}</span>
+                        <Link href="/arsip" className="underline underline-offset-4 text-[var(--accent-text)]">
                           {d.bukaArsipSoal}
                         </Link>
                       </>
@@ -363,7 +363,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
           })}
 
           {data.status === "diterima" && (
-            <div className="pesan-muncul text-sm text-[#1F6B3A]">
+            <div className="pesan-muncul text-sm text-[var(--status-diterima)]">
               {d.selesaiDiterimaAwal}{" "}
               <Link href="/bank-soal" className="underline underline-offset-4 font-medium">
                 {d.bankSoal}
@@ -372,7 +372,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
             </div>
           )}
           {data.status === "ditandai" && (
-            <div className="pesan-muncul border border-[#8A5A00]/30 bg-[#FBF1D9] px-4 py-3 text-sm text-[#8A5A00]">
+            <div className="pesan-muncul border border-[var(--status-ditandai)]/30 bg-[var(--status-ditandai-bg)] px-4 py-3 text-sm text-[var(--status-ditandai)]">
               {d.selesaiDitandaiAwal}{" "}
               <Link href={`/butir-ditandai/${data.butir_id}`} className="underline underline-offset-4 font-medium">
                 {d.butirDitandai}
@@ -381,7 +381,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
             </div>
           )}
           {data.status === "ditolak" && (
-            <div className="pesan-muncul text-sm text-[#A4262C]">
+            <div className="pesan-muncul text-sm text-[var(--status-ditolak)]">
               {d.selesaiDitolak}
             </div>
           )}
@@ -389,14 +389,14 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
             <div className="pesan-muncul border border-[var(--line-strong)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)]">
               <span className="font-medium">{penyebab.judul}.</span>{" "}
               {penyebab.saran && <span className="text-[var(--ink-muted)]">{penyebab.saran}</span>}{" "}
-              <Link href="/butir-tertunda" className="underline underline-offset-4 text-[var(--accent)]">
+              <Link href="/butir-tertunda" className="underline underline-offset-4 text-[var(--accent-text)]">
                 {d.bukaButirTertunda}
               </Link>
             </div>
           )}
 
           {galatArsip && (
-            <div role="alert" className="border border-[#A4262C]/30 text-xs leading-relaxed text-[#A4262C]">
+            <div role="alert" className="border border-[var(--status-ditolak)]/30 text-xs leading-relaxed text-[var(--status-ditolak)]">
               {galatArsip}
             </div>
           )}

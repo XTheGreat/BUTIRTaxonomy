@@ -93,7 +93,7 @@ export default function FormPreferensi() {
         <legend className="flex w-full items-baseline justify-between text-sm font-medium text-[var(--ink)]">
           <span>{p.distribusiBloom}</span>
           <span
-            className={`font-mono text-xs tabular-nums ${total === 100 ? "text-[#1F6B3A]" : "text-[#A4262C]"}`}
+            className={`font-mono text-xs tabular-nums ${total === 100 ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"}`}
           >
             {p.total(total)}
           </span>
@@ -105,12 +105,12 @@ export default function FormPreferensi() {
               className="flex flex-col gap-1.5 rounded-md border border-[var(--line)] bg-[var(--canvas)] p-2.5"
             >
               <span className="flex items-baseline gap-1.5">
-                <span className="rounded border border-[var(--line)] bg-[var(--surface)] px-1.5 py-0.5 font-mono text-[11px] font-semibold text-[var(--accent)]">
+                <span className="rounded border border-[var(--line)] bg-[var(--surface)] px-1.5 py-0.5 font-mono text-[11px] font-semibold text-[var(--accent-text)]">
                   {level}
                 </span>
                 <span className="text-[11px] text-[var(--ink-muted)]">{namaBloom[level]}</span>
               </span>
-              <span className="flex items-baseline justify-end gap-1 rounded border border-[var(--line-strong)] px-2 py-1 focus-within:border-[var(--accent)]">
+              <span className="flex items-baseline justify-end gap-1 rounded border border-[var(--line-strong)] px-2 py-1 focus-within:border-[var(--accent-text)]">
                 <input
                   type="number"
                   min={0}
@@ -137,7 +137,7 @@ export default function FormPreferensi() {
         {status && (
           <p
             role={status.jenis === "galat" ? "alert" : "status"}
-            className={`text-sm ${status.jenis === "galat" ? "text-[#A4262C]" : "text-[#1F6B3A]"}`}
+            className={`text-sm ${status.jenis === "galat" ? "text-[var(--status-ditolak)]" : "text-[var(--status-diterima)]"}`}
           >
             {status.teks}
           </p>

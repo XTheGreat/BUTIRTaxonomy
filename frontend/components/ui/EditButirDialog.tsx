@@ -98,7 +98,7 @@ export default function EditButirDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-6">
       <div
-        className="fixed inset-0 bg-[var(--ink)]/40"
+        className="fixed inset-0 bg-[var(--scrim)]"
         onClick={() => !saving && onClose()}
         aria-hidden="true"
       />
@@ -176,7 +176,7 @@ export default function EditButirDialog({
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-[var(--accent)]"
+              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-[var(--accent-text)]"
             >
               {BLOOM.map((b) => (
                 <option key={b} value={b}>
@@ -197,7 +197,7 @@ export default function EditButirDialog({
         </div>
 
         {error && (
-          <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+          <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
             {error}
           </div>
         )}

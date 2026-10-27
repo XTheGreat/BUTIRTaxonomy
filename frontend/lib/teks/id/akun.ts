@@ -58,6 +58,7 @@ const akun = {
       keterangan: "Pilih bahasa tampilan antarmuka.",
       indonesia: "Bahasa Indonesia",
       inggris: "English",
+      mandarin: "中文（简体）",
       catatan: "Soal, pembahasan, dan hasil debat dibuat oleh AI dari materi Anda, sehingga tidak ikut diterjemahkan.",
     },
     sesi: {
@@ -81,9 +82,15 @@ const akun = {
     tampilan: {
       judul: "Tampilan",
       keterangan: "Atur kenyamanan membaca dan bergerak di BUTIR.",
+      tema: {
+        judul: "Tema",
+        keterangan: "Pilih tampilan terang atau gelap untuk seluruh aplikasi.",
+        terang: "Terang",
+        gelap: "Gelap",
+      },
       ukuranTeks: {
         judul: "Ukuran teks",
-        keterangan: "Memperbesar atau memperkecil seluruh teks di aplikasi.",
+        keterangan: "Memperbesar atau memperkecil teks di area kerja Anda. Halaman masuk dan halaman info tetap berukuran standar.",
         kecil: "Kecil",
         normal: "Normal",
         besar: "Besar",

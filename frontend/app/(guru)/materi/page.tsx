@@ -220,7 +220,7 @@ export default function MateriPage() {
                 {dragDiHalaman || dragDiZona ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-                    <div className="font-serif text-lg text-[var(--accent)]">
+                    <div className="font-serif text-lg text-[var(--accent-text)]">
                       {dragDiZona
                         ? tm.unggah.lepasDiZona
                         : tm.unggah.lepasDiHalaman}
@@ -231,15 +231,15 @@ export default function MateriPage() {
                     <Upload
                       size={28}
                       strokeWidth={1.5}
-                      className="text-[var(--ink-muted)] group-hover:text-[var(--accent)] transition-colors duration-[140ms]"
+                      className="text-[var(--ink-muted)] group-hover:text-[var(--accent-text)] transition-colors duration-[140ms]"
                     />
                     <div className="text-sm text-[var(--ink)]">
                       {file ? (
-                        <span className="font-medium text-[var(--accent)]">
+                        <span className="font-medium text-[var(--accent-text)]">
                           {file.name} ({(file.size / 1024).toFixed(1)} KB)
                         </span>
                       ) : (
-                        <span className="group-hover:text-[var(--accent)] transition-colors duration-[140ms]">
+                        <span className="group-hover:text-[var(--accent-text)] transition-colors duration-[140ms]">
                           {tm.unggah.klikAtauSeret}
                         </span>
                       )}
@@ -257,7 +257,7 @@ export default function MateriPage() {
           </div>
 
           {error && (
-            <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+            <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
               {error}
             </div>
           )}
@@ -325,16 +325,19 @@ export default function MateriPage() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-[var(--ink-muted)]">
-                      {new Date(item.created_at).toLocaleDateString(bahasa === "en" ? "en-US" : "id-ID", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(item.created_at).toLocaleDateString(
+                        bahasa === "zh" ? "zh-CN" : bahasa === "en" ? "en-US" : "id-ID",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}
                     </td>
                     <td className="px-3 py-2.5 text-right">
                       <button
                         onClick={() => setDeleteTarget(item)}
-                        className="text-xs text-[var(--ink-muted)] hover:text-[#A4262C] transition-colors duration-[140ms] underline focus-visible:outline-none"
+                        className="text-xs text-[var(--ink-muted)] hover:text-[var(--status-ditolak)] transition-colors duration-[140ms] underline focus-visible:outline-none"
                       >
                         {t.persiapan.umum.hapus}
                       </button>

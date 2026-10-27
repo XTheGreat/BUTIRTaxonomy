@@ -52,7 +52,7 @@ export default function FooterSitus() {
 
   return (
     <>
-    <section className="relative h-36 sm:h-40 border-t border-[var(--line)] bg-white overflow-hidden">
+    <section className="relative h-36 sm:h-40 border-t border-[var(--line)] bg-[var(--canvas)] overflow-hidden">
       <FaktaUnikBerjalan />
     </section>
     <footer className="bg-[linear-gradient(to_bottom,#0F5F66_0%,#0C525A_50%,#08444A_100%)] text-white">

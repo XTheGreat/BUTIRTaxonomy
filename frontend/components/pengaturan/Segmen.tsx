@@ -1,5 +1,7 @@
 "use client";
 
+import PenandaPanah from "@/components/pengaturan/PenandaPanah";
+
 interface OpsiSegmen<T extends string> {
   nilai: T;
   label: string;
@@ -13,7 +15,7 @@ interface SegmenProps<T extends string> {
   className?: string;
 }
 
-// Pilihan satu-dari-beberapa. Penanda terpilih memakai titik "Butir", bukan sakelar berbentuk pil.
+// Pilihan satu-dari-beberapa menggunakan kepala panah sebagai penanda opsi.
 export default function Segmen<T extends string>({ label, nilai, opsi, onUbah, className = "" }: SegmenProps<T>) {
   return (
     <div
@@ -30,18 +32,15 @@ export default function Segmen<T extends string>({ label, nilai, opsi, onUbah, c
             role="radio"
             aria-checked={terpilih}
             onClick={() => onUbah(o.nilai)}
-            className={`flex items-center gap-3 rounded border px-3.5 py-2.5 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+            className={`flex items-center gap-3 rounded border px-3.5 py-2.5 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
               terpilih
-                ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--ink)]"
-                : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                ? "border-[var(--line-strong)] bg-[var(--line)]/40 text-[var(--ink)]"
+                : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--line)]/40 hover:text-[var(--ink)]"
             }`}
           >
-            <span
-              aria-hidden="true"
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                terpilih ? "bg-[var(--accent)]" : "border border-[var(--line-strong)]"
-              }`}
-            />
+            <span className="flex h-3 w-3 shrink-0 items-center justify-center">
+              {terpilih && <PenandaPanah className="h-3 w-3 text-[var(--ink)]" />}
+            </span>
             {o.label}
           </button>
         );

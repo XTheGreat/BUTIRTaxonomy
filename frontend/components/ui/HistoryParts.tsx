@@ -3,16 +3,16 @@ import { WARNA_GRAFIK } from "@/lib/warnaGrafik";
 import { useTeks } from "@/lib/teks";
 
 export const STATUS_HISTORY: { key: string; label: string; warna: string; penanda: string }[] = [
-  { key: "diterima", label: "Diterima", warna: "#1F6B3A", penanda: WARNA_GRAFIK.diterima },
-  { key: "ditandai", label: "Ditandai", warna: "#8A5A00", penanda: WARNA_GRAFIK.ditandai },
-  { key: "ditolak", label: "Ditolak", warna: "#A4262C", penanda: WARNA_GRAFIK.ditolak },
-  { key: "tertunda", label: "Tertunda", warna: "#5A6070", penanda: WARNA_GRAFIK.tertunda },
+  { key: "diterima", label: "Diterima", warna: "var(--status-diterima)", penanda: WARNA_GRAFIK.diterima },
+  { key: "ditandai", label: "Ditandai", warna: "var(--status-ditandai)", penanda: WARNA_GRAFIK.ditandai },
+  { key: "ditolak", label: "Ditolak", warna: "var(--status-ditolak)", penanda: WARNA_GRAFIK.ditolak },
+  { key: "tertunda", label: "Tertunda", warna: "var(--status-netral)", penanda: WARNA_GRAFIK.tertunda },
 ];
 
 const MAX_RONDE = 3;
 
 export function warnaStatus(status: string): string {
-  return STATUS_HISTORY.find((s) => s.key === status)?.warna ?? "#5A6070";
+  return STATUS_HISTORY.find((s) => s.key === status)?.warna ?? "var(--status-netral)";
 }
 
 export function warnaPenanda(status: string): string {

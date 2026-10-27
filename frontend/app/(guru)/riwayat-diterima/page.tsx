@@ -89,7 +89,7 @@ export default function RiwayatDiterimaPage() {
       render: (b) => (
         <Link
           href={`/debat/${b.id}?dari=riwayat-diterima`}
-          className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
         >
           {t.lihatDebat}
         </Link>
@@ -105,7 +105,7 @@ export default function RiwayatDiterimaPage() {
       />
 
       {galat && (
-        <div role="alert" className="mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}

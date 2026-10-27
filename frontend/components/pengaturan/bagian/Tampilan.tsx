@@ -38,6 +38,21 @@ export default function Tampilan() {
     <div className="space-y-8">
       <BagianKepala judul={t.judul} keterangan={t.keterangan} />
 
+      <section aria-labelledby="tampilan-tema" className="space-y-2">
+        <Subjudul id="tampilan-tema">{t.tema.judul}</Subjudul>
+        <p className="text-sm text-[var(--ink-muted)]">{t.tema.keterangan}</p>
+        <Segmen
+          label={t.tema.judul}
+          nilai={nilai.tema}
+          opsi={[
+            { nilai: "terang", label: t.tema.terang },
+            { nilai: "gelap", label: t.tema.gelap },
+          ]}
+          onUbah={(tema) => ubah({ tema })}
+          className="pt-1"
+        />
+      </section>
+
       <section aria-labelledby="tampilan-ukuran" className="space-y-2">
         <Subjudul id="tampilan-ukuran">{t.ukuranTeks.judul}</Subjudul>
         <p className="text-sm text-[var(--ink-muted)]">{t.ukuranTeks.keterangan}</p>

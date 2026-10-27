@@ -22,12 +22,12 @@ export interface BloomPieChartProps {
 }
 
 export const BLOOM_COLORS: Record<BloomLevel, string> = {
-  C1: "#4A5568",
-  C2: "#2D3748",
-  C3: "#0F5F66",
-  C4: "#18838B",
-  C5: "#2B9EA8",
-  C6: "#4CB8C4",
+  C1: "var(--bloom-c1)",
+  C2: "var(--bloom-c2)",
+  C3: "var(--bloom-c3)",
+  C4: "var(--bloom-c4)",
+  C5: "var(--bloom-c5)",
+  C6: "var(--bloom-c6)",
 };
 
 export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
@@ -133,7 +133,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
             y={cy + 13}
             textAnchor="middle"
             className={`text-base font-sans font-bold tabular-nums ${
-              total === 100 ? "fill-[#1F6B3A]" : "fill-[#A4262C]"
+              total === 100 ? "fill-[var(--status-diterima)]" : "fill-[var(--status-ditolak)]"
             }`}
           >
             {total}%
@@ -154,7 +154,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
                   className="w-4 h-2 rounded-sm shrink-0"
                   style={{ backgroundColor: BLOOM_COLORS[level] }}
                 />
-                <span className="font-mono text-[11px] font-semibold text-[var(--accent)]">
+                <span className="font-mono text-[11px] font-semibold text-[var(--accent-text)]">
                   {level}
                 </span>
                 <span className="text-[11px] text-[var(--ink-muted)] font-sans truncate">

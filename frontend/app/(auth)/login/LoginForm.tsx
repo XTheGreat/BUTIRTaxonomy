@@ -66,6 +66,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
   return (
     <AuthShell
       denganFooterSitus
+      kartuTerbalik={siswa}
       title={siswa ? l.siswa.judul : l.guru.judul}
       subtitle={
         siswa
@@ -81,7 +82,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
               {l.guru.belumPunyaAkun}{" "}
               <Link
                 href="/register"
-                className="text-[var(--accent)] hover:underline font-medium"
+                className="text-[var(--accent-text)] hover:underline font-medium"
               >
                 {l.guru.daftarBaru}
               </Link>
@@ -102,19 +103,22 @@ export default function LoginForm({ awal }: { awal: Peran }) {
         role="tablist"
         aria-label={l.labelPeran}
         onKeyDown={handleTabKey}
-        className="relative grid grid-cols-2 mb-6 overflow-hidden rounded border border-[var(--line-strong)] bg-[var(--surface)]"
+        className={`relative mb-6 grid grid-cols-2 overflow-hidden rounded border transition-colors duration-300 ease-out ${
+          siswa
+            ? "border-white/70 bg-[#0C4D53]"
+            : "border-[var(--line-strong)] bg-[var(--surface)]"
+        }`}
       >
         <span
           aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-1/2 bg-[var(--accent)]"
+          className={`absolute inset-y-0 left-0 w-1/2 transition-[transform,background-color] duration-[280ms] ease-out ${siswa ? "bg-white" : "bg-[var(--accent)]"}`}
           style={{
             transform: siswa ? "translateX(100%)" : "translateX(0)",
-            transition: "transform 220ms ease-out",
           }}
         />
         <span
           aria-hidden="true"
-          className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--line-strong)] z-[1]"
+          className={`absolute inset-y-0 left-1/2 z-[1] w-px -translate-x-1/2 ${siswa ? "bg-white/70" : "bg-[var(--line-strong)]"}`}
         />
         {DAFTAR_PERAN.map((p) => {
           const aktif = peran === p;
@@ -129,7 +133,13 @@ export default function LoginForm({ awal }: { awal: Peran }) {
               tabIndex={aktif ? 0 : -1}
               onClick={() => pilihPeran(p)}
               className={`relative z-[2] py-2.5 text-sm font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/70 ${
-                aktif ? "text-white" : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                siswa
+                  ? aktif
+                    ? "text-[var(--accent-on-light)]"
+                    : "text-white/85 hover:text-white"
+                  : aktif
+                    ? "text-[var(--ink-on-accent)]"
+                    : "text-[var(--ink)] hover:text-[var(--accent-text)]"
               }`}
             >
               {l.peran[p]}
@@ -166,17 +176,29 @@ export default function LoginForm({ awal }: { awal: Peran }) {
               onChange={(e) => setKode(e.target.value.toUpperCase())}
               placeholder="A1B2C3D4"
               helper={l.siswa.bantuanKode}
+              labelClassName={siswa ? "!text-[var(--ink-on-accent)]" : ""}
+              helperClassName={siswa ? "!text-[var(--ink-on-accent)]/80" : ""}
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
-              className="font-mono tracking-[0.2em]"
+              className={`font-mono tracking-[0.2em] ${
+                siswa ? "!border-white !bg-white !text-[var(--ink)]" : ""
+              }`}
             />
             {error && siswa && (
-              <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+              <div className="bg-[var(--status-ditolak-bg)] p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
                 {error}
               </div>
             )}
-            <Button type="submit" disabled={!kode.trim()} className="w-full mt-2">
+            <Button
+              type="submit"
+              disabled={!kode.trim()}
+              className={`mt-2 w-full ${
+                siswa
+                  ? "!border-white !bg-white !text-[var(--accent-on-light)] hover:!bg-[var(--accent-soft-on-light)] disabled:!opacity-60"
+                  : ""
+              }`}
+            >
               {l.siswa.lanjutkan}
             </Button>
           </form>

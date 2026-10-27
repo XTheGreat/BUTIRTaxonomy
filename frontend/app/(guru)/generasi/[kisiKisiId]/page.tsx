@@ -154,7 +154,7 @@ export default function GenerasiPage() {
       {!(status && status.total > 0) && baruDimulai && (
         <div className="border border-dashed border-[var(--line-strong)] bg-[var(--surface)] p-6 max-w-xl rounded-lg">
           <div className="flex items-center gap-3 mb-3">
-            <Loader2 className="w-5 h-5 animate-spin text-[var(--accent)] shrink-0" />
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-text)] shrink-0" />
             <h2 className="font-serif text-lg font-normal text-[var(--ink)]">
               {tg.mempersiapkan.judul}
             </h2>
@@ -179,11 +179,11 @@ export default function GenerasiPage() {
                 <span className="font-sans text-xs text-[var(--ink-muted)]">({progressPercent}%)</span>
               </div>
               {polling ? (
-                <div className="text-[var(--accent)] font-sans text-xs font-medium">
+                <div className="text-[var(--accent-text)] font-sans text-xs font-medium">
                   {tg.progres.sinkronisasi}
                 </div>
               ) : (
-                <div className="font-sans text-[#1F6B3A] text-xs font-medium">
+                <div className="font-sans text-[var(--status-diterima)] text-xs font-medium">
                   {tg.progres.selesai}
                 </div>
               )}
@@ -273,7 +273,7 @@ export default function GenerasiPage() {
                       {item.id && (
                         <Link
                           href={`/debat/${item.id}`}
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline"
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline"
                         >
                           {sedangBerjalan(item.status) && <TigaTitik className="!gap-1 [&>span]:!h-1 [&>span]:!w-1" />}
                           {tg.tabel.lihatDebatLive}

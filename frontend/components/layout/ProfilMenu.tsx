@@ -55,7 +55,7 @@ export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
   const email = user?.email || t.akun.profil.emailDefault;
 
   const itemKelas =
-    "flex w-full items-center gap-3 rounded px-3 py-2 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
+    "flex w-full items-center gap-3 rounded px-3 py-2 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]";
 
   return (
     <div ref={wadah} className="relative shrink-0 border-t border-[var(--line)] p-2">
@@ -82,7 +82,7 @@ export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
             type="button"
             role="menuitem"
             onClick={logout}
-            className={`${itemKelas} text-[#A4262C] hover:bg-[#FBEAEA]/60`}
+            className={`${itemKelas} text-[var(--status-ditolak)] hover:bg-[var(--status-ditolak-bg)]/60`}
           >
             <LogOut size={16} strokeWidth={1.6} aria-hidden="true" className="shrink-0" />
             {t.akun.profil.keluar}
@@ -96,11 +96,11 @@ export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
         aria-haspopup="menu"
         aria-expanded={terbuka}
         aria-label={t.akun.profil.menu}
-        className="flex w-full items-center gap-3 rounded px-2 py-2 text-left transition-colors duration-[140ms] hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+        className="flex w-full items-center gap-3 rounded px-2 py-2 text-left transition-colors duration-[140ms] hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
       >
         <span
           aria-hidden="true"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[var(--line)] bg-[var(--surface)] font-mono text-[11px] font-medium text-[var(--ink)]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] font-mono text-[11px] font-medium text-[var(--ink)]"
         >
           {inisialNama(nama)}
         </span>

@@ -61,7 +61,7 @@ export default function FormPassword() {
         {status && (
           <p
             role={status.jenis === "galat" ? "alert" : "status"}
-            className={`text-sm ${status.jenis === "galat" ? "text-[#A4262C]" : "text-[#1F6B3A]"}`}
+            className={`text-sm ${status.jenis === "galat" ? "text-[var(--status-ditolak)]" : "text-[var(--status-diterima)]"}`}
           >
             {status.teks}
           </p>

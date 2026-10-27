@@ -110,7 +110,7 @@ export default function ButirDitandaiPage() {
                       key={key}
                       className={`flex items-start gap-3 p-2.5 rounded text-sm transition-colors ${
                         isKey
-                          ? "border border-transparent text-[#1F6B3A] font-medium"
+                          ? "border border-transparent text-[var(--status-diterima)] font-medium"
                           : "border border-transparent text-[var(--ink)]"
                       }`}
                     >
@@ -122,7 +122,7 @@ export default function ButirDitandaiPage() {
                       </span>
                       {isKey && (
                         <span
-                          className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
+                          className="inline-flex items-center text-[var(--status-diterima)] shrink-0 pt-0.5"
                           title={t.umum.kunciJawaban}
                         >
                           <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />

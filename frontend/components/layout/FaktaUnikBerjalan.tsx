@@ -123,7 +123,7 @@ export default function FaktaUnikBerjalan() {
             animationDelay: `${item.delayAwal}s`,
             willChange: "left, transform",
           }}
-          className="absolute whitespace-nowrap font-serif text-sm sm:text-base text-[var(--ink)] tracking-normal cursor-default transition-colors duration-150 hover:text-[var(--accent)] hover:[animation-play-state:paused]"
+          className="absolute whitespace-nowrap font-serif text-sm sm:text-base text-[var(--ink)] tracking-normal cursor-default transition-colors duration-150 hover:text-[var(--accent-text)] hover:[animation-play-state:paused]"
         >
           {fakta[item.indeksFakta]}
         </p>

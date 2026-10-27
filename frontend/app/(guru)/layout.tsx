@@ -22,6 +22,15 @@ export default function GuruLayout({ children }: { children: React.ReactNode }) 
     }
   }, [router]);
 
+  // Menandai area guru agar skala ukuran teks (Pengaturan > Tampilan) hanya berlaku di sini.
+  useEffect(() => {
+    const html = document.documentElement;
+    html.dataset.areaGuru = "1";
+    return () => {
+      delete html.dataset.areaGuru;
+    };
+  }, []);
+
   useEffect(() => {
     if (!sidebarOpen) return;
     const lebar = window.matchMedia("(max-width: 767px)");

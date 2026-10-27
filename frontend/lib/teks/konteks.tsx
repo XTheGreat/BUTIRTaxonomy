@@ -38,7 +38,7 @@ export function BahasaProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = bahasa;
+    document.documentElement.lang = bahasa === "zh" ? "zh-CN" : bahasa;
     // Judul bawaan situs ikut bahasa; judul khusus halaman (mis. halaman info) dibiarkan.
     const judulBawaan = daftarBahasa.map((b) => kamusPerBahasa[b].umum.judulSitus);
     const judulSekarang = kamusPerBahasa[bahasa].umum.judulSitus;

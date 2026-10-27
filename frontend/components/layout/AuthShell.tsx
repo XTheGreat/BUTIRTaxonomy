@@ -15,6 +15,7 @@ interface AuthShellProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   denganFooterSitus?: boolean;
+  kartuTerbalik?: boolean;
 }
 
 export default function AuthShell({
@@ -23,13 +24,14 @@ export default function AuthShell({
   children,
   footer,
   denganFooterSitus = false,
+  kartuTerbalik = false,
 }: AuthShellProps) {
   const t = useTeks();
   return (
     <div className="min-h-screen bg-[var(--canvas)] flex flex-col text-[var(--ink)]">
       <div className="flex min-h-screen flex-col lg:flex-row">
       
-      <div className="lg:w-[480px] xl:w-[540px] shrink-0 order-2 lg:order-1 bg-white border-t lg:border-t-0 lg:border-r border-[var(--line-strong)] p-8 lg:p-14 flex flex-col justify-between text-[var(--accent)]">
+      <div className="lg:w-[480px] xl:w-[540px] shrink-0 order-2 lg:order-1 bg-[var(--canvas)] border-t lg:border-t-0 lg:border-r border-[var(--line-strong)] p-8 lg:p-14 flex flex-col justify-between text-[var(--accent-text)]">
         <div>
           <div className="mb-10">
             <Link href="/" className="inline-block focus-visible:outline-none">
@@ -44,7 +46,7 @@ export default function AuthShell({
             </Link>
           </div>
 
-          <p className="text-sm text-[var(--accent)] leading-relaxed mb-10 max-w-sm">
+          <p className="text-sm text-[var(--accent-text)] leading-relaxed mb-10 max-w-sm">
             {t.auth.shell.deskripsi}
           </p>
 
@@ -110,7 +112,7 @@ export default function AuthShell({
           </svg>
         </div>
 
-        <div className="text-[11px] text-[var(--accent)]/80 font-mono pt-8 border-t border-[var(--accent)]/20 mt-8 lg:mt-0">
+        <div className="text-[11px] text-[var(--accent-text)]/80 font-mono pt-8 border-t border-[var(--accent)]/20 mt-8 lg:mt-0">
           {t.auth.shell.standar}
         </div>
       </div>
@@ -120,14 +122,20 @@ export default function AuthShell({
         <PemilihBahasa className="absolute right-4 top-4 z-10" />
 
         <div className="relative w-full max-w-[420px]">
-          <div className="border border-[var(--line-strong)] rounded-md bg-[var(--canvas)] overflow-hidden">
+          <div
+            className={`overflow-hidden rounded-md border transition-colors duration-300 ease-out ${
+              kartuTerbalik
+                ? "border-[var(--accent)] bg-[var(--accent)]"
+                : "border-[var(--line-strong)] bg-[var(--canvas)]"
+            }`}
+          >
             <div className="px-8 pt-7 pb-8">
               <div className="mb-6">
-                <h1 className="font-serif text-2xl font-normal text-[var(--ink)] tracking-tight">
+                <h1 className={`font-serif text-2xl font-normal tracking-tight transition-colors duration-300 ${kartuTerbalik ? "text-[var(--ink-on-accent)]" : "text-[var(--ink)]"}`}>
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-xs text-[var(--ink-muted)] mt-1.5 leading-relaxed">
+                  <p className={`mt-1.5 text-xs leading-relaxed transition-colors duration-300 ${kartuTerbalik ? "text-[var(--ink-on-accent)]/80" : "text-[var(--ink-muted)]"}`}>
                     {subtitle}
                   </p>
                 )}
@@ -136,7 +144,7 @@ export default function AuthShell({
               {children}
 
               {footer && (
-                <div className="mt-8 pt-4 border-t border-[var(--line)] text-xs text-[var(--ink-muted)] text-center">
+                <div className={`mt-8 border-t pt-4 text-center text-xs transition-colors duration-300 ${kartuTerbalik ? "border-[var(--ink-on-accent)]/35 text-[var(--ink-on-accent)]/85" : "border-[var(--line)] text-[var(--ink-muted)]"}`}>
                   {footer}
                 </div>
               )}
@@ -144,7 +152,7 @@ export default function AuthShell({
           </div>
 
           {/* <div className="mt-4 text-center">
-            <p className="inline-block rounded border border-[var(--line)] bg-white px-2.5 py-1 font-mono text-[10px] leading-relaxed text-[var(--ink-muted)]">
+            <p className="inline-block rounded border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 font-mono text-[10px] leading-relaxed text-[var(--ink-muted)]">
               Sesi berakhir otomatis dan dapat dicabut dari server.
             </p>
           </div> */}

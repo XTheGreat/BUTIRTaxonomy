@@ -276,13 +276,13 @@ export default function RakitUjianPage() {
                     type="button"
                     disabled={totalBloom === 0}
                     onClick={() => setBloom({ C1: 0, C2: 0, C3: 0, C4: 0, C5: 0, C6: 0 })}
-                    className="font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
+                    className="font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
                   >
                     {t.rakit.otomatis.kosongkanSemua}
                   </button>
                   <span
                     className={`font-mono text-xs tabular-nums ${
-                      totalBloom === 100 ? "text-[#1F6B3A]" : "text-[#A4262C]"
+                      totalBloom === 100 ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"
                     }`}
                   >
                     {t.rakit.otomatis.total(totalBloom)}
@@ -301,7 +301,7 @@ export default function RakitUjianPage() {
                         className="h-2.5 w-2.5 shrink-0"
                         style={{ backgroundColor: BLOOM_COLORS[lv as BloomLevel] }}
                       />
-                      <span className="font-mono text-xs font-semibold text-[var(--accent)]">{lv}</span>
+                      <span className="font-mono text-xs font-semibold text-[var(--accent-text)]">{lv}</span>
                       <span
                         title={t.rakit.otomatis.tersedia(tersedia[lv] ?? 0)}
                         className="min-w-[22px] border border-[var(--line-strong)] rounded bg-[var(--canvas)] px-1.5 text-center font-mono text-[11px] leading-[18px] tabular-nums text-[var(--ink)]"
@@ -321,7 +321,7 @@ export default function RakitUjianPage() {
                           [lv]: Math.max(0, parseInt(e.target.value) || 0),
                         }))
                       }
-                      className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1.5 text-sm font-mono tabular-nums focus:outline-none focus:border-[var(--accent)]"
+                      className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1.5 text-sm font-mono tabular-nums focus:outline-none focus:border-[var(--accent-text)]"
                     />
                   </label>
                 ))}
@@ -355,7 +355,7 @@ export default function RakitUjianPage() {
                 {rakitInfo.target_bobot !== null && rakitInfo.selisih_bobot !== null && (
                   <div
                     className={`font-mono tabular-nums ${
-                      rakitInfo.selisih_bobot === 0 ? "text-[#1F6B3A]" : "text-[#8A5A00]"
+                      rakitInfo.selisih_bobot === 0 ? "text-[var(--status-diterima)]" : "text-[var(--status-ditandai)]"
                     }`}
                   >
                     {rakitInfo.selisih_bobot === 0
@@ -372,8 +372,8 @@ export default function RakitUjianPage() {
                   <div
                     className={`font-mono tabular-nums ${
                       rakitInfo.cocok_cakupan === rakitInfo.butir_ids.length
-                        ? "text-[#1F6B3A]"
-                        : "text-[#8A5A00]"
+                        ? "text-[var(--status-diterima)]"
+                        : "text-[var(--status-ditandai)]"
                     }`}
                   >
                     {t.rakit.hasil.cakupanCocok(rakitInfo.cocok_cakupan, rakitInfo.butir_ids.length)}
@@ -382,7 +382,7 @@ export default function RakitUjianPage() {
                   </div>
                 )}
                 {(Object.keys(rakitInfo.kekurangan).length > 0 || rakitInfo.kurang_total > 0) && (
-                  <div className="p-2 rounded bg-[#FBF1D9] border border-[#8A5A00]/30 text-[#8A5A00]">
+                  <div className="p-2 rounded bg-[var(--status-ditandai-bg)] border border-[var(--status-ditandai)]/30 text-[var(--status-ditandai)]">
                     {Object.keys(rakitInfo.kekurangan).length > 0 && (
                       <div>
                         {t.rakit.hasil.bankKurangUntuk}{" "}
@@ -446,9 +446,9 @@ export default function RakitUjianPage() {
                   role="tab"
                   aria-selected={sumber === nilai}
                   onClick={() => setSumber(nilai)}
-                  className={`px-3.5 py-1.5 font-sans text-xs font-medium transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                  className={`px-3.5 py-1.5 font-sans text-xs font-medium transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
                     sumber === nilai
-                      ? "bg-[var(--accent)] text-white"
+                      ? "bg-[var(--accent)] text-[var(--ink-on-accent)]"
                       : "bg-[var(--canvas)] text-[var(--ink-muted)] hover:text-[var(--ink)]"
                   }`}
                 >
@@ -474,7 +474,7 @@ export default function RakitUjianPage() {
                     {arsipList.length === 0 ? (
                       <>
                         {t.rakit.pilih.arsipKosongAwal}{" "}
-                        <Link href="/riwayat-diterima" className="underline underline-offset-4 text-[var(--accent)]">
+                        <Link href="/riwayat-diterima" className="underline underline-offset-4 text-[var(--accent-text)]">
                           {t.rakit.pilih.riwayatDiterima}
                         </Link>
                         .
@@ -505,7 +505,7 @@ export default function RakitUjianPage() {
                                 e.stopPropagation();
                                 setPreviewId(isPreview ? null : a.id);
                               }}
-                              className="ml-auto text-[11px] font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
+                              className="ml-auto text-[11px] font-medium text-[var(--accent-text)] hover:underline focus-visible:outline-none"
                             >
                               {isPreview ? t.rakit.pilih.tutup : t.rakit.pilih.pratinjau}
                             </button>
@@ -558,7 +558,7 @@ export default function RakitUjianPage() {
                     onToggle={() => bukaTutup(g.kelompok.id)}
                     tambahan={
                       <span>
-                        <span className="font-mono tabular-nums text-[var(--accent)]">
+                        <span className="font-mono tabular-nums text-[var(--accent-text)]">
                           {idsGrup.filter((id) => selectedIds.includes(id)).length}
                         </span>{" "}
                         {t.rakit.pilih.dipilih}
@@ -568,7 +568,7 @@ export default function RakitUjianPage() {
                       <button
                         type="button"
                         onClick={() => pilihKelompok(idsGrup)}
-                        className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
+                        className="shrink-0 text-xs font-medium text-[var(--accent-text)] hover:underline focus-visible:outline-none"
                       >
                         {semuaTerpilih ? t.rakit.pilih.batalPilihKelompok : t.rakit.pilih.pilihKelompok}
                       </button>
@@ -598,7 +598,7 @@ export default function RakitUjianPage() {
                               e.stopPropagation();
                               setPreviewId(isPreview ? null : butir.id);
                             }}
-                            className="ml-auto text-[11px] text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
+                            className="ml-auto text-[11px] text-[var(--accent-text)] hover:underline font-medium focus-visible:outline-none"
                           >
                             {isPreview ? t.rakit.pilih.tutup : t.rakit.pilih.pratinjau}
                           </button>
@@ -641,7 +641,7 @@ export default function RakitUjianPage() {
           </div>
 
           {error && (
-            <div className="p-3 text-xs leading-relaxed text-[#A4262C]">
+            <div className="p-3 text-xs leading-relaxed text-[var(--status-ditolak)]">
               {error}
             </div>
           )}

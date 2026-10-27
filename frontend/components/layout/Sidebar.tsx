@@ -134,7 +134,7 @@ export default function Sidebar({
 
   const navInner = (
     <div className="w-[240px] h-full flex flex-col border-r border-[var(--line)] bg-[var(--canvas)] select-none">
-      <div className="shrink-0 px-5 py-4 border-b border-[var(--line)] bg-white flex items-center justify-between gap-3">
+      <div className="shrink-0 px-5 py-4 border-b border-[var(--line)] bg-[var(--canvas)] flex items-center justify-between gap-3">
         <Link
           href="/dashboard"
           className="block focus-visible:outline-none group"
@@ -151,7 +151,7 @@ export default function Sidebar({
         </Link>
         <button
           onClick={onToggle || onClose}
-          className="shrink-0 rounded p-1.5 text-[var(--ink-muted)] transition-colors duration-[140ms] hover:bg-[var(--line)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          className="shrink-0 rounded p-1.5 text-[var(--ink-muted)] transition-colors duration-[140ms] hover:bg-[var(--line)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
           aria-label={t.shell.sidebar.tutupNavigasi}
           title={t.shell.sidebar.tutupBilahSamping}
         >
@@ -168,7 +168,7 @@ export default function Sidebar({
                   type="button"
                   onClick={() => setTerbuka((prev) => ({ ...prev, [group.group!]: !prev[group.group!] }))}
                   aria-expanded={!!terbuka[group.group]}
-                  className="flex w-full items-center justify-between rounded px-3 pb-1.5 pt-0.5 font-sans text-xs font-bold text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  className="flex w-full items-center justify-between rounded px-3 pb-1.5 pt-0.5 font-sans text-xs font-bold text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
                 >
                   {t.shell.sidebar.grup[group.group]}
                   <ChevronDown
@@ -197,7 +197,7 @@ export default function Sidebar({
                     key={item.href}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`group flex items-center gap-3 rounded px-3 py-2 font-serif text-[14.5px] transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                    className={`group flex items-center gap-3 rounded px-3 py-2 font-serif text-[14.5px] transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
                       active
                         ? "font-medium text-[var(--ink)]"
                         : "text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"
@@ -209,7 +209,7 @@ export default function Sidebar({
                       aria-hidden="true"
                       className={`shrink-0 transition-colors duration-[140ms] ${
                         active
-                          ? "text-[var(--accent)]"
+                          ? "text-[var(--accent-text)]"
                           : "text-[var(--ink-muted)] group-hover:text-[var(--ink)]"
                       }`}
                     />
@@ -228,7 +228,7 @@ export default function Sidebar({
                     {item.isMarkedCount &&
                       markedCount !== null &&
                       markedCount > 0 && (
-                        <span className="ml-auto shrink-0 rounded border border-[#8A5A00]/30 bg-[var(--canvas)] px-1.5 font-sans text-[11px] font-semibold tabular-nums text-[#8A5A00]">
+                        <span className="ml-auto shrink-0 rounded border border-[var(--status-ditandai)]/30 bg-[var(--canvas)] px-1.5 font-sans text-[11px] font-semibold tabular-nums text-[var(--status-ditandai)]">
                           {markedCount}
                         </span>
                       )}
@@ -281,7 +281,7 @@ export default function Sidebar({
         }`}
       >
         <div
-          className={`fixed inset-0 bg-[var(--ink)]/40 transition-opacity duration-300 ${
+          className={`fixed inset-0 bg-[var(--scrim)] transition-opacity duration-300 ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={onClose}

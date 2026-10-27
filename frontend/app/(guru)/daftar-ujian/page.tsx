@@ -123,7 +123,7 @@ export default function DaftarUjianPage() {
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/ujian/${ujian.id}`}
-                        className="text-xs text-[var(--accent)] hover:underline font-medium"
+                        className="text-xs text-[var(--accent-text)] hover:underline font-medium"
                       >
                         {t.daftar.detail}
                       </Link>

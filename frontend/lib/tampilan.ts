@@ -5,14 +5,17 @@ export const KUNCI_TAMPILAN = "butir_tampilan";
 export const PERISTIWA_TAMPILAN = "tampilan_diubah";
 
 export type UkuranTeks = "kecil" | "normal" | "besar";
+export type Tema = "terang" | "gelap";
 
 export interface Tampilan {
+  tema: Tema;
   ukuranTeks: UkuranTeks;
   kurangiGerak: boolean;
   kursorKhusus: boolean;
 }
 
 export const TAMPILAN_BAWAAN: Tampilan = {
+  tema: "terang",
   ukuranTeks: "normal",
   kurangiGerak: false,
   kursorKhusus: true,
@@ -26,6 +29,7 @@ export function bacaTampilan(): Tampilan {
     if (!mentah) return { ...TAMPILAN_BAWAAN };
     const data = JSON.parse(mentah);
     return {
+      tema: data?.tema === "gelap" || data?.tema === "terang" ? data.tema : TAMPILAN_BAWAAN.tema,
       ukuranTeks: DAFTAR_UKURAN.includes(data?.ukuranTeks) ? data.ukuranTeks : TAMPILAN_BAWAAN.ukuranTeks,
       kurangiGerak: typeof data?.kurangiGerak === "boolean" ? data.kurangiGerak : TAMPILAN_BAWAAN.kurangiGerak,
       kursorKhusus: typeof data?.kursorKhusus === "boolean" ? data.kursorKhusus : TAMPILAN_BAWAAN.kursorKhusus,
@@ -37,6 +41,7 @@ export function bacaTampilan(): Tampilan {
 
 export function terapkanTampilan(t: Tampilan): void {
   const html = document.documentElement;
+  html.dataset.tema = t.tema;
   html.dataset.ukuranTeks = t.ukuranTeks;
   html.dataset.gerak = t.kurangiGerak ? "kurang" : "biasa";
 }

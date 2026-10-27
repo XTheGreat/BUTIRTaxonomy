@@ -26,7 +26,7 @@ function Meter({ terpakai, batas }: { terpakai: number; batas: number | null }) 
         className="h-2.5 w-full border border-[var(--line-strong)] bg-[var(--canvas)]"
       >
         <div
-          className={`h-full ${penuh ? "bg-[#A4262C]" : "bg-[var(--accent)]"}`}
+          className={`h-full ${penuh ? "bg-[var(--status-ditolak)]" : "bg-[var(--accent)]"}`}
           style={{ width: `${persen}%` }}
         />
       </div>
@@ -92,7 +92,7 @@ export default function PaketPage() {
       />
 
       {galat && (
-        <div role="alert" className="mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}
@@ -162,7 +162,7 @@ export default function PaketPage() {
                         {Object.keys(daftar).map((p) => (
                           <th
                             key={p}
-                            className={`px-3 py-2 font-medium capitalize ${p === saya.paket ? "text-[var(--accent)]" : ""}`}
+                            className={`px-3 py-2 font-medium capitalize ${p === saya.paket ? "text-[var(--accent-text)]" : ""}`}
                           >
                             {labelPaket(p)}
                             {p === saya.paket && t.perbandingan.paketAnda}
@@ -234,7 +234,7 @@ export default function PaketPage() {
                               value={u.paket}
                               disabled={sibukId === u.id}
                               onChange={(e) => ubahPaket(u.id, e.target.value)}
-                              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 text-xs focus:outline-none focus:border-[var(--accent)]"
+                              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 text-xs focus:outline-none focus:border-[var(--accent-text)]"
                             >
                               {Object.keys(daftar ?? { gratis: 0, pro: 0 }).map((p) => (
                                 <option key={p} value={p}>

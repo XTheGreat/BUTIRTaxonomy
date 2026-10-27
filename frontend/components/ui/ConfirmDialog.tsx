@@ -58,7 +58,7 @@ export default function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="fixed inset-0 bg-[var(--ink)]/40"
+        className="fixed inset-0 bg-[var(--scrim)]"
         onClick={onCancel}
         aria-hidden="true"
       />
@@ -101,8 +101,8 @@ export default function ConfirmDialog({
             disabled={loading}
             className={`px-4 py-2 text-sm font-medium rounded transition-colors duration-[140ms] ease-out focus-visible:outline-none disabled:opacity-50 ${
               isDestructive
-                ? "bg-[#A4262C] text-white hover:bg-[#8C2025] border border-[#A4262C]"
-                : "bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90 border border-[var(--accent)]"
+                ? "bg-[var(--status-ditolak-action)] text-white hover:opacity-90 border border-[var(--status-ditolak-action)]"
+                : "bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] hover:bg-[var(--button-primary-hover)] border border-[var(--button-primary-border)]"
             }`}
           >
             {loading ? (

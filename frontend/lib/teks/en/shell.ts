@@ -5,8 +5,10 @@ const shell: typeof id = {
     label: "Language",
     idSingkat: "ID",
     enSingkat: "EN",
+    zhSingkat: "中文",
     idNama: "Bahasa Indonesia",
     enNama: "English",
+    zhNama: "简体中文",
   },
   sidebar: {
     logoKeDashboard: "BUTIR — to dashboard",

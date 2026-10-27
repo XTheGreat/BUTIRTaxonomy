@@ -8,7 +8,7 @@ function Daftar({ data }: { data: string[][] }) {
     <ol className="space-y-3">
       {data.map(([judul, uraian], i) => (
         <li key={judul} className="flex gap-3">
-          <span className="mt-0.5 w-5 shrink-0 font-mono text-xs tabular-nums text-[var(--accent)]">{i + 1}</span>
+          <span className="mt-0.5 w-5 shrink-0 font-mono text-xs tabular-nums text-[var(--accent-text)]">{i + 1}</span>
           <p>
             <span className="font-medium">{judul}.</span> <span className="text-[var(--ink-muted)]">{uraian}</span>
           </p>

@@ -13,6 +13,7 @@ export default function PemilihBahasa({ className = "" }: PemilihBahasaProps) {
   const pilihan: { kode: Bahasa; singkat: string; nama: string }[] = [
     { kode: "id", singkat: t.idSingkat, nama: t.idNama },
     { kode: "en", singkat: t.enSingkat, nama: t.enNama },
+    { kode: "zh", singkat: t.zhSingkat, nama: t.zhNama },
   ];
 
   return (
@@ -28,7 +29,7 @@ export default function PemilihBahasa({ className = "" }: PemilihBahasaProps) {
             aria-label={nama}
             title={nama}
             onClick={() => setBahasa(kode)}
-            className={`flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[11px] transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+            className={`flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[11px] transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
               terpilih
                 ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--ink)]"
                 : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:text-[var(--ink)]"

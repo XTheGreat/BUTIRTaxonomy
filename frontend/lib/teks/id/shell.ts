@@ -3,8 +3,10 @@ const shell = {
     label: "Bahasa",
     idSingkat: "ID",
     enSingkat: "EN",
+    zhSingkat: "中文",
     idNama: "Bahasa Indonesia",
     enNama: "English",
+    zhNama: "中文（简体）",
   },
   sidebar: {
     logoKeDashboard: "BUTIR — ke dashboard",

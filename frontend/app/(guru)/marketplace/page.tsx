@@ -17,13 +17,13 @@ import { useTeks } from "@/lib/teks";
 const rupiah = (n: number, gratis: string) => (n === 0 ? gratis : `Rp${n.toLocaleString("id-ID")}`);
 
 const WARNA_TRANSAKSI: Record<string, string> = {
-  selesai: "#1F6B3A",
-  menunggu_pembayaran: "#8A5A00",
-  dibatalkan: "#5A6070",
+  selesai: "var(--status-diterima)",
+  menunggu_pembayaran: "var(--status-ditandai)",
+  dibatalkan: "var(--status-netral)",
 };
 
 const inputCls =
-  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent)]";
+  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent-text)]";
 
 type Tab = "jelajahi" | "jual" | "transaksi";
 
@@ -38,7 +38,7 @@ function Distribusi({ d }: { d: Record<string, number> }) {
 function StatusTransaksi({ status }: { status: string }) {
   const t = useTeks().telaah.marketplace;
   const label: Record<string, string> = t.statusTransaksi;
-  const s = { label: label[status] ?? status, warna: WARNA_TRANSAKSI[status] ?? "#5A6070" };
+  const s = { label: label[status] ?? status, warna: WARNA_TRANSAKSI[status] ?? "var(--status-netral)" };
   return (
     <span className="inline-flex items-center text-xs font-semibold" style={{ color: s.warna }}>
       {s.label}
@@ -189,12 +189,12 @@ export default function MarketplacePage() {
       />
 
       {galat && (
-        <div role="alert" className="mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}
       {info && (
-        <div role="status" className="mb-4 text-xs leading-relaxed text-[#1F6B3A]">
+        <div role="status" className="mb-4 text-xs leading-relaxed text-[var(--status-diterima)]">
           {info}
         </div>
       )}
@@ -340,7 +340,7 @@ export default function MarketplacePage() {
                           onToggle={() => bukaTutup(g.kelompok.id)}
                           tambahan={
                             <span>
-                              <span className="font-mono tabular-nums text-[var(--accent)]">
+                              <span className="font-mono tabular-nums text-[var(--accent-text)]">
                                 {ids.filter((id) => dipilih.has(id)).length}
                               </span>{" "}
                               {t.dipilihKata}
@@ -350,7 +350,7 @@ export default function MarketplacePage() {
                             <button
                               type="button"
                               onClick={() => pilihKelompok(ids)}
-                              className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
+                              className="shrink-0 text-xs font-medium text-[var(--accent-text)] hover:underline focus-visible:outline-none"
                             >
                               {semua ? t.batalPilihKelompok : t.pilihKelompok}
                             </button>

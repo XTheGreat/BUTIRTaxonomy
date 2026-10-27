@@ -70,6 +70,7 @@ function Rumus({ tex, jumlah }: { tex: string; jumlah: number }) {
 export default function AlurKerjaAnimasi() {
   const t = useTeks();
   const judulPanel = t.auth.alurKerja.judulPanel;
+  const frasaCoba = t.auth.alurKerja.frasaCoba;
   const langkah = useMemo(
     () => t.auth.alurKerja.langkah.map((l, i) => ({ nomor: String(i + 1), ...l })),
     [t.auth.alurKerja.langkah],
@@ -198,7 +199,7 @@ export default function AlurKerjaAnimasi() {
         setPersamaan([]);
         setKeluar(0);
         setFase("coba");
-        for (const frasa of ["Try it", "or never."]) {
+        for (const frasa of frasaCoba) {
           if (batal) return;
           setKata("");
           await tunggu(300);
@@ -239,7 +240,7 @@ export default function AlurKerjaAnimasi() {
       reduksiMq.removeEventListener("change", sinkron);
       lebarMq.removeEventListener("change", sinkron);
     };
-  }, [langkah, judulPanel]);
+  }, [langkah, judulPanel, frasaCoba]);
 
 
     const kursor = (tampil: boolean) =>
@@ -248,7 +249,7 @@ export default function AlurKerjaAnimasi() {
   return (
     <section aria-label={t.auth.alurKerja.labelBagian} className="alur-panel border-t border-[var(--accent)]/20 pt-8">
       <div className={reduksi ? "" : "lg:hidden"}>
-        <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent)]">{judulPanel}</div>
+        <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent-text)]">{judulPanel}</div>
         <ol>
           {langkah.map((l, i) => (
             <li key={l.nomor} className={`relative flex items-start gap-3.5 ${i === langkah.length - 1 ? "" : "pb-4"}`}>
@@ -257,13 +258,13 @@ export default function AlurKerjaAnimasi() {
               )}
               <span
                 aria-hidden="true"
-                className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] font-mono text-[11px] font-semibold text-white"
+                className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] font-mono text-[11px] font-semibold text-[var(--ink-on-accent)]"
               >
                 {l.nomor}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="font-sans text-sm font-semibold leading-tight text-[var(--accent)]">{l.judul}</div>
-                <span className="mt-1 block text-xs leading-normal text-[var(--accent)]/85">{l.uraian}</span>
+                <div className="font-sans text-sm font-semibold leading-tight text-[var(--accent-text)]">{l.judul}</div>
+                <span className="mt-1 block text-xs leading-normal text-[var(--accent-text)]/85">{l.uraian}</span>
               </div>
             </li>
           ))}
@@ -273,7 +274,7 @@ export default function AlurKerjaAnimasi() {
       <div className={reduksi ? "hidden" : "hidden h-full lg:block"}>
       {fase === "alur" && (
         <div className={pudar ? "alur-pudar" : ""}>
-          <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent)]">
+          <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent-text)]">
             {judul}
             {kursor(judul.length > 0 && judul.length < judulPanel.length)}
           </div>
@@ -304,11 +305,11 @@ export default function AlurKerjaAnimasi() {
                     {l.nomor}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="h-5 font-sans text-sm font-semibold leading-tight text-[var(--accent)]">
+                    <div className="h-5 font-sans text-sm font-semibold leading-tight text-[var(--accent-text)]">
                       {judulL[i]}
                       {aktif === i && judulL[i].length < l.judul.length && kursor(isi)}
                     </div>
-                    <span className="mt-1 block h-4 text-xs leading-normal text-[var(--accent)]/85">
+                    <span className="mt-1 block h-4 text-xs leading-normal text-[var(--accent-text)]/85">
                       {uraianL[i]}
                       {aktif === i && judulL[i].length === l.judul.length && uraianL[i].length < l.uraian.length && kursor(true)}
                     </span>
@@ -321,7 +322,7 @@ export default function AlurKerjaAnimasi() {
       )}
 
       {fase === "rumus" && (
-        <div className="flex h-full flex-col justify-start gap-3 overflow-hidden text-[var(--accent)]">
+        <div className="flex h-full flex-col justify-start gap-3 overflow-hidden text-[var(--accent-text)]">
           {persamaan.map((p, i) => (
             <div
               key={i}
@@ -336,7 +337,7 @@ export default function AlurKerjaAnimasi() {
 
       {fase === "coba" && (
         <div className="flex h-full items-center justify-center">
-          <p className="font-serif text-4xl font-normal text-[var(--accent)]">
+          <p className="font-serif text-4xl font-normal text-[var(--accent-text)]">
             {kata}
             {kursor(true)}
           </p>

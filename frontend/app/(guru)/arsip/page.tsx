@@ -54,7 +54,7 @@ export default function ArsipPage() {
       />
 
       {galat && (
-        <div role="alert" className="mb-4 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}
@@ -96,7 +96,7 @@ export default function ArsipPage() {
                         {Object.entries(a.pilihan).map(([k, v]) => (
                           <li
                             key={k}
-                            className={`flex gap-3 text-sm ${k === a.kunci_jawaban ? "font-medium text-[#1F6B3A]" : "text-[var(--ink)]"}`}
+                            className={`flex gap-3 text-sm ${k === a.kunci_jawaban ? "font-medium text-[var(--status-diterima)]" : "text-[var(--ink)]"}`}
                           >
                             <span className="w-5 shrink-0 pt-0.5 font-mono text-xs font-semibold">{k}.</span>
                             <span className="font-serif">
@@ -131,7 +131,7 @@ export default function ArsipPage() {
                     {a.sumber_butir_id && (
                       <Link
                         href={`/debat/${a.sumber_butir_id}?dari=riwayat-diterima`}
-                        className="rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none"
+                        className="rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none"
                       >
                         {t.lihatDebat}
                       </Link>

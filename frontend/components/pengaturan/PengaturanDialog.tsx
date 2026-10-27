@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { DAFTAR_BAGIAN } from "@/components/pengaturan/bagian";
+import PenandaPanah from "@/components/pengaturan/PenandaPanah";
 import { useTeks } from "@/lib/teks";
 
 interface PengaturanDialogProps {
@@ -73,7 +74,7 @@ export default function PengaturanDialog({ bagianAktif, onPilih, onTutup }: Peng
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-[var(--ink)]/40" onClick={onTutup} aria-hidden="true" />
+      <div className="fixed inset-0 bg-[var(--scrim)]" onClick={onTutup} aria-hidden="true" />
 
       <div
         ref={panel}
@@ -93,7 +94,7 @@ export default function PengaturanDialog({ bagianAktif, onPilih, onTutup }: Peng
             onClick={onTutup}
             aria-label={d.tutup}
             title={d.tutup}
-            className="rounded p-1.5 text-[var(--ink-muted)] transition-colors duration-[140ms] hover:bg-[var(--surface)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="rounded p-1.5 text-[var(--ink-muted)] transition-colors duration-[140ms] hover:bg-[var(--surface)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
           >
             <X size={18} strokeWidth={1.6} aria-hidden="true" />
           </button>
@@ -122,21 +123,20 @@ export default function PengaturanDialog({ bagianAktif, onPilih, onTutup }: Peng
                   aria-controls="panel-pengaturan"
                   tabIndex={terpilih ? 0 : -1}
                   onClick={() => onPilih(b.id)}
-                  className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded px-3 py-2 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                  className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded px-3 py-2 text-left text-sm transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
                     terpilih
-                      ? "bg-[var(--accent-soft)] font-medium text-[var(--ink)]"
+                      ? "bg-[var(--line)]/40 font-medium text-[var(--ink)]"
                       : "text-[var(--ink-muted)] hover:bg-[var(--line)]/40 hover:text-[var(--ink)]"
                   }`}
                 >
-                  <span
-                    aria-hidden="true"
-                    className={`h-2 w-2 shrink-0 rounded-full ${terpilih ? "bg-[var(--accent)]" : "bg-transparent"}`}
+                  <PenandaPanah
+                    className={`h-3 w-3 shrink-0 ${terpilih ? "text-[var(--ink)]" : "invisible"}`}
                   />
                   <Ikon
                     size={16}
                     strokeWidth={1.6}
                     aria-hidden="true"
-                    className={`shrink-0 ${terpilih ? "text-[var(--accent)]" : ""}`}
+                    className={`shrink-0 ${terpilih ? "text-[var(--ink)]" : ""}`}
                   />
                   {b.label(t)}
                 </button>

@@ -23,6 +23,7 @@ import enSistem from "./en/sistem";
 import enTelaah from "./en/telaah";
 import enUjian from "./en/ujian";
 import enUmum from "./en/umum";
+import terjemahanZh from "./zh";
 
 // Satu berkas per area agar beberapa orang/sesi bisa menerjemahkan bersamaan
 // tanpa saling menimpa. Bentuk `en` dipaksa sama dengan `id` oleh tipenya.
@@ -58,9 +59,26 @@ export const en: Kamus = {
   umum: enUmum,
 };
 
-export const kamusPerBahasa = { id, en } as const;
+function gabungTerjemahan(dasar: unknown, terjemahan: unknown): unknown {
+  if (!terjemahan || typeof terjemahan !== "object" || Array.isArray(terjemahan)) return terjemahan;
+  if (!dasar || typeof dasar !== "object" || Array.isArray(dasar)) return terjemahan;
+  const dasarObjek = dasar as Record<string, unknown>;
+  const hasil: Record<string, unknown> = { ...dasarObjek };
+  for (const [kunci, nilai] of Object.entries(terjemahan as Record<string, unknown>)) {
+    const nilaiDasar = dasarObjek[kunci];
+    hasil[kunci] =
+      nilai && typeof nilai === "object" && !Array.isArray(nilai) && nilaiDasar && typeof nilaiDasar === "object"
+        ? gabungTerjemahan(nilaiDasar, nilai)
+        : nilai;
+  }
+  return hasil;
+}
+
+export const zh: Kamus = gabungTerjemahan(en, terjemahanZh) as Kamus;
+
+export const kamusPerBahasa = { id, en, zh } as const;
 
 export type Bahasa = keyof typeof kamusPerBahasa;
 
-export const daftarBahasa: Bahasa[] = ["id", "en"];
+export const daftarBahasa: Bahasa[] = ["id", "en", "zh"];
 export const bahasaBawaan: Bahasa = "id";

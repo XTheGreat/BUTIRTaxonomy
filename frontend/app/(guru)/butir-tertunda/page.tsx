@@ -249,7 +249,7 @@ export default function ButirTertundaPage() {
           )}
           <Link
             href={`/debat/${b.id}`}
-            className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
           >
             {t.tertunda.debatLive}
           </Link>
@@ -277,7 +277,7 @@ export default function ButirTertundaPage() {
         <div className="flex items-center gap-1.5">
           <Link
             href={`/debat/${b.id}`}
-            className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="inline-flex items-center rounded px-2 py-1 font-sans text-xs font-medium text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
           >
             {t.tertunda.debatLive}
           </Link>
@@ -362,7 +362,7 @@ export default function ButirTertundaPage() {
       {error && (
         <div
           role="alert"
-          className="mb-4 text-sm text-[#A4262C]"
+          className="mb-4 text-sm text-[var(--status-ditolak)]"
         >
           {error}
         </div>

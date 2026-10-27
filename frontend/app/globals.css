@@ -29,6 +29,7 @@
 }
 
 :root {
+  color-scheme: light;
   --canvas: #FFFFFF;
   --surface: #FAF9F6;
   --ink: #181C25;
@@ -36,7 +37,18 @@
   --line: #E7E4DC;
   --line-strong: #8C8778;
   --accent: #0F5F66;
+  --accent-text: #0F5F66;
+  --accent-hover: #0C4D53;
+  --accent-active: #093D42;
   --accent-soft: #E6F1F1;
+  --accent-on-light: #0F5F66;
+  --accent-soft-on-light: #E6F1F1;
+  --ink-on-accent: #FFFFFF;
+  --button-primary-bg: #0F5F66;
+  --button-primary-text: #FFFFFF;
+  --button-primary-hover: var(--accent-hover);
+  --button-primary-active: var(--accent-active);
+  --button-primary-border: #0F5F66;
 
   --status-diterima: #1F6B3A;
   --status-diterima-bg: #E8F3EB;
@@ -44,12 +56,102 @@
   --status-ditandai-bg: #FBF1D9;
   --status-ditolak: #A4262C;
   --status-ditolak-bg: #FBEAEA;
+  --status-ditolak-action: #A4262C;
   --status-debating: #0F5F66;
   --status-debating-bg: #E6F1F1;
   --status-netral: #5A6070;
   --status-netral-bg: #FAF9F6;
 
+  /* Warna segmen Bloom C1-C6 (BloomPieChart, BatangBloom). Teks di atas segmen terang tetap gelap. */
+  --bloom-c1: #4A5568;
+  --bloom-c2: #2D3748;
+  --bloom-c3: #0F5F66;
+  --bloom-c4: #18838B;
+  --bloom-c5: #2B9EA8;
+  --bloom-c6: #4CB8C4;
+  --teks-pada-grafik-terang: #181C25;
+
+  /* Batang distribusi Bloom di Dashboard: isi dan tepi tiap level. */
+  --bloom-batang-c1: #edf6f9;
+  --bloom-batang-c1-tepi: #83c5be;
+  --bloom-batang-c2: #83c5be;
+  --bloom-batang-c2-tepi: #5aa8a1;
+  --bloom-batang-c3: #006d77;
+  --bloom-batang-c3-tepi: #006d77;
+  --bloom-batang-c4: #ffddd2;
+  --bloom-batang-c4-tepi: #e29578;
+  --bloom-batang-c5: #e29578;
+  --bloom-batang-c5-tepi: #c9754f;
+  --bloom-batang-c6: #b5593a;
+  --bloom-batang-c6-tepi: #b5593a;
+
   --shadow-overlay: 0 4px 16px -2px rgba(24, 28, 37, 0.08);
+  --scrim: rgba(24, 28, 37, 0.4);
+}
+
+/* Tema gelap mengikuti palet tinta, kertas, dan teal BUTIR. */
+html[data-tema="gelap"] {
+  color-scheme: dark;
+  --canvas: #191E20;
+  --surface: #23292B;
+  --ink: #F0EFE8;
+  --ink-muted: #AAADA5;
+  --line: #414847;
+  --line-strong: #777A70;
+  /* Teal digeser lebih terang agar tombol, titik, dan garis aksen terpisah dari latar gelap (>= 3:1). */
+  --accent: #1B7F89;
+  --accent-text: #79BDB3;
+  --accent-hover: #17717A;
+  --accent-active: #13595F;
+  --accent-soft: #223638;
+  --accent-on-light: #0F5F66;
+  --accent-soft-on-light: #E5F0EE;
+  --ink-on-accent: #FFFFFF;
+  --button-primary-bg: #1B7F89;
+  --button-primary-text: #FFFFFF;
+  --button-primary-hover: #17717A;
+  --button-primary-active: #13595F;
+  --button-primary-border: #1B7F89;
+
+  /* Diterima kembali hijau agar tidak sama dengan debating (teal), seperti di tema terang. */
+  --status-diterima: #82D49E;
+  --status-diterima-bg: #1F3626;
+  --status-ditandai: #E6C477;
+  --status-ditandai-bg: #342F23;
+  --status-ditolak: #F09A9A;
+  --status-ditolak-bg: #392629;
+  --status-ditolak-action: #8F4148;
+  --status-debating: #79BDB3;
+  --status-debating-bg: #223638;
+  --status-netral: #AAADA5;
+  --status-netral-bg: #222829;
+
+  /* C1-C3 diterangkan agar terpisah dari latar gelap (kontras >= 3:1); C4-C6 sudah cukup terang. */
+  --bloom-c1: #6B7A90;
+  --bloom-c2: #5E6E85;
+  --bloom-c3: #1B7A83;
+  --bloom-c4: #18838B;
+  --bloom-c5: #2B9EA8;
+  --bloom-c6: #4CB8C4;
+  --teks-pada-grafik-terang: #181C25;
+
+  /* Hanya C1 dan C4 yang berisi pastel hampir putih; keduanya diredupkan di latar gelap. */
+  --bloom-batang-c1: #4F7A81;
+  --bloom-batang-c1-tepi: #83c5be;
+  --bloom-batang-c2: #83c5be;
+  --bloom-batang-c2-tepi: #5aa8a1;
+  --bloom-batang-c3: #006d77;
+  --bloom-batang-c3-tepi: #2B9EA8;
+  --bloom-batang-c4: #A87565;
+  --bloom-batang-c4-tepi: #e29578;
+  --bloom-batang-c5: #e29578;
+  --bloom-batang-c5-tepi: #c9754f;
+  --bloom-batang-c6: #b5593a;
+  --bloom-batang-c6-tepi: #d27a5a;
+
+  --shadow-overlay: 0 8px 24px -4px rgba(0, 0, 0, 0.42);
+  /* Peredup di belakang dialog: hitam, bukan warna teks (yang terang di tema gelap). */
+  --scrim: rgba(0, 0, 0, 0.62);
 }
 
 body, button, input, optgroup, select, textarea {
@@ -63,9 +165,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Pengaturan > Tampilan (lib/tampilan.ts menulis atribut data pada <html>). */
-html[data-ukuran-teks="kecil"] { font-size: 93.75%; }
-html[data-ukuran-teks="besar"] { font-size: 112.5%; }
+/* Pengaturan > Tampilan (lib/tampilan.ts menulis atribut data pada <html>).
+   Skala teks hanya berlaku di area guru (data-area-guru, dipasang oleh app/(guru)/layout.tsx).
+   Halaman masuk, daftar, dan info memakai animasi berukuran tetap, jadi tidak ikut diskalakan. */
+html[data-area-guru][data-ukuran-teks="kecil"] { font-size: 93.75%; }
+html[data-area-guru][data-ukuran-teks="besar"] { font-size: 112.5%; }
 
 html[data-gerak="kurang"] *,
 html[data-gerak="kurang"] *::before,
@@ -87,7 +191,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-text);
   outline-offset: 2px;
 }
 

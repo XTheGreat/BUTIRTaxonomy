@@ -15,7 +15,7 @@ const KODE_EMAIL_AKTIF = false;
 type Langkah = "sandi" | "kode";
 
 const tautan =
-  "text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
+  "text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]";
 
 export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTMLInputElement | null> }) {
   const router = useRouter();
@@ -85,7 +85,7 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
   }
 
   const kotakGalat = galat && (
-    <div role="alert" className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+    <div role="alert" className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
       {galat}
     </div>
   );
@@ -130,7 +130,7 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
           type="button"
           disabled={googleClientId === null}
           onClick={() => setGalat(m.googleBelumAktif)}
-          className="flex w-full items-center justify-center gap-3 rounded border border-[var(--line-strong)] bg-[var(--canvas)] px-3.5 py-2 text-sm font-medium text-[var(--ink)] transition-colors duration-[140ms] hover:border-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-3 rounded border border-[var(--line-strong)] bg-[var(--canvas)] px-3.5 py-2 text-sm font-medium text-[var(--ink)] transition-colors duration-[140ms] hover:border-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] disabled:opacity-40"
         >
           <FcGoogle size={20} aria-hidden="true" />
           {m.lanjutkanGoogle}

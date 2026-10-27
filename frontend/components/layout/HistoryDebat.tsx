@@ -59,7 +59,7 @@ export default function HistoryDebat() {
           <History
             size={14}
             strokeWidth={1.75}
-            className="text-[var(--accent)]"
+            className="text-[var(--accent-text)]"
             aria-hidden="true"
           />
           <h2 className="font-serif text-[13px] font-medium text-[var(--ink)]">
@@ -93,7 +93,7 @@ export default function HistoryDebat() {
           <ul className="border-t border-[var(--line)] divide-y divide-[var(--line)]">
             {data.items.map((item, i) => (
               <li key={item.id} className="px-3 py-2 flex gap-2">
-                <span className="mt-0.5 h-fit shrink-0 border border-[var(--line)] bg-[var(--canvas)] px-1 font-mono text-[10px] font-semibold leading-4 text-[var(--accent)]">
+                <span className="mt-0.5 h-fit shrink-0 border border-[var(--line)] bg-[var(--canvas)] px-1 font-mono text-[10px] font-semibold leading-4 text-[var(--accent-text)]">
                   {item.level_bloom}
                 </span>
                 <div className="min-w-0 flex-1 space-y-1">
@@ -123,7 +123,7 @@ export default function HistoryDebat() {
 
           <Link
             href="/history"
-            className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--canvas)] px-3 py-2 font-sans text-[11px] font-medium text-[var(--accent)] transition-colors duration-[140ms] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-inset"
+            className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--canvas)] px-3 py-2 font-sans text-[11px] font-medium text-[var(--accent-text)] transition-colors duration-[140ms] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] focus-visible:ring-inset"
           >
             <span>{t.shell.historyDebat.lihatSemua(data.total)}</span>
             <ArrowRight size={12} strokeWidth={2} aria-hidden="true" />

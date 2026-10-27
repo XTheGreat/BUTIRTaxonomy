@@ -53,7 +53,7 @@ export default function KelompokLipat({
           type="button"
           onClick={onToggle}
           aria-expanded={terbuka}
-          className="flex min-w-0 flex-1 basis-48 items-center gap-2.5 rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          className="flex min-w-0 flex-1 basis-48 items-center gap-2.5 rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
         >
           <ChevronRight
             size={16}

@@ -128,7 +128,7 @@ export default function Panduan() {
           href="/panduan"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          className="text-sm text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]"
         >
           {t.panduanLengkap}
         </a>

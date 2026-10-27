@@ -49,7 +49,7 @@ export default function RegisterPage() {
           {d.sudahPunyaAkun}{" "}
           <Link
             href="/login"
-            className="text-[var(--accent)] hover:underline font-medium"
+            className="text-[var(--accent-text)] hover:underline font-medium"
           >
             {d.masukKeLembarKerja}
           </Link>
@@ -85,7 +85,7 @@ export default function RegisterPage() {
           required
         />
         {error && (
-          <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+          <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
             {error}
           </div>
         )}

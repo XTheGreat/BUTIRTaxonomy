@@ -73,7 +73,7 @@ export default function LaporanPage({
       />
 
       {laporan.daya_beda_indikatif && (
-        <div className="p-3 mb-4 border border-[#8A5A00]/30 bg-[#FBF1D9] text-xs text-[#8A5A00] leading-relaxed">
+        <div className="p-3 mb-4 border border-[var(--status-ditandai)]/30 bg-[var(--status-ditandai-bg)] text-xs text-[var(--status-ditandai)] leading-relaxed">
           {dayaBedaAda
             ? t.laporan.peringatanIndikatif(laporan.total_peserta, laporan.min_peserta_bermakna ?? 30)
             : t.laporan.peringatanSangatSedikit(laporan.total_peserta)}
@@ -112,7 +112,7 @@ export default function LaporanPage({
             </span>
             <div
               className={`font-serif text-4xl font-normal tabular-nums ${
-                butirPerluTinjau > 0 ? "text-[#8A5A00]" : "text-[var(--ink)]"
+                butirPerluTinjau > 0 ? "text-[var(--status-ditandai)]" : "text-[var(--ink)]"
               }`}
             >
               {butirPerluTinjau}
@@ -220,8 +220,8 @@ export default function LaporanPage({
                           <span
                             className={`inline-block px-1 py-0.2 rounded text-[10px] font-mono tabular-nums border ${
                               delta > 0
-                                ? "bg-[#FBEAEA] text-[#A4262C] border-[#A4262C]/30"
-                                : "bg-[#E8F3EB] text-[#1F6B3A] border-[#1F6B3A]/30"
+                                ? "bg-[var(--status-ditolak-bg)] text-[var(--status-ditolak)] border-[var(--status-ditolak)]/30"
+                                : "bg-[var(--status-diterima-bg)] text-[var(--status-diterima)] border-[var(--status-diterima)]/30"
                             }`}
                           >
                             {delta > 0 ? `+${delta}%` : `${delta}%`}
@@ -234,10 +234,10 @@ export default function LaporanPage({
                         <span
                           className={
                             item.daya_beda >= 0.3
-                              ? "text-[#1F6B3A] font-medium"
+                              ? "text-[var(--status-diterima)] font-medium"
                               : item.daya_beda >= 0.2
-                              ? "text-[#8A5A00] font-medium"
-                              : "text-[#A4262C] font-semibold"
+                              ? "text-[var(--status-ditandai)] font-medium"
+                              : "text-[var(--status-ditolak)] font-semibold"
                           }
                         >
                           {item.daya_beda.toFixed(2)}
@@ -251,7 +251,7 @@ export default function LaporanPage({
                     </td>
                     <td className="px-3 py-2.5 text-right">
                       {isDiscrepant ? (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-[#FBF1D9] text-[#8A5A00] border border-[#8A5A00]/30">
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-[var(--status-ditandai-bg)] text-[var(--status-ditandai)] border border-[var(--status-ditandai)]/30">
                           {t.laporan.perluDitinjauBadge}
                         </span>
                       ) : (

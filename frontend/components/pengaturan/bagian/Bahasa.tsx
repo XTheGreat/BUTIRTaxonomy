@@ -17,6 +17,7 @@ export default function Bahasa() {
         opsi={[
           { nilai: "id", label: t.bahasa.indonesia },
           { nilai: "en", label: t.bahasa.inggris },
+          { nilai: "zh", label: t.bahasa.mandarin },
         ]}
         onUbah={setBahasa}
       />

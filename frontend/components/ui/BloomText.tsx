@@ -5,7 +5,7 @@ export default function BloomText({ text }: { text: string }) {
     <>
       {text.split(/\b(C[1-6])\b/).map((bagian, i) =>
         /^C[1-6]$/.test(bagian) ? (
-          <span key={i} className="font-semibold text-[var(--accent)]">
+          <span key={i} className="font-semibold text-[var(--accent-text)]">
             {bagian}
           </span>
         ) : (

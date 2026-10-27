@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import { BagianKepala, Subjudul } from "@/components/pengaturan/BagianKepala";
+import PenandaPanah from "@/components/pengaturan/PenandaPanah";
 import { getToken } from "@/lib/auth";
 import { KUNCI_PREFERENSI, hapusPreferensi } from "@/lib/preferensi";
 import { KUNCI_BAHASA } from "@/lib/teks/aktif";
@@ -45,7 +46,7 @@ export default function Privasi() {
     { kunci: "tampilan", label: t.item.tampilan },
   ];
 
-  const tautan = "text-sm text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
+  const tautan = "text-sm text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)]";
 
   return (
     <div className="space-y-8">
@@ -58,10 +59,9 @@ export default function Privasi() {
             <li key={kunci} className="flex items-center justify-between gap-4 py-2.5 text-sm">
               <span className="text-[var(--ink)]">{label}</span>
               <span className="flex shrink-0 items-center gap-2 text-xs text-[var(--ink-muted)]">
-                <span
-                  aria-hidden="true"
-                  className={`h-2 w-2 rounded-full ${
-                    status[kunci] ? "bg-[var(--accent)]" : "border border-[var(--line-strong)]"
+                <PenandaPanah
+                  className={`h-3 w-3 ${
+                    status[kunci] ? "text-[var(--accent-text)]" : "text-[var(--line-strong)]"
                   }`}
                 />
                 {status[kunci] ? t.tersimpan : t.tidakAda}
@@ -74,7 +74,7 @@ export default function Privasi() {
             {t.hapus}
           </Button>
           {pesan && (
-            <p role="status" className="text-sm text-[#1F6B3A]">
+            <p role="status" className="text-sm text-[var(--status-diterima)]">
               {pesan}
             </p>
           )}

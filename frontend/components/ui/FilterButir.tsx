@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Search } from "lucide-react";
-import { BLOOM_COLORS, BLOOM_LABELS, BLOOM_LEVELS } from "@/components/ui/BloomPieChart";
+import { BLOOM_COLORS, BLOOM_LEVELS } from "@/components/ui/BloomPieChart";
 import { KelompokBank } from "@/lib/kelompokBank";
 import { useTeks } from "@/lib/teks";
 
@@ -20,7 +20,7 @@ export function filterAktif(f: NilaiFilterButir): boolean {
 }
 
 const inputCls =
-  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent)]";
+  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent-text)]";
 
 export default function FilterButir({
   nilai,
@@ -37,7 +37,9 @@ export default function FilterButir({
   jumlahTotal: number;
   tanpaBloom?: boolean;
 }) {
-  const t = useTeks().telaah.filter;
+  const teks = useTeks();
+  const t = teks.telaah.filter;
+  const bloom = teks.komponen.bloom.tingkat;
   const aktif = filterAktif(nilai);
   const ubahBloom = (level: string) =>
     onUbah({
@@ -92,11 +94,11 @@ export default function FilterButir({
                 key={level}
                 type="button"
                 aria-pressed={dipilih}
-                title={`${level} (${BLOOM_LABELS[level]})`}
+                title={`${level} (${bloom[level]})`}
                 onClick={() => ubahBloom(level)}
-                className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs font-semibold transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs font-semibold transition-colors duration-[140ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-text)] ${
                   dipilih
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
                     : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink)] hover:border-[var(--accent)]"
                 }`}
               >
@@ -126,7 +128,7 @@ export default function FilterButir({
             <button
               type="button"
               onClick={() => onUbah(FILTER_AWAL)}
-              className="font-sans font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none"
+              className="font-sans font-medium text-[var(--accent-text)] underline-offset-4 hover:underline focus-visible:outline-none"
             >
               {t.aturUlang}
             </button>

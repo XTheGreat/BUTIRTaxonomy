@@ -145,14 +145,14 @@ export default function HasilUjianPage({
                       <Check
                         size={20}
                         strokeWidth={2.5}
-                        className="text-[#1F6B3A]"
+                        className="text-[var(--status-diterima)]"
                         aria-label={t.siswa.hasil.benar}
                       />
                     ) : (
                       <X
                         size={20}
                         strokeWidth={2.5}
-                        className="text-[#A4262C]"
+                        className="text-[var(--status-ditolak)]"
                         aria-label={t.siswa.hasil.salah}
                       />
                     )}
@@ -168,7 +168,7 @@ export default function HasilUjianPage({
                   </span>
                   <span>
                     {t.siswa.hasil.kunci}{" "}
-                    <strong className="text-[#1F6B3A]">
+                    <strong className="text-[var(--status-diterima)]">
                       {item.kunci_jawaban}
                     </strong>
                   </span>

@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
     >
       {!siap ? null : selesai ? (
         <div className="flex flex-col gap-4">
-          <div className="p-2.5 text-xs leading-relaxed text-[#1F6B3A]">
+          <div className="p-2.5 text-xs leading-relaxed text-[var(--status-diterima)]">
             {r.berhasil}
           </div>
           <Link href="/login">
@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
             required
           />
           {error && (
-            <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+            <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
               {error}{" "}
               <Link href="/reset-password" className="underline">
                 {r.mintaTautanBaru}
@@ -128,12 +128,12 @@ export default function ResetPasswordPage() {
             required
           />
           {error && (
-            <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+            <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
               {error}
             </div>
           )}
           {message && (
-            <div className="p-2.5 text-xs leading-relaxed text-[#1F6B3A]">
+            <div className="p-2.5 text-xs leading-relaxed text-[var(--status-diterima)]">
               {message}
             </div>
           )}

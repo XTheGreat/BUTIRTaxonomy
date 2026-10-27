@@ -29,14 +29,14 @@ export default function HalamanInfo({
   useJudulTab(judul.includes("BUTIR") ? judul : `${judul} - BUTIR`);
   return (
     <div className="flex min-h-screen flex-col bg-[var(--canvas)] text-[var(--ink)]">
-      <header className="bg-[var(--accent)] text-white">
+      <header className="bg-[var(--accent)] text-[var(--ink-on-accent)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-5 lg:px-12">
           <Link href="/login" className="font-serif text-xl font-medium tracking-tight focus-visible:outline-none">
             BUTIR
           </Link>
           <Link
             href="/login"
-            className="font-sans text-xs text-white/85 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none"
+            className="font-sans text-xs text-[var(--ink-on-accent)]/85 underline-offset-4 hover:text-[var(--ink-on-accent)] hover:underline focus-visible:outline-none"
           >
             {t.info.halaman.masuk}
           </Link>
@@ -46,7 +46,7 @@ export default function HalamanInfo({
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
         <Link
           href="/login"
-          className="inline-flex items-center gap-1.5 font-sans text-xs text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--accent)]"
+          className="inline-flex items-center gap-1.5 font-sans text-xs text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--accent-text)]"
         >
           <ArrowLeft size={14} strokeWidth={1.8} aria-hidden="true" />
           {t.info.halaman.kembaliKeMasuk}

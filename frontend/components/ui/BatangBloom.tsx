@@ -26,7 +26,7 @@ export default function BatangBloom({ bloom }: { bloom: Record<string, number> }
             title={`${level} (${t.tingkat[level]}): ${nilai}%`}
             style={{ flexGrow: nilai, flexBasis: 0, backgroundColor: BLOOM_COLORS[level] }}
             className={`flex items-center justify-center border-r border-[var(--canvas)] font-mono text-[11px] font-semibold tabular-nums transition-[flex-grow] duration-[140ms] last:border-r-0 ${
-              TEKS_GELAP.includes(level) ? "text-[var(--ink)]" : "text-white"
+              TEKS_GELAP.includes(level) ? "text-[var(--teks-pada-grafik-terang)]" : "text-white"
             }`}
           >
             {nilai >= 8 ? `${nilai}%` : ""}

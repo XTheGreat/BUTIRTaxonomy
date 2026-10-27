@@ -8,7 +8,7 @@ import { useFormat } from "@/lib/format";
 import { useTeks } from "@/lib/teks";
 
 const inputCls =
-  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent)]";
+  "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent-text)]";
 
 function Judul({ children }: { children: React.ReactNode }) {
   return (
@@ -83,7 +83,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
       </Judul>
 
       {galat && (
-        <div role="alert" className="mb-3 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-3 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}
@@ -105,7 +105,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
                   <span className="font-serif block">
                     {u.nama}
                     {u.admin_institusi && (
-                      <span className="ml-2 border border-[var(--accent)]/40 bg-[var(--accent-soft)] rounded px-1.5 py-px text-[10px] text-[var(--accent)]">
+                      <span className="ml-2 border border-[var(--accent)]/40 bg-[var(--accent-soft)] rounded px-1.5 py-px text-[10px] text-[var(--accent-text)]">
                         {t.adminInstitusi}
                       </span>
                     )}
@@ -214,7 +214,7 @@ export function KelolaInstitusi() {
       <Judul>{t.judul}</Judul>
 
       {galat && (
-        <div role="alert" className="mb-3 text-xs leading-relaxed text-[#A4262C]">
+        <div role="alert" className="mb-3 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {galat}
         </div>
       )}

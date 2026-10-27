@@ -16,14 +16,13 @@ import DeliberasiLineChart from "@/components/ui/DeliberasiLineChart";
 import { PackageOpen } from "lucide-react";
 import { useTeks } from "@/lib/teks";
 
-const BLOOM_BAR: Record<string, { fill: string; edge: string }> = {
-  C1: { fill: "#edf6f9", edge: "#83c5be" },
-  C2: { fill: "#83c5be", edge: "#5aa8a1" },
-  C3: { fill: "#006d77", edge: "#006d77" },
-  C4: { fill: "#ffddd2", edge: "#e29578" },
-  C5: { fill: "#e29578", edge: "#c9754f" },
-  C6: { fill: "#b5593a", edge: "#b5593a" },
-};
+// Warna batang ada di app/globals.css (--bloom-batang-*) agar punya varian terang dan gelap.
+const BLOOM_BAR: Record<string, { fill: string; edge: string }> = Object.fromEntries(
+  ["c1", "c2", "c3", "c4", "c5", "c6"].map((k) => [
+    k.toUpperCase(),
+    { fill: `var(--bloom-batang-${k})`, edge: `var(--bloom-batang-${k}-tepi)` },
+  ])
+);
 
 export default function DashboardPage() {
   const { dashboard: t, komponen } = useTeks();
@@ -139,7 +138,7 @@ export default function DashboardPage() {
       render: (item) => (
         <Link
           href={`/butir-ditandai/${item.id}`}
-          className="text-xs text-[var(--accent)] hover:underline font-medium"
+          className="text-xs text-[var(--accent-text)] hover:underline font-medium"
         >
           {t.kolom.telaahDebat}
         </Link>
@@ -217,7 +216,7 @@ export default function DashboardPage() {
               </div>
               <div
                 className={`font-serif text-3xl sm:text-4xl font-normal tabular-nums ${
-                  stats.ditandai > 0 ? "text-[#8A5A00]" : "text-[var(--ink)]"
+                  stats.ditandai > 0 ? "text-[var(--status-ditandai)]" : "text-[var(--ink)]"
                 }`}
               >
                 {stats.ditandai}
@@ -297,7 +296,7 @@ export default function DashboardPage() {
                 <div className="flex gap-1.5 sm:gap-2 px-1 sm:px-2 mt-2 pt-2 border-t border-[var(--line)]">
                   {["C1", "C2", "C3", "C4", "C5", "C6"].map((level) => (
                     <div key={level} className="flex-1 text-center min-w-0" title={`${level} - ${BLOOM_LABELS[level]}`}>
-                      <span className="font-mono text-[11px] font-semibold text-[var(--accent)] block">
+                      <span className="font-mono text-[11px] font-semibold text-[var(--accent-text)] block">
                         {level}
                       </span>
                       <span className="text-[10px] text-[var(--ink-muted)] block truncate leading-tight mt-0.5">
@@ -332,7 +331,7 @@ export default function DashboardPage() {
           {markedList.length > 0 && (
             <Link
               href="/butir-ditandai"
-              className="text-xs text-[var(--accent)] hover:underline font-medium"
+              className="text-xs text-[var(--accent-text)] hover:underline font-medium"
             >
               {t.perluTindakan.lihatSemua(stats.ditandai)}
             </Link>

@@ -219,7 +219,7 @@ export default function UjianDetailPage({
                 type="button"
                 onClick={muatPeserta}
                 disabled={pesertaLoading}
-                className="text-xs text-[var(--accent)] hover:underline font-medium disabled:opacity-50"
+                className="text-xs text-[var(--accent-text)] hover:underline font-medium disabled:opacity-50"
               >
                 {pesertaLoading ? t.detail.peserta.memuat : t.detail.peserta.muatUlang}
               </button>
@@ -243,7 +243,7 @@ export default function UjianDetailPage({
                     <span className="font-mono tabular-nums text-[var(--ink-muted)]">
                       {t.detail.peserta.terjawab(p.terjawab, p.total_soal)}
                     </span>
-                    <span className={p.terkumpul ? "text-[#1F6B3A] font-medium" : "text-[#8A5A00] font-medium"}>
+                    <span className={p.terkumpul ? "text-[var(--status-diterima)] font-medium" : "text-[var(--status-ditandai)] font-medium"}>
                       {p.terkumpul ? t.detail.peserta.statusTerkumpul : t.detail.peserta.statusMengerjakan}
                     </span>
                     {p.id && !p.terkumpul && (
@@ -273,7 +273,7 @@ export default function UjianDetailPage({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="text-sm">
                 <span
-                  className={`font-medium ${ujian.hasil_dirilis ? "text-[#1F6B3A]" : "text-[#8A5A00]"}`}
+                  className={`font-medium ${ujian.hasil_dirilis ? "text-[var(--status-diterima)]" : "text-[var(--status-ditandai)]"}`}
                 >
                   {ujian.hasil_dirilis ? t.detail.hasil.sudahDirilis : t.detail.hasil.belumDirilis}
                 </span>
@@ -393,7 +393,7 @@ export default function UjianDetailPage({
       </div>
 
       {error && (
-        <div className="p-3 mb-6 text-xs leading-relaxed text-[#A4262C]">
+        <div className="p-3 mb-6 text-xs leading-relaxed text-[var(--status-ditolak)]">
           {error}
         </div>
       )}
@@ -424,7 +424,7 @@ export default function UjianDetailPage({
             <select
               value={rilisHasil}
               onChange={(e) => setRilisHasil(e.target.value as "otomatis" | "manual")}
-              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)]"
+              className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent-text)]"
             >
               <option value="otomatis">{t.detail.jadwal.rilisOtomatis}</option>
               <option value="manual">{t.detail.jadwal.rilisManual}</option>

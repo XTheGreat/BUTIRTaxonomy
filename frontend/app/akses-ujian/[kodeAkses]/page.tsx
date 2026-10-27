@@ -178,14 +178,14 @@ export default function UjianSiswaPage({
                 value={namaSiswa}
                 onChange={(e) => setNamaSiswa(e.target.value)}
                 placeholder={t.siswa.placeholderNama}
-                className="bg-[var(--canvas)] border border-[var(--line-strong)] rounded px-3 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-muted)]/60 focus:outline-none focus:border-[var(--accent)]"
+                className="bg-[var(--canvas)] border border-[var(--line-strong)] rounded px-3 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-muted)]/60 focus:outline-none focus:border-[var(--accent-text)]"
                 autoComplete="name"
                 required
               />
             </div>
 
             {error && (
-              <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
+              <div className="p-2.5 text-xs leading-relaxed text-[var(--status-ditolak)]">
                 {error}
               </div>
             )}
@@ -211,9 +211,9 @@ export default function UjianSiswaPage({
 
   const timerClass =
     timeLeft !== null && timeLeft <= 60
-      ? "text-[#A4262C] border-[#A4262C]/40 bg-[#FBEAEA]"
+      ? "text-[var(--status-ditolak)] border-[var(--status-ditolak)]/40 bg-[var(--status-ditolak-bg)]"
       : timeLeft !== null && timeLeft <= 300
-      ? "text-[#8A5A00] border-[#8A5A00]/40 bg-[#FBF1D9]"
+      ? "text-[var(--status-ditandai)] border-[var(--status-ditandai)]/40 bg-[var(--status-ditandai-bg)]"
       : "text-[var(--ink)] border-[var(--line)] bg-[var(--surface)]";
 
   return (
@@ -255,7 +255,7 @@ export default function UjianSiswaPage({
         {galatSimpan && (
           <div
             role="alert"
-            className="mb-4 text-xs leading-relaxed text-[#A4262C]"
+            className="mb-4 text-xs leading-relaxed text-[var(--status-ditolak)]"
           >
             {galatSimpan} {t.siswa.pilihUlang}
           </div>
@@ -384,7 +384,7 @@ export default function UjianSiswaPage({
       </main>
 
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4">
           <div
             className="w-full max-w-md bg-[var(--canvas)] border border-[var(--line)] p-6 rounded"
             style={{ boxShadow: "var(--shadow-overlay)" }}
@@ -404,7 +404,7 @@ export default function UjianSiswaPage({
                 <span className="text-[var(--ink-muted)]">{t.siswa.konfirmasi.belumTerjawab}</span>
                 <span
                   className={`font-medium tabular-nums ${
-                    totalBelumDijawab > 0 ? "text-[#A4262C]" : "text-[#1F6B3A]"
+                    totalBelumDijawab > 0 ? "text-[var(--status-ditolak)]" : "text-[var(--status-diterima)]"
                   }`}
                 >
                   {t.siswa.konfirmasi.butir(totalBelumDijawab)}
@@ -413,7 +413,7 @@ export default function UjianSiswaPage({
             </div>
 
             {totalBelumDijawab > 0 ? (
-              <p className="text-xs text-[#8A5A00] mb-5 leading-relaxed">
+              <p className="text-xs text-[var(--status-ditandai)] mb-5 leading-relaxed">
                 {t.siswa.konfirmasi.peringatan(totalBelumDijawab)}
               </p>
             ) : (
