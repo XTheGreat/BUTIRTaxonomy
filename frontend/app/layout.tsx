@@ -2,6 +2,7 @@ import "./globals.css";
 import { Metadata } from "next";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import KursorLingkaran from "@/components/ui/KursorLingkaran";
+import { BahasaProvider } from "@/lib/teks";
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -34,8 +35,10 @@ export default function RootLayout({
       className={`${instrumentSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="bg-canvas text-ink font-sans antialiased min-h-screen">
-        {children}
-        <KursorLingkaran />
+        <BahasaProvider>
+          {children}
+          <KursorLingkaran />
+        </BahasaProvider>
       </body>
     </html>
   );

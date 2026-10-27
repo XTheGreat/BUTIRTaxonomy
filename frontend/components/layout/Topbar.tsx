@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getCurrentUser, logout } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { useTeks } from "@/lib/teks";
 import { PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -40,7 +40,7 @@ export default function Topbar({
   onOpenMobileMenu,
 }: TopbarProps) {
   const pathname = usePathname();
-  const user = getCurrentUser();
+  const t = useTeks();
   const [activeGenId, setActiveGenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,7 +98,11 @@ export default function Topbar({
   const segments = pathname.split("/").filter(Boolean);
   const breadcrumbItems = segments.map((seg, idx) => {
     const isId = seg.length > 20 || !isNaN(Number(seg));
-    const label = isId ? `#${seg.slice(0, 6)}...` : routeNameMap[seg] || seg;
+    const label = isId
+      ? `#${seg.slice(0, 6)}...`
+      : seg === "pengaturan"
+        ? t.akun.pengaturan.judul
+        : routeNameMap[seg] || seg;
     const href = "/" + segments.slice(0, idx + 1).join("/");
     const isLast = idx === segments.length - 1;
     return { label, href, isLast };
@@ -151,38 +155,6 @@ export default function Topbar({
           </Link>
         )}
 
-        <div className="flex items-center gap-2.5 hidden sm:flex">
-          <div className="text-right">
-            <span className="text-xs font-medium text-[var(--ink)] block truncate max-w-[140px]">
-              {user?.nama || "Pengajar"}
-            </span>
-            <span className="text-[11px] text-[var(--ink-muted)] block truncate max-w-[140px]">
-              {user?.email || "email@instansi.id"}
-            </span>
-          </div>
-          <div
-            className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0"
-            title={user?.nama || "Pengajar"}
-          >
-            <span className="text-[11px] font-sans font-semibold text-white leading-none select-none">
-              {(() => {
-                const nama = user?.nama || "GP";
-                const parts = nama.trim().split(/\s+/);
-                if (parts.length >= 2) {
-                  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-                }
-                return nama.slice(0, 2).toUpperCase();
-              })()}
-            </span>
-          </div>
-        </div>
-        <div className="h-4 w-px bg-[var(--line)] hidden sm:block" />
-        <button
-          onClick={logout}
-          className="text-xs text-[var(--ink-muted)] hover:text-[#A4262C] transition-colors duration-[140ms] py-1 focus-visible:outline-none"
-        >
-          Keluar
-        </button>
       </div>
     </header>
   );

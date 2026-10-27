@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import HistoryDebat from "@/components/layout/HistoryDebat";
+import ProfilMenu from "@/components/layout/ProfilMenu";
 
 interface NavItem {
   href: string;
@@ -245,6 +246,8 @@ export default function Sidebar({
 
         <HistoryDebat />
       </div>
+
+      <ProfilMenu onNavigate={onClose} />
 
       <div className="shrink-0 flex items-center justify-between border-t border-[var(--line)] px-4 py-3 font-mono text-[10px] tracking-wide text-[var(--ink-muted)]">
         <span>BUTIR</span>
