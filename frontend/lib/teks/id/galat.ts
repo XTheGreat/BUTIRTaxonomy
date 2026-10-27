@@ -19,6 +19,8 @@ const galat = {
   sesi_berakhir: "Sesi telah berakhir, silakan masuk kembali",
   pengguna_tidak_ditemukan: "Pengguna tidak ditemukan",
   hanya_admin: "Hanya admin yang dapat mengakses ini",
+  akun_password_salah: "Kata sandi saat ini salah",
+  akun_password_sama: "Kata sandi baru harus berbeda dari yang lama",
   // Error validasi Pydantic (backend `galat_validasi`): dibaca dari `type` dan `ctx` respons 422.
   validasi_sandi_pendek: "Kata sandi minimal 8 karakter",
   validasi_sandi_huruf_angka: "Kata sandi harus memuat huruf dan angka",
@@ -33,6 +35,8 @@ const galat = {
   validasi_kisi_persen_negatif: (p: Param) => `Persentase ${p.key} tidak boleh negatif`,
   validasi_kisi_total_bloom: (p: Param) => `Total distribusi Bloom harus 100%, saat ini ${p.total}%`,
   validasi_siswa_nama_kosong: "Nama tidak boleh kosong",
+  validasi_nama_kosong: "Nama tidak boleh kosong",
+  validasi_nama_panjang: "Nama terlalu panjang (maksimal 255 karakter)",
   validasi_ujian_total_bloom: "Total distribusi Bloom harus 100%",
   validasi_ujian_bloom_tidak_valid: "Level Bloom tidak valid",
   validasi_ujian_persen_negatif: "Persentase Bloom tidak boleh negatif",

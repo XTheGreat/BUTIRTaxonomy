@@ -26,6 +26,35 @@ class UserRegister(BaseModel):
         return periksa_kekuatan_password(v)
 
 
+class ProfilUbah(BaseModel):
+    nama: str | None = None
+    email: EmailStr | None = None
+    # Wajib bila email berubah, sebagai konfirmasi pemilik akun.
+    password_sekarang: str | None = None
+
+    @field_validator("nama")
+    @classmethod
+    def rapikan_nama(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = " ".join(v.split())
+        if not v:
+            raise galat_validasi("validasi_nama_kosong", "Nama tidak boleh kosong")
+        if len(v) > 255:
+            raise galat_validasi("validasi_nama_panjang", "Nama terlalu panjang (maksimal 255 karakter)")
+        return v
+
+
+class PasswordUbah(BaseModel):
+    password_sekarang: str
+    password_baru: str
+
+    @field_validator("password_baru")
+    @classmethod
+    def password_cukup_kuat(cls, v: str) -> str:
+        return periksa_kekuatan_password(v)
+
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str

@@ -25,7 +25,11 @@ export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
   const wadah = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setUser(getCurrentUser());
+    const muat = () => setUser(getCurrentUser());
+    muat();
+    // Dipancarkan Pengaturan setelah nama atau email berubah.
+    window.addEventListener("user_diperbarui", muat);
+    return () => window.removeEventListener("user_diperbarui", muat);
   }, []);
 
   useEffect(() => {

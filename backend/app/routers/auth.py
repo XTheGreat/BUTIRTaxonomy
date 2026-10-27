@@ -8,6 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, func, select
 from app.config import get_settings
+from app.core.deps import get_current_guru
 from app.core.galat import Galat
 from app.database import get_db
 from app.models.kode_masuk import KodeMasuk
@@ -19,6 +20,8 @@ from app.services.surel import kirim_email_kode, kirim_email_reset
 from app.schemas.auth import (
     UserRegister,
     UserLogin,
+    ProfilUbah,
+    PasswordUbah,
     UserResponse,
     TokenResponse,
     ForgotPasswordRequest,
@@ -75,6 +78,45 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
         access_token=token,
         user=UserResponse.model_validate(user),
     )
+
+
+@router.patch("/saya", response_model=UserResponse)
+async def ubah_profil(
+    data: ProfilUbah,
+    user: User = Depends(get_current_guru),
+    db: AsyncSession = Depends(get_db),
+):
+    if data.nama is not None:
+        user.nama = data.nama
+
+    if data.email is not None and data.email.lower() != user.email.lower():
+        if not data.password_sekarang or not verify_password(data.password_sekarang, user.password_hash):
+            raise Galat(400, "akun_password_salah", "Kata sandi saat ini salah")
+        dipakai = await db.execute(
+            select(User.id).where(func.lower(User.email) == data.email.lower(), User.id != user.id)
+        )
+        if dipakai.first():
+            raise Galat(400, "email_sudah_terdaftar", "Email sudah terdaftar")
+        user.email = data.email
+
+    await db.commit()
+    await db.refresh(user)
+    return UserResponse.model_validate(user)
+
+
+@router.post("/ganti-password")
+async def ganti_password(
+    data: PasswordUbah,
+    user: User = Depends(get_current_guru),
+    db: AsyncSession = Depends(get_db),
+):
+    if not verify_password(data.password_sekarang, user.password_hash):
+        raise Galat(400, "akun_password_salah", "Kata sandi saat ini salah")
+    if data.password_sekarang == data.password_baru:
+        raise Galat(400, "akun_password_sama", "Kata sandi baru harus berbeda dari yang lama")
+    user.password_hash = hash_password(data.password_baru)
+    await db.commit()
+    return {"detail": "Kata sandi berhasil diganti"}
 
 
 @router.post("/logout")

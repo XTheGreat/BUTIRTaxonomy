@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
+import FormAkun from "@/components/pengaturan/FormAkun";
+import FormPassword from "@/components/pengaturan/FormPassword";
 import { getCurrentUser, logout } from "@/lib/auth";
 import { useBahasa, useTeks, type Bahasa } from "@/lib/teks";
 import type { User } from "@/lib/types";
@@ -40,12 +42,18 @@ export default function PengaturanPage() {
         <h2 id="pengaturan-akun" className="font-serif text-xl text-[var(--ink)]">
           {t.akun.pengaturan.akun.judul}
         </h2>
-        <dl className="mt-3 divide-y divide-[var(--line)] border-y border-[var(--line)]">
-          <Baris label={t.akun.pengaturan.akun.nama} nilai={user?.nama || t.akun.profil.pengajarDefault} />
-          <Baris label={t.akun.pengaturan.akun.email} nilai={user?.email || t.akun.profil.emailDefault} />
+        {user && <FormAkun key={user.id} user={user} onTersimpan={setUser} />}
+        <dl className="border-b border-[var(--line)]">
           <Baris label={t.akun.pengaturan.akun.peran} nilai={peran} />
         </dl>
-        <p className="mt-2 text-xs text-[var(--ink-muted)]">{t.akun.pengaturan.akun.bantuan}</p>
+      </section>
+
+      <section aria-labelledby="pengaturan-password" className="mb-10">
+        <h2 id="pengaturan-password" className="font-serif text-xl text-[var(--ink)]">
+          {t.akun.pengaturan.password.judul}
+        </h2>
+        <p className="mt-1 text-sm text-[var(--ink-muted)]">{t.akun.pengaturan.password.keterangan}</p>
+        <FormPassword />
       </section>
 
       <section aria-labelledby="pengaturan-bahasa" className="mb-10">

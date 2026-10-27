@@ -16,6 +16,8 @@ const galat: typeof galatId = {
   sesi_berakhir: "Your session has ended, please sign in again",
   pengguna_tidak_ditemukan: "User not found",
   hanya_admin: "Only admins can access this",
+  akun_password_salah: "The current password is incorrect",
+  akun_password_sama: "The new password must be different from the current one",
   // Error validasi Pydantic (backend `galat_validasi`): dibaca dari `type` dan `ctx` respons 422.
   validasi_sandi_pendek: "Password must be at least 8 characters",
   validasi_sandi_huruf_angka: "Password must contain letters and numbers",
@@ -30,6 +32,8 @@ const galat: typeof galatId = {
   validasi_kisi_persen_negatif: (p) => `The percentage for ${p.key} cannot be negative`,
   validasi_kisi_total_bloom: (p) => `The Bloom distribution must total 100%, currently ${p.total}%`,
   validasi_siswa_nama_kosong: "Name cannot be empty",
+  validasi_nama_kosong: "Name cannot be empty",
+  validasi_nama_panjang: "Name is too long (maximum 255 characters)",
   validasi_ujian_total_bloom: "The Bloom distribution must total 100%",
   validasi_ujian_bloom_tidak_valid: "Invalid Bloom level",
   validasi_ujian_persen_negatif: "The Bloom percentage cannot be negative",
