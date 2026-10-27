@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 
 export interface BloomChipProps {
   level: string;
@@ -7,6 +10,7 @@ export interface BloomChipProps {
 }
 
 export default function BloomChip({ level, target, className = "" }: BloomChipProps) {
+  const t = useTeks().komponen.bloom;
   if (!level) return null;
   const bergeser = !!target && target !== level;
   return (
@@ -19,9 +23,9 @@ export default function BloomChip({ level, target, className = "" }: BloomChipPr
       {bergeser && (
         <span
           className="font-mono text-[10px] font-semibold text-[var(--accent)] whitespace-nowrap"
-          title={`Anda meminta ${target}, tetapi Arbiter menilai soal ini setingkat ${level}.`}
+          title={t.bergeser(target!, level)}
         >
-          target {target}
+          {t.target(target!)}
         </span>
       )}
     </span>

@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 
 export interface PageHeaderProps {
   title: string;
@@ -15,10 +18,11 @@ export default function PageHeader({
   breadcrumb,
   className = "",
 }: PageHeaderProps) {
+  const t = useTeks().komponen;
   return (
     <div className={`border-b border-[var(--line)] pb-5 mb-6 ${className}`}>
       {breadcrumb && breadcrumb.length > 0 && (
-        <nav aria-label="Breadcrumb" className="mb-2">
+        <nav aria-label={t.breadcrumb} className="mb-2">
           <ol className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--ink-muted)]">
             {breadcrumb.map((item, idx) => (
               <li key={idx} className="flex items-center gap-1.5">

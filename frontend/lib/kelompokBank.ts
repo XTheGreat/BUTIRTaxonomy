@@ -1,3 +1,5 @@
+export const ID_TANPA_KELOMPOK = "tanpa-kelompok";
+
 export interface KelompokBank {
   id: string;
   nama: string | null;
@@ -26,7 +28,7 @@ export function kelompokkan<T extends { kisi_kisi_id: string; created_at: string
   if (sisa.length > 0) {
     hasil.push({
       kelompok: {
-        id: "tanpa-kelompok",
+        id: ID_TANPA_KELOMPOK,
         nama: null,
         label: "Tanpa kelompok",
         urutan: 0,

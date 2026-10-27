@@ -1,3 +1,6 @@
+import type { Bahasa } from "@/lib/teks";
+import { DAFTAR_FAKTA_EN } from "./faktaUnikEn";
+
 /**
  * Koleksi 100 Fakta Unik Sains, Alam, dan Pengetahuan Nyata
  * Untuk komponen ticker animasi di FooterSitus.
@@ -105,3 +108,7 @@ export const DAFTAR_FAKTA: string[] = [
   "Satwa kukang memiliki gerakan lambat yang memungkinkan lumut dan alga hijau tumbuh di bulunya sebagai kamuflase alami di kanopi hutan.",
   "Jarak rata-rata antara planet Bumi dan Bulan bertambah sekitar 3,8 sentimeter setiap tahunnya akibat interaksi pasang surut gravitasi.",
 ];
+
+export function daftarFakta(bahasa: Bahasa): string[] {
+  return bahasa === "en" ? DAFTAR_FAKTA_EN : DAFTAR_FAKTA;
+}

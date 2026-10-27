@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { InstitusiRingkas, InstitusiSaya } from "@/lib/types";
 import Button from "@/components/ui/Button";
-
-const angka = (n: number) => n.toLocaleString("id-ID");
+import { useFormat } from "@/lib/format";
+import { useTeks } from "@/lib/teks";
 
 const inputCls =
   "bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[var(--accent)]";
@@ -19,6 +19,8 @@ function Judul({ children }: { children: React.ReactNode }) {
 }
 
 export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
+  const t = useTeks().sistem.institusi;
+  const { angka } = useFormat();
   const [data, setData] = useState<InstitusiSaya | null | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [galat, setGalat] = useState("");
@@ -49,7 +51,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
       await muat();
       onBerubah();
     } catch (err: any) {
-      setGalat(err.message || "Gagal menambah anggota.");
+      setGalat(err.message || t.gagalTambah);
     } finally {
       setSibuk(false);
     }
@@ -64,7 +66,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
       await muat();
       onBerubah();
     } catch (err: any) {
-      setGalat(err.message || "Gagal mengeluarkan anggota.");
+      setGalat(err.message || t.gagalKeluarkan);
     } finally {
       setSibuk(false);
     }
@@ -73,10 +75,10 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
   return (
     <section>
       <Judul>
-        Institusi: {data.nama}
+        {t.judul(data.nama)}
         <span className="ml-3 font-mono text-xs text-[var(--ink-muted)]">
-          {data.anggota} dari {data.kursi} kursi
-          {!data.aktif && " · lisensi tidak aktif"}
+          {t.kursiTerisi(data.anggota, data.kursi)}
+          {!data.aktif && t.lisensiTidakAktif}
         </span>
       </Judul>
 
@@ -90,10 +92,10 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
         <table className="w-full text-left text-sm border-collapse">
           <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
             <tr className="text-xs text-[var(--ink-muted)]">
-              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Anggota</th>
-              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Soal bulan ini</th>
-              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Token bulan ini</th>
-              <th className="px-3 py-2 font-medium">Aksi</th>
+              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.anggota}</th>
+              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.soalBulanIni}</th>
+              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.tokenBulanIni}</th>
+              <th className="px-3 py-2 font-medium">{t.aksi}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--line)]">
@@ -104,7 +106,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
                     {u.nama}
                     {u.admin_institusi && (
                       <span className="ml-2 border border-[var(--accent)]/40 bg-[var(--accent-soft)] rounded px-1.5 py-px text-[10px] text-[var(--accent)]">
-                        admin institusi
+                        {t.adminInstitusi}
                       </span>
                     )}
                   </span>
@@ -119,7 +121,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
                 <td className="px-3 py-2">
                   {data.bisa_kelola && !u.admin_institusi ? (
                     <Button size="sm" variant="ghost" disabled={sibuk} onClick={() => keluarkan(u.id)}>
-                      Keluarkan
+                      {t.keluarkan}
                     </Button>
                   ) : (
                     <span className="text-xs text-[var(--ink-muted)]">-</span>
@@ -134,7 +136,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
       {data.bisa_kelola && (
         <form onSubmit={tambah} className="mt-3 flex flex-wrap items-center gap-2">
           <label htmlFor="email-anggota" className="text-xs text-[var(--ink-muted)]">
-            Tambah anggota
+            {t.tambahAnggota}
           </label>
           <input
             id="email-anggota"
@@ -142,11 +144,11 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="email guru atau dosen yang sudah terdaftar"
+            placeholder={t.placeholderEmail}
             className={`${inputCls} w-72 max-w-full`}
           />
           <Button type="submit" size="sm" variant="secondary" disabled={sibuk || !email.trim()}>
-            Tambahkan
+            {t.tambahkan}
           </Button>
         </form>
       )}
@@ -155,6 +157,7 @@ export function InstitusiAnggota({ onBerubah }: { onBerubah: () => void }) {
 }
 
 export function KelolaInstitusi() {
+  const t = useTeks().sistem.institusi.kelola;
   const [daftar, setDaftar] = useState<InstitusiRingkas[]>([]);
   const [nama, setNama] = useState("");
   const [kursi, setKursi] = useState("10");
@@ -166,9 +169,9 @@ export function KelolaInstitusi() {
     try {
       setDaftar(await apiFetch("/api/institusi"));
     } catch (err: any) {
-      setGalat(err.message || "Gagal memuat institusi.");
+      setGalat(err.message || t.gagalMuat);
     }
-  }, []);
+  }, [t.gagalMuat]);
 
   useEffect(() => {
     muat();
@@ -187,7 +190,7 @@ export function KelolaInstitusi() {
       setEmailAdmin("");
       await muat();
     } catch (err: any) {
-      setGalat(err.message || "Gagal membuat institusi.");
+      setGalat(err.message || t.gagalBuat);
     } finally {
       setSibuk(false);
     }
@@ -200,7 +203,7 @@ export function KelolaInstitusi() {
       await apiFetch(`/api/institusi/${id}`, { method: "PUT", body: JSON.stringify(isi) });
       await muat();
     } catch (err: any) {
-      setGalat(err.message || "Gagal mengubah institusi.");
+      setGalat(err.message || t.gagalUbah);
     } finally {
       setSibuk(false);
     }
@@ -208,7 +211,7 @@ export function KelolaInstitusi() {
 
   return (
     <section>
-      <Judul>Lisensi Institusi</Judul>
+      <Judul>{t.judul}</Judul>
 
       {galat && (
         <div role="alert" className="mb-3 text-xs leading-relaxed text-[#A4262C]">
@@ -220,17 +223,17 @@ export function KelolaInstitusi() {
         <table className="w-full text-left text-sm border-collapse">
           <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
             <tr className="text-xs text-[var(--ink-muted)]">
-              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Institusi</th>
-              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Anggota</th>
-              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Kursi</th>
-              <th className="px-3 py-2 font-medium">Lisensi</th>
+              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.institusi}</th>
+              <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.anggota}</th>
+              <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kursi}</th>
+              <th className="px-3 py-2 font-medium">{t.lisensi}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--line)]">
             {daftar.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-3 py-4 text-center text-xs text-[var(--ink-muted)]">
-                  Belum ada institusi.
+                  {t.kosong}
                 </td>
               </tr>
             ) : (
@@ -245,7 +248,7 @@ export function KelolaInstitusi() {
                       type="number"
                       min={Math.max(1, i.anggota)}
                       defaultValue={i.kursi}
-                      aria-label={`Kursi ${i.nama}`}
+                      aria-label={t.kursiUntuk(i.nama)}
                       onBlur={(e) => {
                         const v = parseInt(e.target.value);
                         if (v && v !== i.kursi) ubah(i.id, { kursi: v });
@@ -260,7 +263,7 @@ export function KelolaInstitusi() {
                       disabled={sibuk}
                       onClick={() => ubah(i.id, { aktif: !i.aktif })}
                     >
-                      {i.aktif ? "Nonaktifkan" : "Aktifkan"}
+                      {i.aktif ? t.nonaktifkan : t.aktifkan}
                     </Button>
                   </td>
                 </tr>
@@ -273,13 +276,13 @@ export function KelolaInstitusi() {
       <form onSubmit={buat} className="mt-3 flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
           <label htmlFor="inst-nama" className="text-xs text-[var(--ink-muted)]">
-            Nama institusi
+            {t.namaInstitusi}
           </label>
           <input id="inst-nama" required value={nama} onChange={(e) => setNama(e.target.value)} className={`${inputCls} w-56`} />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="inst-kursi" className="text-xs text-[var(--ink-muted)]">
-            Kursi
+            {t.kursi}
           </label>
           <input
             id="inst-kursi"
@@ -293,7 +296,7 @@ export function KelolaInstitusi() {
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="inst-admin" className="text-xs text-[var(--ink-muted)]">
-            Email admin institusi
+            {t.emailAdmin}
           </label>
           <input
             id="inst-admin"
@@ -301,12 +304,12 @@ export function KelolaInstitusi() {
             required
             value={emailAdmin}
             onChange={(e) => setEmailAdmin(e.target.value)}
-            placeholder="sudah terdaftar"
+            placeholder={t.placeholderAdmin}
             className={`${inputCls} w-64`}
           />
         </div>
         <Button type="submit" size="sm" variant="secondary" disabled={sibuk}>
-          Buat Institusi
+          {t.buat}
         </Button>
       </form>
     </section>

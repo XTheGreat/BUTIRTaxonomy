@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 import { PackageOpen } from "lucide-react";
 
 export interface Column<T> {
@@ -24,10 +27,11 @@ export default function Table<T extends Record<string, any>>({
   data,
   keyField = "id",
   className = "",
-  emptyMessage = "Tidak ada data.",
+  emptyMessage,
   expandedKey = null,
   renderExpanded,
 }: TableProps<T>) {
+  const t = useTeks().komponen.tabel;
   return (
     <div className={`w-full overflow-x-auto border border-[var(--line)] rounded-none bg-[var(--canvas)] ${className}`}>
       <table className="w-full border-collapse text-left text-sm">
@@ -58,7 +62,7 @@ export default function Table<T extends Record<string, any>>({
                     strokeWidth={1.25}
                     className="text-[var(--ink-muted)]/65"
                   />
-                  <span>{emptyMessage}</span>
+                  <span>{emptyMessage ?? t.kosong}</span>
                 </div>
               </td>
             </tr>

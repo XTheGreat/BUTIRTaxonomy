@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 
 export interface PipMeterProps {
   score: number;
@@ -13,12 +16,13 @@ export default function PipMeter({
   label,
   className = "",
 }: PipMeterProps) {
+  const t = useTeks().komponen;
   const clampedScore = Math.max(0, Math.min(score, maxScore));
 
   return (
     <div className={`inline-flex items-center gap-2 text-xs ${className}`}>
       {label && <span className="text-[var(--ink-muted)]">{label}</span>}
-      <div className="inline-flex items-center gap-1 font-mono tracking-tighter" aria-label={`Skor ${clampedScore} dari ${maxScore}`}>
+      <div className="inline-flex items-center gap-1 font-mono tracking-tighter" aria-label={t.skor(clampedScore, maxScore)}>
         {Array.from({ length: maxScore }).map((_, i) => (
           <span
             key={i}
