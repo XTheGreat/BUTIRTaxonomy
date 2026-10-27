@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { ChevronUp, LogOut, Settings } from "lucide-react";
+import { usePengaturan } from "@/components/pengaturan/PengaturanProvider";
 import { getCurrentUser, logout } from "@/lib/auth";
 import { useTeks } from "@/lib/teks";
 
@@ -20,6 +20,7 @@ interface ProfilMenuProps {
 
 export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
   const t = useTeks();
+  const { buka: bukaPengaturan } = usePengaturan();
   const [terbuka, setTerbuka] = useState(false);
   const [user, setUser] = useState<ReturnType<typeof getCurrentUser>>(null);
   const wadah = useRef<HTMLDivElement>(null);
@@ -64,18 +65,19 @@ export default function ProfilMenu({ onNavigate }: ProfilMenuProps) {
           className="absolute inset-x-2 bottom-full mb-1 rounded-md border border-[var(--line)] bg-[var(--canvas)] p-1"
           style={{ boxShadow: "var(--shadow-overlay)" }}
         >
-          <Link
-            href="/pengaturan"
+          <button
+            type="button"
             role="menuitem"
             onClick={() => {
               setTerbuka(false);
               onNavigate?.();
+              bukaPengaturan();
             }}
             className={`${itemKelas} text-[var(--ink)] hover:bg-[var(--surface)]`}
           >
             <Settings size={16} strokeWidth={1.6} aria-hidden="true" className="shrink-0 text-[var(--ink-muted)]" />
             {t.akun.profil.pengaturan}
-          </Link>
+          </button>
           <button
             type="button"
             role="menuitem"

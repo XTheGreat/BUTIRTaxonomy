@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PERISTIWA_TAMPILAN, bacaTampilan } from "@/lib/tampilan";
 
 const UKURAN = 36;
 const SKALA_DIAM = 24 / UKURAN;
@@ -8,8 +9,18 @@ const KELEMBUTAN = 0.2;
 
 export default function KursorLingkaran() {
   const ref = useRef<HTMLDivElement>(null);
+  const [aktif, setAktif] = useState(true);
+
+  // Dapat dimatikan lewat Pengaturan > Tampilan.
+  useEffect(() => {
+    const muat = () => setAktif(bacaTampilan().kursorKhusus);
+    muat();
+    window.addEventListener(PERISTIWA_TAMPILAN, muat);
+    return () => window.removeEventListener(PERISTIWA_TAMPILAN, muat);
+  }, []);
 
   useEffect(() => {
+    if (!aktif) return;
     const el = ref.current;
     if (!el) return;
     if (!window.matchMedia("(pointer: fine)").matches) return;
@@ -109,7 +120,9 @@ export default function KursorLingkaran() {
       window.removeEventListener("blur", keluar);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [aktif]);
+
+  if (!aktif) return null;
 
   return (
     <div

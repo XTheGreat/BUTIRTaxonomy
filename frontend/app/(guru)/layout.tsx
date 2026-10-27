@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { isLoggedIn } from "@/lib/auth";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { PengaturanProvider } from "@/components/pengaturan/PengaturanProvider";
 import { useTeks } from "@/lib/teks";
 
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
@@ -42,21 +43,23 @@ export default function GuruLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="flex min-h-dvh bg-[var(--canvas)] text-[var(--ink)]">
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        onToggle={() => setSidebarOpen((prev) => !prev)}
-      />
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-clip">
-        <Topbar
-          isSidebarOpen={sidebarOpen}
-          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+    <PengaturanProvider>
+      <div className="flex min-h-dvh bg-[var(--canvas)] text-[var(--ink)]">
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onToggle={() => setSidebarOpen((prev) => !prev)}
         />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto min-w-0">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col min-w-0 overflow-x-clip">
+          <Topbar
+            isSidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto min-w-0">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </PengaturanProvider>
   );
 }

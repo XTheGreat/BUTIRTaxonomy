@@ -98,7 +98,7 @@ export default function FormPreferensi() {
             {p.total(total)}
           </span>
         </legend>
-        <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6">
+        <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {LEVEL_BLOOM.map((level) => (
             <label
               key={level}

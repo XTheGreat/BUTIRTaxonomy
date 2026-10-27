@@ -63,6 +63,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Pengaturan > Tampilan (lib/tampilan.ts menulis atribut data pada <html>). */
+html[data-ukuran-teks="kecil"] { font-size: 93.75%; }
+html[data-ukuran-teks="besar"] { font-size: 112.5%; }
+
+html[data-gerak="kurang"] *,
+html[data-gerak="kurang"] *::before,
+html[data-gerak="kurang"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-family: 'Times New Roman', Times, 'Tinos', serif;

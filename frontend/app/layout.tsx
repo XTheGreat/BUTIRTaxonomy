@@ -2,6 +2,7 @@ import "./globals.css";
 import { Metadata } from "next";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import KursorLingkaran from "@/components/ui/KursorLingkaran";
+import PenerapTampilan from "@/components/pengaturan/PenerapTampilan";
 import { BahasaProvider } from "@/lib/teks";
 
 const instrumentSans = Instrument_Sans({
@@ -38,6 +39,7 @@ export default function RootLayout({
         <BahasaProvider>
           {children}
           <KursorLingkaran />
+          <PenerapTampilan />
         </BahasaProvider>
       </body>
     </html>
