@@ -1,3 +1,8 @@
+import galatSiswa from "./galatSiswa";
+import galatUjian from "./galatUjian";
+import galatInstitusi from "./galatInstitusi";
+import galatMateri from "./galatMateri";
+
 // Kunci = `kode` dari backend (`app/core/galat.py`). Nilai berupa string, atau fungsi
 // bila kalimatnya memakai `param` dari server, mis. `(p) => \`Kursi penuh (${p.kursi})\``.
 const galat = {
@@ -12,6 +17,10 @@ const galat = {
   sesi_berakhir: "Sesi telah berakhir, silakan masuk kembali",
   pengguna_tidak_ditemukan: "Pengguna tidak ditemukan",
   hanya_admin: "Hanya admin yang dapat mengakses ini",
+  ...galatSiswa,
+  ...galatUjian,
+  ...galatInstitusi,
+  ...galatMateri,
 };
 
 export default galat;

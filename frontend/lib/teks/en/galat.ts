@@ -1,4 +1,8 @@
 import type galatId from "../id/galat";
+import galatSiswa from "./galatSiswa";
+import galatUjian from "./galatUjian";
+import galatInstitusi from "./galatInstitusi";
+import galatMateri from "./galatMateri";
 
 const galat: typeof galatId = {
   email_sudah_terdaftar: "This email is already registered",
@@ -12,6 +16,10 @@ const galat: typeof galatId = {
   sesi_berakhir: "Your session has ended, please sign in again",
   pengguna_tidak_ditemukan: "User not found",
   hanya_admin: "Only admins can access this",
+  ...galatSiswa,
+  ...galatUjian,
+  ...galatInstitusi,
+  ...galatMateri,
 };
 
 export default galat;
