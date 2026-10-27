@@ -4,14 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { PaketPemakaian, PaketPengguna, BatasPaket } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
+import { useFormat } from "@/lib/format";
+import { useTeks } from "@/lib/teks";
 import { InstitusiAnggota, KelolaInstitusi } from "@/components/paket/InstitusiPanel";
 
-const angka = (n: number) => n.toLocaleString("id-ID");
-const rupiah = (n: number) => `Rp${n.toLocaleString("id-ID")}`;
-
 function Meter({ terpakai, batas }: { terpakai: number; batas: number | null }) {
+  const { sistem, umum } = useTeks();
+  const { angka } = useFormat();
   if (batas === null) {
-    return <p className="font-mono text-xs text-[var(--ink-muted)]">Tanpa batas</p>;
+    return <p className="font-mono text-xs text-[var(--ink-muted)]">{umum.tanpaBatas}</p>;
   }
   const persen = Math.min(100, Math.round((100 * terpakai) / batas));
   const penuh = terpakai >= batas;
@@ -30,17 +31,17 @@ function Meter({ terpakai, batas }: { terpakai: number; batas: number | null }) 
         />
       </div>
       <p className="mt-1.5 font-mono text-xs tabular-nums text-[var(--ink-muted)]">
-        {angka(terpakai)} dari {angka(batas)} · {persen}%
+        {sistem.paket.meter(angka(terpakai), angka(batas), persen)}
       </p>
     </div>
   );
 }
 
-function batasTeks(n: number | null, satuan: string) {
-  return n === null ? "Tanpa batas" : `${angka(n)} ${satuan}`;
-}
-
 export default function PaketPage() {
+  const { sistem, umum } = useTeks();
+  const t = sistem.paket;
+  const { angka, rupiah } = useFormat();
+  const batasTeks = (n: number | null, satuan: string) => (n === null ? umum.tanpaBatas : `${angka(n)} ${satuan}`);
   const [saya, setSaya] = useState<PaketPemakaian | null>(null);
   const [daftar, setDaftar] = useState<Record<string, BatasPaket> | null>(null);
   const [pengguna, setPengguna] = useState<PaketPengguna[] | null>(null);
@@ -58,10 +59,11 @@ export default function PaketPage() {
         setPengguna(await apiFetch("/api/paket/pengguna"));
       }
     } catch (err: any) {
-      setGalat(err.message || "Gagal memuat data paket.");
+      setGalat(err.message || t.gagalMuat);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export default function PaketPage() {
       await apiFetch(`/api/paket/pengguna/${id}`, { method: "PUT", body: JSON.stringify({ paket }) });
       await muat();
     } catch (err: any) {
-      setGalat(err.message || "Gagal mengubah paket.");
+      setGalat(err.message || t.gagalUbah);
     } finally {
       setSibukId(null);
     }
@@ -84,8 +86,8 @@ export default function PaketPage() {
   return (
     <div>
       <PageHeader
-        title="Paket & Pemakaian"
-        description="Paket akun, kuota bulan ini, dan pemakaian layanan AI."
+        title={t.judul}
+        description={t.deskripsi}
       />
 
       {galat && (
@@ -96,46 +98,46 @@ export default function PaketPage() {
 
       {loading ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Memuat data paket...
+          {t.memuat}
         </div>
       ) : (
         saya && (
           <div className="space-y-8">
             <section className="border border-[var(--line)] bg-[var(--surface)] p-5">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-serif text-xl font-normal text-[var(--ink)]">Paket {saya.nama_paket}</h2>
+                <h2 className="font-serif text-xl font-normal text-[var(--ink)]">{t.namaPaket(saya.nama_paket)}</h2>
                 <span className="font-mono text-[11px] text-[var(--ink-muted)]">
-                  bulan {saya.bulan}
+                  {t.bulan(saya.bulan)}
                 </span>
                 {saya.institusi && (
                   <span className="border border-[var(--line-strong)] bg-[var(--canvas)] rounded px-2 py-0.5 text-[11px] text-[var(--ink)]">
-                    Lisensi {saya.institusi.nama}
+                    {t.lisensi(saya.institusi.nama)}
                   </span>
                 )}
                 {saya.tanpa_batas && (
                   <span className="text-[11px] text-[var(--ink-muted)] underline underline-offset-4 decoration-[var(--line-strong)]">
-                    {saya.kuota_aktif ? "Akun admin: tanpa batas" : "Pembatasan paket belum diberlakukan"}
+                    {saya.kuota_aktif ? t.akunAdmin : t.belumDiberlakukan}
                   </span>
                 )}
               </div>
 
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5">
                 <div>
-                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">Soal dibuat bulan ini</span>
+                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">{t.soalBulanIni}</span>
                   <Meter terpakai={saya.soal.terpakai} batas={saya.soal.batas} />
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">Materi ajar</span>
+                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">{t.materiAjar}</span>
                   <Meter terpakai={saya.materi.terpakai} batas={saya.materi.batas} />
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">Ekspor PDF dan DOCX</span>
-                  <p className="font-serif text-sm text-[var(--ink)]">{saya.ekspor ? "Tersedia" : "Khusus paket Pro"}</p>
+                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">{t.eksporPdfDocx}</span>
+                  <p className="font-serif text-sm text-[var(--ink)]">{saya.ekspor ? t.tersedia : t.khususPro}</p>
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">Pemakaian AI bulan ini</span>
+                  <span className="text-xs font-medium text-[var(--ink-muted)] block mb-1.5">{t.pemakaianAi}</span>
                   <p className="font-serif text-sm text-[var(--ink)] tabular-nums">
-                    {angka(saya.token.bulan_ini)} token
+                    {angka(saya.token.bulan_ini)} {t.token}
                     {saya.token.estimasi_biaya_rp !== null && (
                       <span className="ml-2 font-mono text-xs text-[var(--ink-muted)]">
                         ± {rupiah(saya.token.estimasi_biaya_rp)}
@@ -149,29 +151,29 @@ export default function PaketPage() {
             {daftar && (
               <section>
                 <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">
-                  Perbandingan Paket
+                  {t.perbandingan.judul}
                 </h2>
                 <div className="border border-[var(--line-strong)] bg-[var(--canvas)] overflow-x-auto">
                   <table className="w-full text-left text-sm border-collapse">
                     <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
                       <tr className="text-xs text-[var(--ink-muted)]">
-                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Fitur</th>
+                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.perbandingan.fitur}</th>
                         {Object.keys(daftar).map((p) => (
                           <th
                             key={p}
                             className={`px-3 py-2 font-medium capitalize ${p === saya.paket ? "text-[var(--accent)]" : ""}`}
                           >
                             {p}
-                            {p === saya.paket && " (paket Anda)"}
+                            {p === saya.paket && t.perbandingan.paketAnda}
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--line)]">
                       {[
-                        { label: "Soal per bulan", nilai: (b: BatasPaket) => batasTeks(b.soal, "soal") },
-                        { label: "Materi ajar", nilai: (b: BatasPaket) => batasTeks(b.materi, "materi") },
-                        { label: "Ekspor PDF dan DOCX", nilai: (b: BatasPaket) => (b.ekspor ? "Ya" : "Tidak") },
+                        { label: t.perbandingan.soalPerBulan, nilai: (b: BatasPaket) => batasTeks(b.soal, t.satuanSoal) },
+                        { label: t.materiAjar, nilai: (b: BatasPaket) => batasTeks(b.materi, t.satuanMateri) },
+                        { label: t.eksporPdfDocx, nilai: (b: BatasPaket) => (b.ekspor ? t.perbandingan.ya : t.perbandingan.tidak) },
                       ].map((baris) => (
                         <tr key={baris.label}>
                           <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{baris.label}</td>
@@ -186,7 +188,7 @@ export default function PaketPage() {
                   </table>
                 </div>
                 <p className="mt-2 text-xs text-[var(--ink-muted)]">
-                  Untuk berpindah paket, hubungi administrator.
+                  {t.perbandingan.hubungiAdmin}
                 </p>
               </section>
             )}
@@ -198,17 +200,17 @@ export default function PaketPage() {
             {saya.admin && pengguna && (
               <section>
                 <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">
-                  Pengguna dan Paket
+                  {t.pengguna.judul}
                 </h2>
                 <div className="border border-[var(--line-strong)] bg-[var(--canvas)] overflow-x-auto">
                   <table className="w-full text-left text-sm border-collapse">
                     <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
                       <tr className="text-xs text-[var(--ink-muted)]">
-                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Pengguna</th>
-                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Peran</th>
-                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Soal bulan ini</th>
-                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Token bulan ini</th>
-                        <th className="px-3 py-2 font-medium">Paket</th>
+                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.pengguna.kolomPengguna}</th>
+                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.pengguna.peran}</th>
+                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.pengguna.soalBulanIni}</th>
+                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.pengguna.tokenBulanIni}</th>
+                        <th className="px-3 py-2 font-medium">{t.pengguna.paket}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--line)]">
@@ -227,7 +229,7 @@ export default function PaketPage() {
                           </td>
                           <td className="px-3 py-2">
                             <select
-                              aria-label={`Paket untuk ${u.nama}`}
+                              aria-label={t.pengguna.paketUntuk(u.nama)}
                               value={u.paket}
                               disabled={sibukId === u.id}
                               onChange={(e) => ubahPaket(u.id, e.target.value)}

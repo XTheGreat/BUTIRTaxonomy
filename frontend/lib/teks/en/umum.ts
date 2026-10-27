@@ -1,5 +1,8 @@
-import type id from "../id/umum";
+import type umumId from "../id/umum";
 
-const umum: typeof id = {};
+const umum: typeof umumId = {
+  tanpaKelompok: "Ungrouped",
+  tanpaBatas: "No limit",
+};
 
 export default umum;

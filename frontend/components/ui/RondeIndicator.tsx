@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 
 export interface RondeIndicatorProps {
   ronde: number;
@@ -13,14 +16,15 @@ export default function RondeIndicator({
   showText = true,
   className = "",
 }: RondeIndicatorProps) {
+  const t = useTeks().komponen.ronde;
   const current = Math.min(Math.max(ronde, 0), maxRonde);
 
   return (
     <div className={`inline-flex items-center gap-2 ${className}`}>
       <div
         className="inline-flex items-center gap-1.5 select-none"
-        aria-label={`Ronde ${current} dari ${maxRonde}`}
-        title={`Ronde ${current} dari ${maxRonde}`}
+        aria-label={t.dariTotal(current, maxRonde)}
+        title={t.dariTotal(current, maxRonde)}
       >
         {Array.from({ length: maxRonde }).map((_, i) => {
           const isFilled = i < current;
@@ -42,7 +46,7 @@ export default function RondeIndicator({
       </div>
       {showText && (
         <span className="font-sans text-xs text-[var(--ink-muted)] tabular-nums font-medium">
-          Ronde {Math.max(current, 1)}
+          {t.label(Math.max(current, 1))}
         </span>
       )}
     </div>

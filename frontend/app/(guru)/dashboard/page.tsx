@@ -15,15 +15,7 @@ import RondeIndicator from "@/components/ui/RondeIndicator";
 import Skeleton from "@/components/ui/Skeleton";
 import DeliberasiLineChart from "@/components/ui/DeliberasiLineChart";
 import { PackageOpen } from "lucide-react";
-
-const BLOOM_LABELS: Record<string, string> = {
-  C1: "Mengingat",
-  C2: "Memahami",
-  C3: "Menerapkan",
-  C4: "Menganalisis",
-  C5: "Mengevaluasi",
-  C6: "Mencipta",
-};
+import { useTeks } from "@/lib/teks";
 
 const BLOOM_BAR: Record<string, { fill: string; edge: string }> = {
   C1: { fill: "#edf6f9", edge: "#83c5be" },
@@ -36,6 +28,8 @@ const BLOOM_BAR: Record<string, { fill: string; edge: string }> = {
 
 export default function DashboardPage() {
   const user = getCurrentUser();
+  const { dashboard: t, komponen } = useTeks();
+  const BLOOM_LABELS = komponen.bloom.tingkat;
   const [stats, setStats] = useState({
     materi: 0,
     bankSoal: 0,
@@ -114,7 +108,7 @@ export default function DashboardPage() {
     },
     {
       key: "pertanyaan",
-      header: "Pertanyaan",
+      header: t.kolom.pertanyaan,
       className: "max-w-md",
       render: (item) => (
         <span className="font-serif text-sm text-[var(--ink)] line-clamp-1">
@@ -124,19 +118,19 @@ export default function DashboardPage() {
     },
     {
       key: "level_bloom",
-      header: "Bloom",
+      header: t.kolom.bloom,
       className: "w-20",
       render: (item) => <BloomChip level={item.level_bloom} />,
     },
     {
       key: "status",
-      header: "Status",
+      header: t.kolom.status,
       className: "w-28",
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "ronde_saat_ini",
-      header: "Ronde",
+      header: t.kolom.ronde,
       className: "w-36",
       render: (item) => <RondeIndicator ronde={item.ronde_saat_ini} />,
     },
@@ -149,7 +143,7 @@ export default function DashboardPage() {
           href={`/butir-ditandai/${item.id}`}
           className="text-xs text-[var(--accent)] hover:underline font-medium"
         >
-          Telaah Debat
+          {t.kolom.telaahDebat}
         </Link>
       ),
     },
@@ -160,13 +154,11 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title="Dashboard Naskah"
-        description={`Lembar kerja telaah dan validasi butir soal. Selamat bertugas, ${
-          user?.nama || "Pengajar"
-        }.`}
+        title={t.judul}
+        description={t.deskripsi(user?.nama || t.pengajarDefault)}
         action={
           <Link href="/kisi-kisi">
-            <Button size="sm">Buat Kisi-kisi</Button>
+            <Button size="sm">{t.buatKisiKisi}</Button>
           </Link>
         }
       />
@@ -199,31 +191,31 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4">
             <div className="p-4 sm:p-5 lg:p-6 border-r border-b lg:border-b-0 border-[var(--line)]">
               <div className="text-xs font-medium text-[var(--ink-muted)] font-sans mb-1.5">
-                Materi Ajar
+                {t.statistik.materi.judul}
               </div>
               <div className="font-serif text-3xl sm:text-4xl font-normal text-[var(--ink)] tabular-nums">
                 {stats.materi}
               </div>
               <p className="text-xs text-[var(--ink-muted)] mt-1.5 leading-snug">
-                Dokumen kurikulum tersimpan
+                {t.statistik.materi.ket}
               </p>
             </div>
 
             <div className="p-4 sm:p-5 lg:p-6 border-b lg:border-b-0 lg:border-r border-[var(--line)]">
               <div className="text-xs font-medium text-[var(--ink-muted)] font-sans mb-1.5">
-                Bank Soal
+                {t.statistik.bankSoal.judul}
               </div>
               <div className="font-serif text-3xl sm:text-4xl font-normal text-[var(--ink)] tabular-nums">
                 {stats.bankSoal}
               </div>
               <p className="text-xs text-[var(--ink-muted)] mt-1.5 leading-snug">
-                Butir tervalidasi siap pakai
+                {t.statistik.bankSoal.ket}
               </p>
             </div>
 
             <div className="p-4 sm:p-5 lg:p-6 border-r border-[var(--line)]">
               <div className="text-xs font-medium text-[var(--ink-muted)] font-sans mb-1.5">
-                Perlu Tindakan
+                {t.statistik.perluTindakan.judul}
               </div>
               <div
                 className={`font-serif text-3xl sm:text-4xl font-normal tabular-nums ${
@@ -233,19 +225,19 @@ export default function DashboardPage() {
                 {stats.ditandai}
               </div>
               <p className="text-xs text-[var(--ink-muted)] mt-1.5 leading-snug">
-                Butir menunggu keputusan manual
+                {t.statistik.perluTindakan.ket}
               </p>
             </div>
 
             <div className="p-4 sm:p-5 lg:p-6">
               <div className="text-xs font-medium text-[var(--ink-muted)] font-sans mb-1.5">
-                Paket Ujian
+                {t.statistik.paketUjian.judul}
               </div>
               <div className="font-serif text-3xl sm:text-4xl font-normal text-[var(--ink)] tabular-nums">
                 {stats.paketUjian}
               </div>
               <p className="text-xs text-[var(--ink-muted)] mt-1.5 leading-snug">
-                Paket tersusun (draft & aktif)
+                {t.statistik.paketUjian.ket}
               </p>
             </div>
           </div>
@@ -260,10 +252,10 @@ export default function DashboardPage() {
 
           <div className="border border-[var(--line)] bg-[var(--canvas)] p-4 sm:p-5 min-w-0">
             <h3 className="font-serif text-base font-normal text-[var(--ink)] mb-1">
-              Distribusi Bloom | Bank Soal
+              {t.distribusiBloom.judul}
             </h3>
             <p className="text-xs text-[var(--ink-muted)] mb-5">
-              Persebaran tingkat kognitif dari seluruh butir yang telah diterima.
+              {t.distribusiBloom.deskripsi}
             </p>
             {totalBloom === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-xs text-[var(--ink-muted)] gap-2 select-none">
@@ -272,7 +264,7 @@ export default function DashboardPage() {
                   strokeWidth={1.25}
                   className="text-[var(--ink-muted)]/65"
                 />
-                <span>Belum ada butir di bank soal.</span>
+                <span>{t.distribusiBloom.kosong}</span>
               </div>
             ) : (
               <>
@@ -318,7 +310,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mt-3 pt-3 border-t border-[var(--line)] flex justify-between text-xs text-[var(--ink-muted)]">
-                  <span>Total butir di bank soal</span>
+                  <span>{t.distribusiBloom.total}</span>
                   <span className="font-mono tabular-nums font-medium text-[var(--ink)]">
                     {totalBloom}
                   </span>
@@ -333,10 +325,10 @@ export default function DashboardPage() {
         <div className="flex items-baseline justify-between border-b border-[var(--line)] pb-2">
           <div>
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] tracking-tight">
-              Perlu Tindakan
+              {t.perluTindakan.judul}
             </h2>
             <p className="text-xs text-[var(--ink-muted)] mt-0.5">
-              Daftar butir soal yang tidak mencapai konsensus agen dan membutuhkan verifikasi
+              {t.perluTindakan.deskripsi}
             </p>
           </div>
           {markedList.length > 0 && (
@@ -344,24 +336,24 @@ export default function DashboardPage() {
               href="/butir-ditandai"
               className="text-xs text-[var(--accent)] hover:underline font-medium"
             >
-              Lihat semua ({stats.ditandai})
+              {t.perluTindakan.lihatSemua(stats.ditandai)}
             </Link>
           )}
         </div>
 
         {markedList.length === 0 ? (
           <EmptyState
-            title="Tidak ada butir yang menunggu tindakan"
-            description="Semua butir soal dari sesi debat terkini telah tervalidasi atau belum ada proses generasi yang aktif."
+            title={t.perluTindakan.kosongJudul}
+            description={t.perluTindakan.kosongDeskripsi}
             className="py-14 sm:py-16 min-h-[220px] sm:min-h-[250px] flex flex-col justify-center items-center"
             action={
               <div className="flex gap-2.5 justify-center mt-2">
                 <Link href="/kisi-kisi">
-                  <Button size="sm">Mulai Sesi Baru</Button>
+                  <Button size="sm">{t.perluTindakan.mulaiSesi}</Button>
                 </Link>
                 <Link href="/bank-soal">
                   <Button size="sm" variant="secondary">
-                    Periksa Bank Soal
+                    {t.perluTindakan.periksaBank}
                   </Button>
                 </Link>
               </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTeks } from "@/lib/teks";
 
 export type BloomLevel = "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
 
@@ -28,6 +31,7 @@ export const BLOOM_COLORS: Record<BloomLevel, string> = {
 };
 
 export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
+  const t = useTeks().komponen.bloom;
   const cx = 90;
   const cy = 90;
   const radius = 78;
@@ -109,7 +113,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
                   strokeWidth="2"
                   className="transition-all duration-200 hover:opacity-90"
                 >
-                  <title>{`${slice.level} (${BLOOM_LABELS[slice.level]}): ${slice.value}%`}</title>
+                  <title>{`${slice.level} (${t.tingkat[slice.level]}): ${slice.value}%`}</title>
                 </path>
               );
             })
@@ -122,7 +126,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
             textAnchor="middle"
             className="text-[10px] font-sans fill-[var(--ink-muted)] font-medium"
           >
-            Total
+            {t.total}
           </text>
           <text
             x={cx}
@@ -154,7 +158,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
                   {level}
                 </span>
                 <span className="text-[11px] text-[var(--ink-muted)] font-sans truncate">
-                  {BLOOM_LABELS[level]}
+                  {t.tingkat[level]}
                 </span>
               </div>
               <span className="font-sans font-semibold text-[var(--ink)] tabular-nums shrink-0">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTeks } from "@/lib/teks";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -20,13 +21,14 @@ export default function ConfirmDialog({
   title,
   description,
   children,
-  confirmLabel = "Konfirmasi",
-  cancelLabel = "Batal",
+  confirmLabel,
+  cancelLabel,
   variant = "default",
   loading = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTeks().komponen.konfirmasi;
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,7 +93,7 @@ export default function ConfirmDialog({
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-[var(--ink-muted)] hover:text-[var(--ink)] border border-[var(--line)] rounded bg-[var(--canvas)] transition-colors duration-[140ms] ease-out focus-visible:outline-none disabled:opacity-50"
           >
-            {cancelLabel}
+            {cancelLabel ?? t.batal}
           </button>
           <button
             type="button"
@@ -106,10 +108,10 @@ export default function ConfirmDialog({
             {loading ? (
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
-                Memproses...
+                {t.memproses}
               </span>
             ) : (
-              confirmLabel
+              (confirmLabel ?? t.konfirmasi)
             )}
           </button>
         </div>
