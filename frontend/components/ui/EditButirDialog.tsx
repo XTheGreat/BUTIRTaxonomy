@@ -6,6 +6,7 @@ import { ButirSoal } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Textarea from "@/components/ui/Textarea";
+import { useTeks } from "@/lib/teks";
 
 const KUNCI = ["A", "B", "C", "D"];
 const BLOOM = ["C1", "C2", "C3", "C4", "C5", "C6"];
@@ -23,6 +24,7 @@ export default function EditButirDialog({
   onClose,
   onSaved,
 }: EditButirDialogProps) {
+  const t = useTeks().telaah.editButir;
   const [pertanyaan, setPertanyaan] = useState("");
   const [pilihan, setPilihan] = useState<Record<string, string>>({});
   const [kunci, setKunci] = useState("A");
@@ -62,11 +64,11 @@ export default function EditButirDialog({
     e.preventDefault();
     if (!butir) return;
     if (!pertanyaan.trim()) {
-      setError("Pertanyaan tidak boleh kosong.");
+      setError(t.pertanyaanKosong);
       return;
     }
     if (KUNCI.some((k) => !(pilihan[k] || "").trim())) {
-      setError("Keempat opsi jawaban (A sampai D) harus diisi.");
+      setError(t.opsiHarusDiisi);
       return;
     }
     setSaving(true);
@@ -87,7 +89,7 @@ export default function EditButirDialog({
       });
       onSaved(hasil);
     } catch (err: any) {
-      setError(err.message || "Gagal menyimpan perubahan.");
+      setError(err.message || t.gagalMenyimpan);
     } finally {
       setSaving(false);
     }
@@ -113,15 +115,15 @@ export default function EditButirDialog({
             id="edit-butir-judul"
             className="font-serif text-lg font-normal text-[var(--ink)]"
           >
-            {mode === "terima" ? "Revisi & Terima Butir" : "Edit Butir Soal"}
+            {mode === "terima" ? t.judulTerima : t.judulEdit}
           </h2>
           <p className="text-xs text-[var(--ink-muted)] mt-0.5">
-            Rumus ditulis dalam LaTeX di antara \( dan \).
+            {t.petunjukRumus}
           </p>
         </div>
 
         <Textarea
-          label="Pertanyaan"
+          label={t.pertanyaan}
           value={pertanyaan}
           onChange={(e) => setPertanyaan(e.target.value)}
           rows={4}
@@ -131,7 +133,7 @@ export default function EditButirDialog({
 
         <div className="space-y-2">
           <span className="text-sm font-medium text-[var(--ink)] block">
-            Opsi Jawaban
+            {t.opsiJawaban}
           </span>
           {KUNCI.map((k) => (
             <div key={k} className="flex items-center gap-3">
@@ -142,25 +144,25 @@ export default function EditButirDialog({
                   checked={kunci === k}
                   onChange={() => setKunci(k)}
                   className="accent-[var(--accent)]"
-                  aria-label={`Jadikan ${k} kunci jawaban`}
+                  aria-label={t.jadikanKunci(k)}
                 />
                 <span className="font-mono text-xs font-semibold w-4">{k}.</span>
               </label>
               <Input
                 value={pilihan[k] || ""}
                 onChange={(e) => setPilihan((prev) => ({ ...prev, [k]: e.target.value }))}
-                aria-label={`Opsi ${k}`}
+                aria-label={t.opsi(k)}
                 className="font-serif"
               />
             </div>
           ))}
           <span className="text-xs text-[var(--ink-muted)] block">
-            Pilihan bulat menandai kunci jawaban: {kunci}.
+            {t.petunjukKunci(kunci)}
           </span>
         </div>
 
         <Textarea
-          label="Pembahasan"
+          label={t.pembahasan}
           value={pembahasan}
           onChange={(e) => setPembahasan(e.target.value)}
           rows={3}
@@ -170,7 +172,7 @@ export default function EditButirDialog({
 
         <div className="grid grid-cols-2 gap-4 max-w-sm">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-[var(--ink)]">Level Bloom</span>
+            <span className="text-sm font-medium text-[var(--ink)]">{t.levelBloom}</span>
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
@@ -184,7 +186,7 @@ export default function EditButirDialog({
             </select>
           </label>
           <Input
-            label="Bobot Poin"
+            label={t.bobotPoin}
             type="number"
             min={1}
             max={100}
@@ -202,14 +204,14 @@ export default function EditButirDialog({
 
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--line)]">
           <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
-            Batal
+            {t.batal}
           </Button>
           <Button type="submit" disabled={saving}>
             {saving
-              ? "Menyimpan..."
+              ? t.menyimpan
               : mode === "terima"
-                ? "Simpan & Terima ke Bank"
-                : "Simpan Perubahan"}
+                ? t.simpanTerima
+                : t.simpanPerubahan}
           </Button>
         </div>
       </form>

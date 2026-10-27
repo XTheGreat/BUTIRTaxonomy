@@ -12,8 +12,10 @@ import EmptyState from "@/components/ui/EmptyState";
 import RondeIndicator from "@/components/ui/RondeIndicator";
 import { Lock } from "lucide-react";
 import MathText from "@/components/ui/MathText";
+import { useTeks } from "@/lib/teks";
 
 export default function ButirDitandaiPage() {
+  const t = useTeks().telaah;
   const [butirList, setButirList] = useState<ButirSoal[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,22 +57,22 @@ export default function ButirDitandaiPage() {
   return (
     <div>
       <PageHeader
-        title="Butir Ditandai"
-        description="Daftar butir soal yang tidak mencapai mufakat dalam batas ronde debat maksimal dan memerlukan telaah manual guru atau dosen."
+        title={t.ditandai.judul}
+        description={t.ditandai.deskripsi}
       />
 
       {loading ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Memuat daftar butir ditandai...
+          {t.ditandai.memuat}
         </div>
       ) : butirList.length === 0 ? (
         <EmptyState
-          title="Tidak ada butir yang ditandai"
-          description="Seluruh butir soal telah melalui verifikasi atau diterima ke dalam Bank Soal."
+          title={t.ditandai.kosongJudul}
+          description={t.ditandai.kosongDeskripsi}
           action={
             <Link href="/bank-soal">
               <Button size="sm" variant="secondary">
-                Buka Bank Soal
+                {t.ditandai.bukaBankSoal}
               </Button>
             </Link>
           }
@@ -121,9 +123,9 @@ export default function ButirDitandaiPage() {
                       {isKey && (
                         <span
                           className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
-                          title="Kunci jawaban"
+                          title={t.umum.kunciJawaban}
                         >
-                          <Lock size={14} strokeWidth={2} aria-label="Kunci jawaban" />
+                          <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />
                         </span>
                       )}
                     </div>
@@ -134,7 +136,7 @@ export default function ButirDitandaiPage() {
               {butir.pembahasan && (
                 <div className="bg-[var(--surface)] border border-[var(--line)] p-3.5 mb-5 text-xs">
                   <div className="font-sans text-xs font-medium text-[var(--ink-muted)] mb-1">
-                    Pembahasan Naskah
+                    {t.ditandai.pembahasanNaskah}
                   </div>
                   <p className="font-serif text-[var(--ink)] leading-relaxed text-sm">
                     <MathText text={butir.pembahasan} />
@@ -145,7 +147,7 @@ export default function ButirDitandaiPage() {
               <div className="flex items-center justify-between pt-3 border-t border-[var(--line)]">
                 <Link href={`/butir-ditandai/${butir.id}`}>
                   <Button size="sm" variant="secondary">
-                    Periksa Log Debat
+                    {t.ditandai.periksaLogDebat}
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
@@ -154,14 +156,14 @@ export default function ButirDitandaiPage() {
                     variant="danger"
                     onClick={() => handleReject(butir.id)}
                   >
-                    Tolak Butir
+                    {t.umum.tolakButir}
                   </Button>
                   <Button
                     size="sm"
                     variant="primary"
                     onClick={() => handleApprove(butir.id)}
                   >
-                    Setujui Butir
+                    {t.ditandai.setujuiButir}
                   </Button>
                 </div>
               </div>

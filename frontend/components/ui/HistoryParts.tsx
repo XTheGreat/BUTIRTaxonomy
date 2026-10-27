@@ -1,5 +1,6 @@
 import { HistoryDebatTerakhir } from "@/lib/types";
 import { WARNA_GRAFIK } from "@/lib/warnaGrafik";
+import { useTeks } from "@/lib/teks";
 
 export const STATUS_HISTORY: { key: string; label: string; warna: string; penanda: string }[] = [
   { key: "diterima", label: "Diterima", warna: "#1F6B3A", penanda: WARNA_GRAFIK.diterima },
@@ -40,10 +41,11 @@ export function Kotak({
 }
 
 export function PipRonde({ ronde }: { ronde: number }) {
+  const t = useTeks().telaah;
   return (
     <span
       className="inline-flex items-center gap-[3px] shrink-0"
-      aria-label={`Ronde ${ronde} dari ${MAX_RONDE}`}
+      aria-label={t.umum.rondeDari(ronde, MAX_RONDE)}
     >
       {Array.from({ length: MAX_RONDE }).map((_, i) => (
         <span
@@ -68,12 +70,13 @@ export function RingkasanStatus({
   total: number;
   ukuranTeks?: string;
 }) {
+  const t = useTeks().telaah;
   return (
     <div className="space-y-1.5">
       <div
         className="flex h-1.5 w-full gap-px bg-[var(--line)]"
         role="img"
-        aria-label={STATUS_HISTORY.map((s) => `${hitung[s.key] ?? 0} ${s.label}`).join(", ")}
+        aria-label={STATUS_HISTORY.map((s) => `${hitung[s.key] ?? 0} ${t.status[s.key as keyof typeof t.status] ?? s.label}`).join(", ")}
       >
         {STATUS_HISTORY.map((s) => {
           const n = hitung[s.key] ?? 0;
@@ -94,7 +97,7 @@ export function RingkasanStatus({
             <span className="tabular-nums font-semibold" style={{ color: s.warna }}>
               {hitung[s.key] ?? 0}
             </span>
-            <span>{s.label.toLowerCase()}</span>
+            <span>{(t.status[s.key as keyof typeof t.status] ?? s.label).toLowerCase()}</span>
           </li>
         ))}
       </ul>

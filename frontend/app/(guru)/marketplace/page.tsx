@@ -12,13 +12,14 @@ import MathText from "@/components/ui/MathText";
 import FilterButir, { FILTER_AWAL, filterAktif, NilaiFilterButir } from "@/components/ui/FilterButir";
 import KelompokLipat, { useBukaTutup } from "@/components/ui/KelompokLipat";
 import { KelompokBank, kelompokkan } from "@/lib/kelompokBank";
+import { useTeks } from "@/lib/teks";
 
-const rupiah = (n: number) => (n === 0 ? "Gratis" : `Rp${n.toLocaleString("id-ID")}`);
+const rupiah = (n: number, gratis: string) => (n === 0 ? gratis : `Rp${n.toLocaleString("id-ID")}`);
 
-const STATUS_TRANSAKSI: Record<string, { label: string; warna: string }> = {
-  selesai: { label: "Selesai", warna: "#1F6B3A" },
-  menunggu_pembayaran: { label: "Menunggu pembayaran", warna: "#8A5A00" },
-  dibatalkan: { label: "Dibatalkan", warna: "#5A6070" },
+const WARNA_TRANSAKSI: Record<string, string> = {
+  selesai: "#1F6B3A",
+  menunggu_pembayaran: "#8A5A00",
+  dibatalkan: "#5A6070",
 };
 
 const inputCls =
@@ -35,7 +36,9 @@ function Distribusi({ d }: { d: Record<string, number> }) {
 }
 
 function StatusTransaksi({ status }: { status: string }) {
-  const s = STATUS_TRANSAKSI[status] ?? { label: status, warna: "#5A6070" };
+  const t = useTeks().telaah.marketplace;
+  const label: Record<string, string> = t.statusTransaksi;
+  const s = { label: label[status] ?? status, warna: WARNA_TRANSAKSI[status] ?? "#5A6070" };
   return (
     <span className="inline-flex items-center text-xs font-semibold" style={{ color: s.warna }}>
       {s.label}
@@ -44,6 +47,8 @@ function StatusTransaksi({ status }: { status: string }) {
 }
 
 export default function MarketplacePage() {
+  const t = useTeks().telaah.marketplace;
+  const rp = (n: number) => rupiah(n, t.gratis);
   const [tab, setTab] = useState<Tab>("jelajahi");
   const [galat, setGalat] = useState("");
   const [info, setInfo] = useState("");
@@ -106,9 +111,9 @@ export default function MarketplacePage() {
       setAdmin(!!p.admin);
       if (p.admin) setMenunggu(await apiFetch("/api/marketplace/transaksi?status=menunggu_pembayaran"));
     } catch (err: any) {
-      setGalat(err.message || "Gagal memuat marketplace.");
+      setGalat(err.message || t.gagalMemuat);
     }
-  }, []);
+  }, [t.gagalMemuat]);
 
   useEffect(() => {
     muat();
@@ -123,7 +128,7 @@ export default function MarketplacePage() {
       if (pesan) setInfo(pesan);
       await muat();
     } catch (err: any) {
-      setGalat(err.message || "Aksi gagal dijalankan.");
+      setGalat(err.message || t.aksiGagal);
     } finally {
       setSibuk(false);
     }
@@ -139,7 +144,7 @@ export default function MarketplacePage() {
     try {
       setDetail(await apiFetch(`/api/marketplace/listing/${id}`));
     } catch (err: any) {
-      setGalat(err.message || "Gagal memuat rincian.");
+      setGalat(err.message || t.gagalMemuatRincian);
     }
   }
 
@@ -147,8 +152,8 @@ export default function MarketplacePage() {
     jalankan(
       () => apiFetch(`/api/marketplace/listing/${l.id}/beli`, { method: "POST" }),
       l.harga_rp === 0
-        ? "Bank soal gratis sudah ditambahkan ke Bank Soal Anda."
-        : "Pesanan dibuat. Butir akan masuk ke Bank Soal setelah pembayaran dikonfirmasi admin."
+        ? t.pesanBeliGratis
+        : t.pesanBeliBerbayar
     );
 
   const terbitkan = (e: React.FormEvent) => {
@@ -167,20 +172,20 @@ export default function MarketplacePage() {
       setDeskripsi("");
       setHarga("0");
       setDipilih(new Set());
-    }, "Bank soal diterbitkan di marketplace.");
+    }, t.pesanTerbit);
   };
 
   const tabs: [Tab, string][] = [
-    ["jelajahi", "Jelajahi"],
-    ["jual", "Jual Bank Soal"],
-    ["transaksi", "Transaksi"],
+    ["jelajahi", t.tab.jelajahi],
+    ["jual", t.tab.jual],
+    ["transaksi", t.tab.transaksi],
   ];
 
   return (
     <div>
       <PageHeader
-        title="Marketplace Bank Soal"
-        description="Beli bank soal yang sudah tervalidasi dari guru atau dosen lain, atau jual bank soal Anda. Hanya butir berstatus diterima yang dapat dijual."
+        title={t.judul}
+        description={t.deskripsi}
       />
 
       {galat && (
@@ -215,10 +220,10 @@ export default function MarketplacePage() {
       {tab === "jelajahi" && (
         <div className="space-y-3">
           {listing === null ? (
-            <p className="font-mono text-xs text-[var(--ink-muted)]">Memuat...</p>
+            <p className="font-mono text-xs text-[var(--ink-muted)]">{t.memuat}</p>
           ) : listing.length === 0 ? (
             <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-sm text-[var(--ink-muted)]">
-              Belum ada bank soal yang dijual guru atau dosen lain.
+              {t.belumAdaDijual}
             </div>
           ) : (
             listing.map((l) => (
@@ -227,20 +232,20 @@ export default function MarketplacePage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="font-serif text-base text-[var(--ink)]">{l.judul}</h3>
                     <p className="mt-0.5 text-xs text-[var(--ink-muted)]">
-                      oleh {l.penjual} · {l.jumlah_butir} butir · <Distribusi d={l.distribusi_bloom} />
+                      {t.olehPenjual(l.penjual, l.jumlah_butir)} · <Distribusi d={l.distribusi_bloom} />
                     </p>
                     {l.deskripsi && <p className="mt-2 text-sm text-[var(--ink)] leading-relaxed">{l.deskripsi}</p>}
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm tabular-nums text-[var(--ink)]">{rupiah(l.harga_rp)}</span>
+                    <span className="font-mono text-sm tabular-nums text-[var(--ink)]">{rp(l.harga_rp)}</span>
                     <Button size="sm" variant="ghost" onClick={() => bukaDetail(l.id)} aria-expanded={terbuka === l.id}>
-                      {terbuka === l.id ? "Tutup" : "Pratinjau"}
+                      {terbuka === l.id ? t.tutup : t.pratinjau}
                     </Button>
                     {l.status_pembelian ? (
                       <StatusTransaksi status={l.status_pembelian} />
                     ) : (
                       <Button size="sm" variant="primary" disabled={sibuk} onClick={() => beli(l)}>
-                        Beli
+                        {t.beli}
                       </Button>
                     )}
                   </div>
@@ -248,11 +253,11 @@ export default function MarketplacePage() {
                 {terbuka === l.id && (
                   <div className="border-t border-[var(--line)] bg-[var(--surface)] px-4 py-3">
                     {!detail ? (
-                      <p className="font-mono text-xs text-[var(--ink-muted)]">Memuat pratinjau...</p>
+                      <p className="font-mono text-xs text-[var(--ink-muted)]">{t.memuatPratinjau}</p>
                     ) : (
                       <>
                         <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-muted)]">
-                          Pratinjau 2 butir pertama · kunci dan pembahasan terbuka setelah membeli
+                          {t.keteranganPratinjau}
                         </p>
                         <ol className="space-y-2">
                           {detail.pratinjau?.map((b) => (
@@ -279,11 +284,11 @@ export default function MarketplacePage() {
           <form onSubmit={terbitkan} className="space-y-4 max-w-3xl">
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-4">
               <div className="flex flex-col gap-1">
-                <label htmlFor="mk-judul" className="text-xs text-[var(--ink-muted)]">Judul bank soal</label>
+                <label htmlFor="mk-judul" className="text-xs text-[var(--ink-muted)]">{t.form.judul}</label>
                 <input id="mk-judul" required minLength={3} value={judul} onChange={(e) => setJudul(e.target.value)} className={inputCls} />
               </div>
               <div className="flex flex-col gap-1">
-                <label htmlFor="mk-harga" className="text-xs text-[var(--ink-muted)]">Harga (Rp, 0 = gratis)</label>
+                <label htmlFor="mk-harga" className="text-xs text-[var(--ink-muted)]">{t.form.harga}</label>
                 <input
                   id="mk-harga"
                   type="number"
@@ -296,17 +301,17 @@ export default function MarketplacePage() {
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="mk-desk" className="text-xs text-[var(--ink-muted)]">Deskripsi (opsional)</label>
+              <label htmlFor="mk-desk" className="text-xs text-[var(--ink-muted)]">{t.form.deskripsiOpsional}</label>
               <textarea id="mk-desk" rows={2} value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} className={inputCls} />
             </div>
 
             <div>
               <div className="flex items-baseline justify-between mb-2">
-                <span className="text-sm font-medium text-[var(--ink)]">Pilih butir dari Bank Soal</span>
-                <span className="font-mono text-xs tabular-nums text-[var(--ink-muted)]">{dipilih.size} dipilih</span>
+                <span className="text-sm font-medium text-[var(--ink)]">{t.form.pilihButir}</span>
+                <span className="font-mono text-xs tabular-nums text-[var(--ink-muted)]">{t.dipilih(dipilih.size)}</span>
               </div>
               {bank.length === 0 ? (
-                <p className="text-xs text-[var(--ink-muted)]">Bank Soal Anda masih kosong. Hanya butir diterima yang bisa dijual.</p>
+                <p className="text-xs text-[var(--ink-muted)]">{t.bankKosong}</p>
               ) : (
                 <>
                   <FilterButir
@@ -319,7 +324,7 @@ export default function MarketplacePage() {
                   <div className="daftar-gulir space-y-3 sm:pr-1">
                     {grup.length === 0 && (
                       <p className="border border-dashed border-[var(--line-strong)] px-4 py-8 text-center font-sans text-sm text-[var(--ink-muted)]">
-                        Tidak ada butir yang cocok dengan filter.
+                        {t.tidakCocokFilter}
                       </p>
                     )}
                     {grup.map((g) => {
@@ -338,7 +343,7 @@ export default function MarketplacePage() {
                               <span className="font-mono tabular-nums text-[var(--accent)]">
                                 {ids.filter((id) => dipilih.has(id)).length}
                               </span>{" "}
-                              dipilih
+                              {t.dipilihKata}
                             </span>
                           }
                           aksi={
@@ -347,7 +352,7 @@ export default function MarketplacePage() {
                               onClick={() => pilihKelompok(ids)}
                               className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
                             >
-                              {semua ? "Batal pilih kelompok" : "Pilih kelompok"}
+                              {semua ? t.batalPilihKelompok : t.pilihKelompok}
                             </button>
                           }
                         >
@@ -378,31 +383,30 @@ export default function MarketplacePage() {
             </div>
 
             <Button type="submit" variant="primary" disabled={sibuk || dipilih.size === 0 || judul.trim().length < 3}>
-              Terbitkan ke Marketplace
+              {t.form.terbitkan}
             </Button>
             {rekap && (
               <p className="text-xs text-[var(--ink-muted)]">
-                Komisi platform {rekap.komisi_persen}% dari tiap penjualan. Butir disalin saat diterbitkan, jadi mengubah
-                butir asli tidak memengaruhi pembeli.
+                {t.form.catatanKomisi(rekap.komisi_persen)}
               </p>
             )}
           </form>
 
           <section>
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">
-              Bank Soal Saya yang Dijual
+              {t.bankSayaDijual}
             </h2>
             {milikku.length === 0 ? (
-              <p className="text-xs text-[var(--ink-muted)]">Belum ada yang diterbitkan.</p>
+              <p className="text-xs text-[var(--ink-muted)]">{t.belumDiterbitkan}</p>
             ) : (
               <div className="border border-[var(--line-strong)] bg-[var(--canvas)] overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse">
                   <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
                     <tr className="text-xs text-[var(--ink-muted)]">
-                      <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Judul</th>
-                      <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Butir</th>
-                      <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Harga</th>
-                      <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kolom.judul}</th>
+                      <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.kolom.butir}</th>
+                      <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.kolom.harga}</th>
+                      <th className="px-3 py-2 font-medium">{t.kolom.status}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--line)]">
@@ -410,7 +414,7 @@ export default function MarketplacePage() {
                       <tr key={l.id}>
                         <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{l.judul}</td>
                         <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{l.jumlah_butir}</td>
-                        <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rupiah(l.harga_rp)}</td>
+                        <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rp(l.harga_rp)}</td>
                         <td className="px-3 py-2">
                           <Button
                             size="sm"
@@ -422,7 +426,7 @@ export default function MarketplacePage() {
                               )
                             }
                           >
-                            {l.aktif ? "Hentikan penjualan" : "Jual lagi"}
+                            {l.aktif ? t.hentikanPenjualan : t.jualLagi}
                           </Button>
                         </td>
                       </tr>
@@ -440,44 +444,44 @@ export default function MarketplacePage() {
           {admin && (
             <section>
               <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">
-                Menunggu Konfirmasi Pembayaran
+                {t.menungguKonfirmasi}
               </h2>
               {menunggu.length === 0 ? (
-                <p className="text-xs text-[var(--ink-muted)]">Tidak ada pesanan yang menunggu.</p>
+                <p className="text-xs text-[var(--ink-muted)]">{t.tidakAdaPesanan}</p>
               ) : (
                 <div className="border border-[var(--line-strong)] bg-[var(--canvas)] overflow-x-auto">
                   <table className="w-full text-left text-sm border-collapse">
                     <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
                       <tr className="text-xs text-[var(--ink-muted)]">
-                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Bank soal</th>
-                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Pembeli</th>
-                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Harga</th>
-                        <th className="px-3 py-2 font-medium">Aksi</th>
+                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kolom.bankSoal}</th>
+                        <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kolom.pembeli}</th>
+                        <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.kolom.harga}</th>
+                        <th className="px-3 py-2 font-medium">{t.kolom.aksi}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--line)]">
-                      {menunggu.map((t) => (
-                        <tr key={t.id}>
-                          <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{t.judul}</td>
-                          <td className="px-3 py-2 text-xs border-r border-[var(--line)]">{t.pembeli}</td>
-                          <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rupiah(t.harga_rp)}</td>
+                      {menunggu.map((m) => (
+                        <tr key={m.id}>
+                          <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{m.judul}</td>
+                          <td className="px-3 py-2 text-xs border-r border-[var(--line)]">{m.pembeli}</td>
+                          <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rp(m.harga_rp)}</td>
                           <td className="px-3 py-2">
                             <div className="flex gap-1.5">
                               <Button
                                 size="sm"
                                 variant="primary"
                                 disabled={sibuk}
-                                onClick={() => jalankan(() => apiFetch(`/api/marketplace/transaksi/${t.id}/konfirmasi`, { method: "PUT" }), "Pembayaran dikonfirmasi; butir masuk ke akun pembeli.")}
+                                onClick={() => jalankan(() => apiFetch(`/api/marketplace/transaksi/${m.id}/konfirmasi`, { method: "PUT" }), t.pesanDikonfirmasi)}
                               >
-                                Konfirmasi
+                                {t.konfirmasi}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 disabled={sibuk}
-                                onClick={() => jalankan(() => apiFetch(`/api/marketplace/transaksi/${t.id}/batalkan`, { method: "PUT" }))}
+                                onClick={() => jalankan(() => apiFetch(`/api/marketplace/transaksi/${m.id}/batalkan`, { method: "PUT" }))}
                               >
-                                Batalkan
+                                {t.batalkan}
                               </Button>
                             </div>
                           </td>
@@ -491,18 +495,18 @@ export default function MarketplacePage() {
           )}
 
           <section>
-            <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">Pembelian Saya</h2>
-            <DaftarTransaksi data={rekap.pembelian} kosong="Belum ada pembelian." />
+            <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">{t.pembelianSaya}</h2>
+            <DaftarTransaksi data={rekap.pembelian} kosong={t.belumAdaPembelian} />
           </section>
 
           <section>
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-3">
-              Penjualan Saya
+              {t.penjualanSaya}
               <span className="ml-3 font-mono text-xs text-[var(--ink-muted)]">
-                pendapatan bersih {rupiah(rekap.total_pendapatan_rp)} · komisi {rekap.komisi_persen}%
+                {t.ringkasPendapatan(rp(rekap.total_pendapatan_rp), rekap.komisi_persen)}
               </span>
             </h2>
-            <DaftarTransaksi data={rekap.penjualan} kosong="Belum ada penjualan." tampilkanBersih />
+            <DaftarTransaksi data={rekap.penjualan} kosong={t.belumAdaPenjualan} tampilkanBersih />
           </section>
         </div>
       )}
@@ -519,33 +523,35 @@ function DaftarTransaksi({
   kosong: string;
   tampilkanBersih?: boolean;
 }) {
+  const t = useTeks().telaah.marketplace;
+  const rp = (n: number) => rupiah(n, t.gratis);
   if (data.length === 0) return <p className="text-xs text-[var(--ink-muted)]">{kosong}</p>;
   return (
     <div className="border border-[var(--line-strong)] bg-[var(--canvas)] overflow-x-auto">
       <table className="w-full text-left text-sm border-collapse">
         <thead className="bg-[var(--surface)] border-b border-[var(--line-strong)]">
           <tr className="text-xs text-[var(--ink-muted)]">
-            <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Bank soal</th>
-            <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Harga</th>
-            {tampilkanBersih && <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">Bersih</th>}
-            <th className="px-3 py-2 font-medium border-r border-[var(--line)]">Status</th>
-            <th className="px-3 py-2 font-medium">Waktu</th>
+            <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kolom.bankSoal}</th>
+            <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.kolom.harga}</th>
+            {tampilkanBersih && <th className="px-3 py-2 font-medium text-right border-r border-[var(--line)]">{t.kolom.bersih}</th>}
+            <th className="px-3 py-2 font-medium border-r border-[var(--line)]">{t.kolom.status}</th>
+            <th className="px-3 py-2 font-medium">{t.kolom.waktu}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--line)]">
-          {data.map((t) => (
-            <tr key={t.id}>
-              <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{t.judul}</td>
-              <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rupiah(t.harga_rp)}</td>
+          {data.map((d) => (
+            <tr key={d.id}>
+              <td className="px-3 py-2 font-serif border-r border-[var(--line)]">{d.judul}</td>
+              <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">{rp(d.harga_rp)}</td>
               {tampilkanBersih && (
                 <td className="px-3 py-2 text-right font-mono text-xs tabular-nums border-r border-[var(--line)]">
-                  {rupiah(t.pendapatan_penjual_rp)}
+                  {rp(d.pendapatan_penjual_rp)}
                 </td>
               )}
               <td className="px-3 py-2 border-r border-[var(--line)]">
-                <StatusTransaksi status={t.status} />
+                <StatusTransaksi status={d.status} />
               </td>
-              <td className="px-3 py-2 text-xs tabular-nums text-[var(--ink-muted)] whitespace-nowrap">{formatWaktu(t.created_at)}</td>
+              <td className="px-3 py-2 text-xs tabular-nums text-[var(--ink-muted)] whitespace-nowrap">{formatWaktu(d.created_at)}</td>
             </tr>
           ))}
         </tbody>

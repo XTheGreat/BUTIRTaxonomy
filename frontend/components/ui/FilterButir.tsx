@@ -4,6 +4,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { BLOOM_COLORS, BLOOM_LABELS, BLOOM_LEVELS } from "@/components/ui/BloomPieChart";
 import { KelompokBank } from "@/lib/kelompokBank";
+import { useTeks } from "@/lib/teks";
 
 export interface NilaiFilterButir {
   cari: string;
@@ -36,6 +37,7 @@ export default function FilterButir({
   jumlahTotal: number;
   tanpaBloom?: boolean;
 }) {
+  const t = useTeks().telaah.filter;
   const aktif = filterAktif(nilai);
   const ubahBloom = (level: string) =>
     onUbah({
@@ -47,7 +49,7 @@ export default function FilterButir({
     <div className="mb-4 space-y-3 border border-[var(--line)] bg-[var(--surface)] p-3">
       <div className="grid gap-3 sm:grid-cols-[1fr_minmax(0,16rem)]">
         <label className="relative block">
-          <span className="sr-only">Cari teks soal</span>
+          <span className="sr-only">{t.cariTeksSoal}</span>
           <Search
             size={15}
             strokeWidth={1.8}
@@ -58,21 +60,21 @@ export default function FilterButir({
             type="search"
             value={nilai.cari}
             onChange={(e) => onUbah({ ...nilai, cari: e.target.value })}
-            placeholder="Cari teks soal"
+            placeholder={t.cariTeksSoal}
             className={`${inputCls} w-full pl-8`}
           />
         </label>
         <label className="block">
-          <span className="sr-only">Saring menurut kisi-kisi</span>
+          <span className="sr-only">{t.saringKisiKisi}</span>
           <select
             value={nilai.kisi}
             onChange={(e) => onUbah({ ...nilai, kisi: e.target.value })}
             className={`${inputCls} w-full`}
           >
-            <option value="">Semua kisi-kisi</option>
+            <option value="">{t.semuaKisiKisi}</option>
             {kelompok.map((k) => (
               <option key={k.id} value={k.id}>
-                {k.label} (ke-{k.urutan})
+                {k.label} ({t.keUrutan(k.urutan)})
               </option>
             ))}
           </select>
@@ -81,8 +83,8 @@ export default function FilterButir({
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {!tanpaBloom && (
-        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Saring menurut level Bloom">
-          <span className="mr-1 font-sans text-xs text-[var(--ink-muted)]">Level</span>
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t.saringBloom}>
+          <span className="mr-1 font-sans text-xs text-[var(--ink-muted)]">{t.level}</span>
           {BLOOM_LEVELS.map((level) => {
             const dipilih = nilai.bloom.includes(level);
             return (
@@ -113,12 +115,12 @@ export default function FilterButir({
             onChange={(e) => onUbah({ ...nilai, hanyaTerpilih: e.target.checked })}
             className="accent-[var(--accent)]"
           />
-          Hanya yang terpilih
+          {t.hanyaTerpilih}
         </label>
 
         <div className="ml-auto flex items-center gap-3 font-mono text-xs tabular-nums text-[var(--ink-muted)]">
           <span>
-            Menampilkan <span className="text-[var(--ink)]">{jumlahTampil}</span> dari {jumlahTotal} butir
+            {t.menampilkan} <span className="text-[var(--ink)]">{jumlahTampil}</span> {t.dariTotal(jumlahTotal)}
           </span>
           {aktif && (
             <button
@@ -126,7 +128,7 @@ export default function FilterButir({
               onClick={() => onUbah(FILTER_AWAL)}
               className="font-sans font-medium text-[var(--accent)] underline-offset-4 hover:underline focus-visible:outline-none"
             >
-              Atur ulang
+              {t.aturUlang}
             </button>
           )}
         </div>

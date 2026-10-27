@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { WARNA_GRAFIK } from "@/lib/warnaGrafik";
+import { useTeks } from "@/lib/teks";
 
 export interface DebatStats {
   diterima: number;
@@ -28,10 +29,10 @@ const DOWN = WARNA_GRAFIK.turun;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const CATEGORIES = [
-  { key: "diterima", label: "Diterima", color: WARNA_GRAFIK.diterima },
-  { key: "ditandai", label: "Ditandai", color: WARNA_GRAFIK.ditandai },
-  { key: "ditolak", label: "Ditolak", color: WARNA_GRAFIK.ditolak },
-  { key: "tertunda", label: "Tertunda", color: WARNA_GRAFIK.tertunda },
+  { key: "diterima", color: WARNA_GRAFIK.diterima },
+  { key: "ditandai", color: WARNA_GRAFIK.ditandai },
+  { key: "ditolak", color: WARNA_GRAFIK.ditolak },
+  { key: "tertunda", color: WARNA_GRAFIK.tertunda },
 ] as const;
 
 type CatKey = (typeof CATEGORIES)[number]["key"];
@@ -47,6 +48,8 @@ function niceMax(v: number) {
 }
 
 export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChartProps) {
+  const tl = useTeks().telaah;
+  const tg = tl.grafik;
   const [hoveredKey, setHoveredKey] = useState<CatKey | null>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [view, setView] = useState<"line" | "candle">("candle");
@@ -122,26 +125,26 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
   const y = (v: number) => padT + innerH - (innerH * v) / yMax;
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => Math.round(yMax * t));
 
-  const fmtDay = (d: Date) => d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  const fmtDay = (d: Date) => d.toLocaleDateString(tl.umum.lokalWaktu, { day: "numeric", month: "short" });
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-serif text-base font-normal text-[var(--ink)] mb-0.5">
-            Hasil Deliberasi Agen
+            {tg.judul}
           </h3>
           <p className="text-xs text-[var(--ink-muted)]">
             {view === "candle"
-              ? `Tingkat penerimaan butir kumulatif, ${CANDLE_DAYS} hari terakhir.`
-              : `Butir per keputusan dalam ${DAYS} hari terakhir.`}
+              ? tg.keteranganLilin(CANDLE_DAYS)
+              : tg.keteranganGaris(DAYS)}
           </p>
         </div>
         <div className="inline-flex rounded border border-[var(--line)] bg-[var(--surface)] p-0.5 text-[11px] font-sans shrink-0">
           {(
             [
-              { id: "candle", label: "Lilin" },
-              { id: "line", label: "Garis" },
+              { id: "candle", label: tg.lilin },
+              { id: "line", label: tg.garis },
             ] as const
           ).map((o) => (
             <button
@@ -166,7 +169,7 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
             viewBox={`0 0 ${W} ${H}`}
             className="w-full h-auto select-none"
             role="img"
-            aria-label="Grafik candlestick tingkat penerimaan butir kumulatif per hari"
+            aria-label={tg.ariaLilin}
             onMouseLeave={() => setCandleIdx(null)}
           >
             {[0, 25, 50, 75, 100].map((t) => {
@@ -226,14 +229,14 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
               }}
             >
               <div className="font-mono text-[10px] text-[var(--ink-muted)] mb-1">
-                {fmtDay(candles[candleIdx].date)} · {candles[candleIdx].count} butir
+                {fmtDay(candles[candleIdx].date)} · {tg.jumlahButir(candles[candleIdx].count)}
               </div>
               {(
                 [
-                  ["Buka", candles[candleIdx].open],
-                  ["Tinggi", candles[candleIdx].high],
-                  ["Rendah", candles[candleIdx].low],
-                  ["Tutup", candles[candleIdx].close],
+                  [tg.buka, candles[candleIdx].open],
+                  [tg.tinggi, candles[candleIdx].high],
+                  [tg.rendah, candles[candleIdx].low],
+                  [tg.tutup, candles[candleIdx].close],
                 ] as const
               ).map(([label, v]) => (
                 <div key={label} className="flex items-center gap-4">
@@ -246,12 +249,12 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
 
           <div className="flex items-center gap-4 mt-1 text-[11px] text-[var(--ink-muted)]">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: UP }} /> Naik
+              <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: UP }} /> {tg.naik}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: DOWN }} /> Turun
+              <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: DOWN }} /> {tg.turun}
             </span>
-            <span>Redup: tidak ada butir baru</span>
+            <span>{tg.redup}</span>
           </div>
         </div>
       ) : (
@@ -260,7 +263,7 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
           viewBox={`0 0 ${W} ${H}`}
           className="w-full h-auto select-none"
           role="img"
-          aria-label="Grafik garis jumlah butir per keputusan debat dalam 7 hari terakhir"
+          aria-label={tg.ariaGaris(DAYS)}
           onMouseLeave={() => setHoverIdx(null)}
         >
           {ticks.map((t, i) => (
@@ -364,7 +367,7 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
             {CATEGORIES.map((cat) => (
               <div key={cat.key} className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: cat.color }} />
-                <span className="text-[var(--ink)] flex-1">{cat.label}</span>
+                <span className="text-[var(--ink)] flex-1">{tl.status[cat.key]}</span>
                 <span className="font-mono tabular-nums text-[var(--ink)]">
                   {series[cat.key][hoverIdx]}
                 </span>
@@ -389,7 +392,7 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
               }`}
             >
               <span className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: cat.color }} />
-              <span className="text-sm text-[var(--ink)] flex-1 truncate">{cat.label}</span>
+              <span className="text-sm text-[var(--ink)] flex-1 truncate">{tl.status[cat.key]}</span>
               <span className="font-serif text-sm tabular-nums text-[var(--ink)]">{count}</span>
               <span className="font-mono text-[11px] tabular-nums text-[var(--ink-muted)] w-9 text-right">
                 {Math.round(pct)}%
@@ -400,7 +403,7 @@ export default function DeliberasiLineChart({ stats, butir }: DeliberasiLineChar
       </div>
 
       <div className="pt-3 border-t border-[var(--line)] flex justify-between items-center text-xs text-[var(--ink-muted)]">
-        <span>Total butir diproses</span>
+        <span>{tg.totalDiproses}</span>
         <span className="font-mono tabular-nums font-semibold text-[var(--ink)]">{stats.total}</span>
       </div>
     </div>

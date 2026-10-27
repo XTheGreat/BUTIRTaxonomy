@@ -14,35 +14,35 @@ import PipMeter from "@/components/ui/PipMeter";
 import TigaTitik from "@/components/ui/TigaTitik";
 import Ketik, { AnimasiKetik } from "@/components/ui/Ketik";
 import Button from "@/components/ui/Button";
+import { useTeks, type Kamus } from "@/lib/teks";
 
 const JEDA_MS = 2500;
 
-const AGEN: Record<string, { nama: string; kegiatan: string }> = {
-  penyusun: { nama: "Penyusun", kegiatan: "sedang menyusun draf soal" },
-  kritikus: { nama: "Kritikus", kegiatan: "sedang menelaah soal" },
-  penjawab_buta: { nama: "Penjawab Buta", kegiatan: "sedang menjawab tanpa melihat kunci" },
-  arbiter: { nama: "Arbiter", kegiatan: "sedang menimbang dan memutuskan" },
+type TeksDebat = Kamus["telaah"]["debat"];
+
+const WARNA_VERDICT: Record<string, string> = {
+  diterima: "#1F6B3A",
+  revisi: "#8A5A00",
+  ditolak: "#A4262C",
 };
 
-const VERDICT: Record<string, { label: string; warna: string }> = {
-  diterima: { label: "Diterima", warna: "#1F6B3A" },
-  revisi: { label: "Perlu revisi", warna: "#8A5A00" },
-  ditolak: { label: "Ditolak", warna: "#A4262C" },
-};
+const infoAgen = (d: TeksDebat, agen: string): { nama: string; kegiatan: string } | undefined =>
+  (d.agen as Record<string, { nama: string; kegiatan: string }>)[agen];
 
 const prosesBerjalan = (status: string) => status === "draft" || status === "debating";
 
-function daftarNama(agen: string[]) {
-  const nama = agen.map((a) => AGEN[a]?.nama ?? a);
-  return nama.length > 1 ? `${nama.slice(0, -1).join(", ")} dan ${nama[nama.length - 1]}` : nama[0];
+function daftarNama(d: TeksDebat, agen: string[]) {
+  const nama = agen.map((a) => infoAgen(d, a)?.nama ?? a);
+  return nama.length > 1 ? d.gabungNama(nama.slice(0, -1).join(", "), nama[nama.length - 1]) : nama[0];
 }
 
 function Kotak({ agen, children }: { agen: string; children: React.ReactNode }) {
+  const d = useTeks().telaah.debat;
   return (
     <article className="pesan-muncul border border-[var(--line)] bg-[var(--canvas)] rounded-md">
       <header className="flex items-center gap-2 border-b border-[var(--line)] bg-[var(--surface)] px-4 py-2">
         <span aria-hidden="true" className="h-2 w-2 bg-[var(--accent)]" />
-        <span className="font-serif text-sm font-medium text-[var(--ink)]">{AGEN[agen]?.nama ?? agen}</span>
+        <span className="font-serif text-sm font-medium text-[var(--ink)]">{infoAgen(d, agen)?.nama ?? agen}</span>
       </header>
       <div className="px-4 py-3">{children}</div>
     </article>
@@ -50,6 +50,7 @@ function Kotak({ agen, children }: { agen: string; children: React.ReactNode }) 
 }
 
 function IsiPenyusun({ o }: { o: Record<string, any> }) {
+  const d = useTeks().telaah.debat;
   const kunci = o.kunci_jawaban;
   return (
     <div className="space-y-3">
@@ -68,7 +69,7 @@ function IsiPenyusun({ o }: { o: Record<string, any> }) {
       </ul>
       {o.pembahasan && (
         <p className="border-t border-[var(--line)] pt-2 text-xs leading-relaxed text-[var(--ink-muted)] font-serif">
-          <span className="font-sans font-semibold text-[var(--ink)]">Pembahasan: </span>
+          <span className="font-sans font-semibold text-[var(--ink)]">{d.pembahasanLabel} </span>
           <Ketik text={o.pembahasan} tunda={600} />
         </p>
       )}
@@ -77,6 +78,7 @@ function IsiPenyusun({ o }: { o: Record<string, any> }) {
 }
 
 function IsiKritikus({ o }: { o: Record<string, any> }) {
+  const d = useTeks().telaah.debat;
   return (
     <div className="space-y-3">
       {o.skor_rubrik && (
@@ -93,13 +95,13 @@ function IsiKritikus({ o }: { o: Record<string, any> }) {
       )}
       {o.catatan_kritik && (
         <p className="font-serif text-sm leading-relaxed text-[var(--ink)]">
-          <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-0.5">Catatan</span>
+          <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-0.5">{d.catatan}</span>
           <Ketik text={o.catatan_kritik} />
         </p>
       )}
       {o.usulan_perbaikan && (
         <p className="font-serif text-sm leading-relaxed text-[var(--ink)]">
-          <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-0.5">Usulan perbaikan</span>
+          <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-0.5">{d.usulanPerbaikan}</span>
           <Ketik text={o.usulan_perbaikan} tunda={250} />
         </p>
       )}
@@ -108,19 +110,20 @@ function IsiKritikus({ o }: { o: Record<string, any> }) {
 }
 
 function IsiPenjawab({ o, kunci }: { o: Record<string, any>; kunci?: string }) {
+  const d = useTeks().telaah.debat;
   const jawab = o.jawaban_pilihan;
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--ink)]">
         <span>
-          Menjawab <span className="font-mono font-bold border border-[var(--line-strong)] px-1.5">{jawab || "-"}</span>
+          {d.menjawab} <span className="font-mono font-bold border border-[var(--line-strong)] px-1.5">{jawab || "-"}</span>
         </span>
         {o.tingkat_keyakinan != null && (
-          <span className="font-mono text-xs text-[var(--ink-muted)]">keyakinan {o.tingkat_keyakinan}/5</span>
+          <span className="font-mono text-xs text-[var(--ink-muted)]">{d.keyakinan(o.tingkat_keyakinan)}</span>
         )}
         {kunci && jawab && (
           <span className="text-xs font-semibold" style={{ color: jawab === kunci ? "#1F6B3A" : "#A4262C" }}>
-            {jawab === kunci ? "Sesuai kunci" : `Tidak sesuai kunci (${kunci})`}
+            {jawab === kunci ? d.sesuaiKunci : d.tidakSesuaiKunci(kunci)}
           </span>
         )}
       </div>
@@ -134,11 +137,13 @@ function IsiPenjawab({ o, kunci }: { o: Record<string, any>; kunci?: string }) {
 }
 
 function IsiArbiter({ o }: { o: Record<string, any> }) {
-  const v = VERDICT[o.verdict] ?? { label: o.verdict || "-", warna: "#5A6070" };
+  const d = useTeks().telaah.debat;
+  const labelPutusan: Record<string, string> = d.putusanLabel;
+  const v = { label: labelPutusan[o.verdict] ?? (o.verdict || "-"), warna: WARNA_VERDICT[o.verdict] ?? "#5A6070" };
   return (
     <div className="space-y-2">
       <p className="flex items-center gap-2 text-sm">
-        <span className="text-[var(--ink-muted)]">Putusan:</span>
+        <span className="text-[var(--ink-muted)]">{d.putusan}</span>
         <span className="font-semibold" style={{ color: v.warna }}>
           {v.label}
         </span>
@@ -152,11 +157,11 @@ function IsiArbiter({ o }: { o: Record<string, any> }) {
         <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs text-[var(--ink-muted)]">
           {o.level_bloom_final && (
             <span>
-              level <span className="font-semibold text-[var(--accent)]">{o.level_bloom_final}</span>
+              {d.level} <span className="font-semibold text-[var(--accent)]">{o.level_bloom_final}</span>
             </span>
           )}
-          {o.bobot_poin_final != null && <span>bobot {o.bobot_poin_final}</span>}
-          {o.prediksi_kesukaran_final != null && <span>kesukaran {o.prediksi_kesukaran_final}</span>}
+          {o.bobot_poin_final != null && <span>{d.bobot} {o.bobot_poin_final}</span>}
+          {o.prediksi_kesukaran_final != null && <span>{d.kesukaran} {o.prediksi_kesukaran_final}</span>}
         </div>
       )}
     </div>
@@ -164,6 +169,8 @@ function IsiArbiter({ o }: { o: Record<string, any> }) {
 }
 
 export default function DebatLivePage({ params }: { params: Promise<{ butirId: string }> }) {
+  const t = useTeks().telaah;
+  const d = t.debat;
   const { butirId } = use(params);
   const [data, setData] = useState<DebatLive | null>(null);
   const [galat, setGalat] = useState("");
@@ -193,7 +200,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
       await apiFetch("/api/arsip", { method: "POST", body: JSON.stringify({ butir_id: butirId, ronde: r }) });
       setDiarsipkan((s) => new Set(s).add(r));
     } catch (err: any) {
-      setGalatArsip(err.message || "Gagal menyimpan ke Arsip.");
+      setGalatArsip(err.message || d.gagalArsip);
     } finally {
       setSedangSimpan(null);
     }
@@ -201,24 +208,24 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
 
   const muat = useCallback(async () => {
     try {
-      const d: DebatLive = await apiFetch(`/api/butir/${butirId}/debat-live`);
-      setIdAwal((sebelumnya) => sebelumnya ?? new Set(d.pesan.map((p) => p.id)));
-      setData(d);
+      const hasil: DebatLive = await apiFetch(`/api/butir/${butirId}/debat-live`);
+      setIdAwal((sebelumnya) => sebelumnya ?? new Set(hasil.pesan.map((p) => p.id)));
+      setData(hasil);
       setGalat("");
-      return d;
+      return hasil;
     } catch (err: any) {
-      setGalat(err.message || "Gagal memuat debat.");
+      setGalat(err.message || d.gagalMemuat);
       return null;
     }
-  }, [butirId]);
+  }, [butirId, d.gagalMemuat]);
 
   useEffect(() => {
     let aktif = true;
     let timer: ReturnType<typeof setTimeout>;
     const putar = async () => {
-      const d = await muat();
+      const hasil = await muat();
       if (!aktif) return;
-      if (d === null || prosesBerjalan(d.status)) {
+      if (hasil === null || prosesBerjalan(hasil.status)) {
         timer = setTimeout(putar, JEDA_MS);
       } else {
         window.dispatchEvent(new Event("generation_status_changed"));
@@ -247,16 +254,16 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
   if (data?.sedang_berpikir && !perRonde.has(data.sedang_berpikir.ronde)) perRonde.set(data.sedang_berpikir.ronde, []);
   const ronde = Array.from(perRonde.keys()).sort((a, b) => a - b);
 
-  const penyebab = data?.status === "tertunda" ? ringkasPenyebab(data.alasan_tertunda) : null;
+  const penyebab = data?.status === "tertunda" ? ringkasPenyebab(data.alasan_tertunda, t.penyebab) : null;
 
   return (
     <div>
       <PageHeader
-        title="Debat Live"
-        description="Pantau keempat agen berdebat soal ini langsung saat prosesnya berjalan. Halaman diperbarui otomatis."
+        title={d.judul}
+        description={d.deskripsi}
         breadcrumb={[
-          { label: "Generasi", href: data ? `/generasi/${data.kisi_kisi_id}` : undefined },
-          { label: "Debat Live" },
+          { label: d.breadcrumbGenerasi, href: data ? `/generasi/${data.kisi_kisi_id}` : undefined },
+          { label: d.judul },
         ]}
         action={
           data && (
@@ -276,13 +283,13 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
       )}
 
       {!data ? (
-        !galat && <p className="font-mono text-xs text-[var(--ink-muted)]">Memuat debat...</p>
+        !galat && <p className="font-mono text-xs text-[var(--ink-muted)]">{d.memuat}</p>
       ) : (
         <div className="max-w-3xl space-y-8">
           {data.menunggu_giliran && (
             <div className="pesan-muncul flex items-center gap-3 border border-dashed border-[var(--line-strong)] bg-[var(--surface)] px-4 py-4 text-sm text-[var(--ink-muted)]">
               <TigaTitik />
-              <span>Menunggu giliran. Soal lain dalam kisi-kisi ini sedang ditelaah, debat dimulai begitu giliran tiba.</span>
+              <span>{d.menungguGiliran}</span>
             </div>
           )}
 
@@ -298,9 +305,9 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
               r < data.ronde_saat_ini &&
               putusan !== "diterima";
             return (
-              <section key={r} aria-label={`Ronde ${r}`} className="space-y-4">
+              <section key={r} aria-label={t.umum.ronde(r)} className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <h2 className="font-serif text-lg font-normal text-[var(--ink)]">Ronde {r}</h2>
+                  <h2 className="font-serif text-lg font-normal text-[var(--ink)]">{t.umum.ronde(r)}</h2>
                   <span aria-hidden="true" className="h-px flex-1 bg-[var(--line-strong)]" />
                 </div>
 
@@ -319,9 +326,9 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
                   <div className="flex flex-wrap items-center gap-3 border border-dashed border-[var(--line-strong)] px-4 py-2.5 text-xs text-[var(--ink-muted)]">
                     {diarsipkan.has(r) ? (
                       <>
-                        <span className="font-medium text-[#1F6B3A]">Soal ronde {r} tersimpan di Arsip.</span>
+                        <span className="font-medium text-[#1F6B3A]">{d.tersimpanDiArsip(r)}</span>
                         <Link href="/arsip" className="underline underline-offset-4 text-[var(--accent)]">
-                          Buka Arsip Soal
+                          {d.bukaArsipSoal}
                         </Link>
                       </>
                     ) : (
@@ -333,9 +340,9 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
                           disabled={sedangSimpan === r}
                           onClick={() => simpanKeArsip(r)}
                         >
-                          {sedangSimpan === r ? "Menyimpan..." : "Simpan ke Arsip"}
+                          {sedangSimpan === r ? t.umum.menyimpan : d.simpanKeArsip}
                         </Button>
-                        <span>Ronde ini belum diterima. Soal dan jawaban Penjawab Buta-nya bisa Anda simpan tanpa level Bloom, atau dibiarkan saja.</span>
+                        <span>{d.rondeBelumDiterima}</span>
                       </>
                     )}
                   </div>
@@ -345,8 +352,8 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
                   <div className="pesan-muncul flex items-center gap-3 px-1 py-1 text-sm text-[var(--ink-muted)]" role="status">
                     <TigaTitik />
                     <span>
-                      <span className="font-medium text-[var(--ink)]">{daftarNama(berpikir.agen)}</span>{" "}
-                      {berpikir.agen.length > 1 ? "sedang bekerja bersamaan" : AGEN[berpikir.agen[0]]?.kegiatan}
+                      <span className="font-medium text-[var(--ink)]">{daftarNama(d, berpikir.agen)}</span>{" "}
+                      {berpikir.agen.length > 1 ? d.bekerjaBersamaan : infoAgen(d, berpikir.agen[0])?.kegiatan}
                     </span>
                   </div>
                 )}
@@ -356,25 +363,25 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
 
           {data.status === "diterima" && (
             <div className="pesan-muncul text-sm text-[#1F6B3A]">
-              Debat selesai: butir diterima dan masuk ke{" "}
+              {d.selesaiDiterimaAwal}{" "}
               <Link href="/bank-soal" className="underline underline-offset-4 font-medium">
-                Bank Soal
+                {d.bankSoal}
               </Link>
-              . Hanya ronde sebelum ronde penerimaan yang bisa disimpan ke Arsip, dan hanya lewat Riwayat Diterima.
+              {d.selesaiDiterimaAkhir}
             </div>
           )}
           {data.status === "ditandai" && (
             <div className="pesan-muncul border border-[#8A5A00]/30 bg-[#FBF1D9] px-4 py-3 text-sm text-[#8A5A00]">
-              Debat selesai tanpa kesepakatan, jadi butir ditandai untuk Anda tinjau di{" "}
+              {d.selesaiDitandaiAwal}{" "}
               <Link href={`/butir-ditandai/${data.butir_id}`} className="underline underline-offset-4 font-medium">
-                Butir Ditandai
+                {d.butirDitandai}
               </Link>
-              .
+              {d.selesaiDitandaiAkhir}
             </div>
           )}
           {data.status === "ditolak" && (
             <div className="pesan-muncul text-sm text-[#A4262C]">
-              Debat selesai: butir ditolak oleh Arbiter.
+              {d.selesaiDitolak}
             </div>
           )}
           {penyebab && (
@@ -382,7 +389,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
               <span className="font-medium">{penyebab.judul}.</span>{" "}
               {penyebab.saran && <span className="text-[var(--ink-muted)]">{penyebab.saran}</span>}{" "}
               <Link href="/butir-tertunda" className="underline underline-offset-4 text-[var(--accent)]">
-                Buka Butir Tertunda
+                {d.bukaButirTertunda}
               </Link>
             </div>
           )}
