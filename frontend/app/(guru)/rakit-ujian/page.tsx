@@ -17,6 +17,7 @@ import KelompokLipat, { useBukaTutup } from "@/components/ui/KelompokLipat";
 import { KelompokBank, kelompokkan } from "@/lib/kelompokBank";
 import EmptyState from "@/components/ui/EmptyState";
 import MathText from "@/components/ui/MathText";
+import { useTeks } from "@/lib/teks";
 
 const BLOOM_LEVELS = ["C1", "C2", "C3", "C4", "C5", "C6"];
 
@@ -33,6 +34,7 @@ interface RakitInfo {
 }
 
 export default function RakitUjianPage() {
+  const t = useTeks().ujian;
   const router = useRouter();
   const [butirList, setButirList] = useState<ButirSoal[]>([]);
   const [kelompokList, setKelompokList] = useState<KelompokBank[]>([]);
@@ -124,7 +126,7 @@ export default function RakitUjianPage() {
       setSelectedIds(hasil.butir_ids);
       setRakitInfo(hasil);
     } catch (err: any) {
-      setError(err.message || "Gagal merakit paket otomatis.");
+      setError(err.message || t.rakit.otomatis.galat);
     } finally {
       setRakitLoading(false);
     }
@@ -154,7 +156,7 @@ export default function RakitUjianPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (selectedIds.length === 0) {
-      setError("Pilih minimal satu butir soal dari bank soal.");
+      setError(t.rakit.pilihMin1);
       return;
     }
     setError("");
@@ -170,7 +172,7 @@ export default function RakitUjianPage() {
       });
       router.push(`/ujian/${ujian.id}`);
     } catch (err: any) {
-      setError(err.message || "Gagal membuat paket ujian.");
+      setError(err.message || t.rakit.galatBuat);
     } finally {
       setLoading(false);
     }
@@ -179,19 +181,19 @@ export default function RakitUjianPage() {
   return (
     <div>
       <PageHeader
-        title="Rakit Paket Ujian"
-        description="Pilih butir soal yang telah tervalidasi dan tetapkan konfigurasi durasi pelaksanaan ujian."
+        title={t.rakit.judul}
+        description={t.rakit.deskripsi}
       />
 
       {!siap ? (
-        <p className="font-mono text-xs text-[var(--ink-muted)]">Memuat...</p>
+        <p className="font-mono text-xs text-[var(--ink-muted)]">{t.rakit.memuat}</p>
       ) : butirList.length === 0 && arsipList.length === 0 ? (
         <EmptyState
-          title="Bank soal kosong"
-          description="Anda memerlukan setidaknya satu butir soal yang telah disetujui untuk merakit paket ujian."
+          title={t.rakit.bankKosongJudul}
+          description={t.rakit.bankKosongDeskripsi}
           action={
             <Link href="/kisi-kisi">
-              <Button size="sm">Buat Kisi-kisi & Butir Soal</Button>
+              <Button size="sm">{t.rakit.buatKisiKisi}</Button>
             </Link>
           }
         />
@@ -200,27 +202,27 @@ export default function RakitUjianPage() {
           
           <div className="border border-[var(--line)] bg-[var(--surface)] p-5 space-y-4">
             <h2 className="font-serif text-lg font-normal text-[var(--ink)]">
-              Konfigurasi Naskah Ujian
+              {t.rakit.konfigurasi.judul}
             </h2>
 
             <Input
-              label="Judul Paket Ujian"
+              label={t.rakit.konfigurasi.labelJudul}
               value={judul}
               onChange={(e) => setJudul(e.target.value)}
-              placeholder="Contoh: Penilaian Akhir Semester - Fisika Terapan"
-              helper="Judul akan tampil pada lembar pengerjaan peserta"
+              placeholder={t.rakit.konfigurasi.placeholderJudul}
+              helper={t.rakit.konfigurasi.bantuanJudul}
               required
             />
 
             <div className="w-36">
               <Input
-                label="Durasi (Menit)"
+                label={t.rakit.konfigurasi.labelDurasi}
                 type="number"
                 min={5}
                 max={240}
                 value={durasi}
                 onChange={(e) => setDurasi(parseInt(e.target.value) || 60)}
-                helper="5 - 240 menit"
+                helper={t.rakit.konfigurasi.bantuanDurasi}
                 className="font-mono tabular-nums"
                 required
               />
@@ -230,17 +232,16 @@ export default function RakitUjianPage() {
           <div className="border border-[var(--line)] bg-[var(--surface)] p-5 space-y-4">
             <div>
               <h2 className="font-serif text-lg font-normal text-[var(--ink)]">
-                Rakit Otomatis
+                {t.rakit.otomatis.judul}
               </h2>
               <p className="text-xs text-[var(--ink-muted)] mt-0.5">
-                Sistem memilihkan butir dari bank soal (tanpa soal Arsip) sesuai jumlah dan distribusi Bloom.
-                Hasilnya masih bisa diubah manual di bawah.
+                {t.rakit.otomatis.deskripsi}
               </p>
             </div>
 
             <div className="w-36">
               <Input
-                label="Jumlah Butir"
+                label={t.rakit.otomatis.jumlahButir}
                 type="number"
                 min={1}
                 max={Math.max(butirList.length, 1)}
@@ -252,21 +253,21 @@ export default function RakitUjianPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4">
               <Input
-                label="Cakupan Bab (opsional)"
+                label={t.rakit.otomatis.labelCakupan}
                 value={cakupanPaket}
                 onChange={(e) => setCakupanPaket(e.target.value)}
-                placeholder="Misal: Hukum Newton, bidang miring"
-                helper="Butir yang cocok dengan kata kunci ini didahulukan"
+                placeholder={t.rakit.otomatis.placeholderCakupan}
+                helper={t.rakit.otomatis.bantuanCakupan}
                 maxLength={2000}
               />
               <Input
-                label="Target Total Bobot (opsional)"
+                label={t.rakit.otomatis.labelTarget}
                 type="number"
                 min={1}
                 value={targetBobot}
                 onChange={(e) => setTargetBobot(e.target.value)}
-                placeholder="Misal: 100"
-                helper="Butir ditukar agar mendekati angka ini"
+                placeholder={t.rakit.otomatis.placeholderTarget}
+                helper={t.rakit.otomatis.bantuanTarget}
                 className="font-mono tabular-nums"
               />
             </div>
@@ -274,7 +275,7 @@ export default function RakitUjianPage() {
             <div>
               <div className="flex items-baseline justify-between mb-2">
                 <span className="text-sm font-medium text-[var(--ink)]">
-                  Distribusi Bloom (%)
+                  {t.rakit.otomatis.distribusiBloom}
                 </span>
                 <div className="flex items-center gap-4">
                   <button
@@ -283,14 +284,14 @@ export default function RakitUjianPage() {
                     onClick={() => setBloom({ C1: 0, C2: 0, C3: 0, C4: 0, C5: 0, C6: 0 })}
                     className="font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
                   >
-                    Kosongkan semua
+                    {t.rakit.otomatis.kosongkanSemua}
                   </button>
                   <span
                     className={`font-mono text-xs tabular-nums ${
                       totalBloom === 100 ? "text-[#1F6B3A]" : "text-[#A4262C]"
                     }`}
                   >
-                    Total: {totalBloom}%
+                    {t.rakit.otomatis.total(totalBloom)}
                   </span>
                 </div>
               </div>
@@ -308,12 +309,12 @@ export default function RakitUjianPage() {
                       />
                       <span className="font-mono text-xs font-semibold text-[var(--accent)]">{lv}</span>
                       <span
-                        title={`${tersedia[lv] ?? 0} butir tersedia`}
+                        title={t.rakit.otomatis.tersedia(tersedia[lv] ?? 0)}
                         className="min-w-[22px] border border-[var(--line-strong)] rounded bg-[var(--canvas)] px-1.5 text-center font-mono text-[11px] leading-[18px] tabular-nums text-[var(--ink)]"
                       >
                         {tersedia[lv] ?? 0}
                       </span>
-                      <span className="font-mono text-[11px] text-[var(--ink-muted)]">butir</span>
+                      <span className="font-mono text-[11px] text-[var(--ink-muted)]">{t.rakit.otomatis.butir}</span>
                     </span>
                     <input
                       type="number"
@@ -339,13 +340,13 @@ export default function RakitUjianPage() {
               onClick={handleRakitOtomatis}
               disabled={rakitLoading || totalBloom !== 100}
             >
-              {rakitLoading ? "Merakit..." : "Rakit Otomatis"}
+              {rakitLoading ? t.rakit.otomatis.tombolProses : t.rakit.otomatis.tombol}
             </Button>
 
             {rakitInfo && (
               <div className="border border-[var(--line)] bg-[var(--canvas)] p-3 text-xs space-y-1.5">
                 <div className="font-mono tabular-nums text-[var(--ink)]">
-                  {rakitInfo.butir_ids.length} butir terpilih · total bobot {rakitInfo.total_bobot}
+                  {t.rakit.hasil.terpilih(rakitInfo.butir_ids.length, rakitInfo.total_bobot)}
                 </div>
                 <div className="font-mono tabular-nums text-[var(--ink-muted)]">
                   <BloomText
@@ -364,10 +365,13 @@ export default function RakitUjianPage() {
                     }`}
                   >
                     {rakitInfo.selisih_bobot === 0
-                      ? `Total bobot tepat ${rakitInfo.target_bobot}.`
-                      : `Total bobot ${rakitInfo.total_bobot} dari target ${rakitInfo.target_bobot} (${
-                          rakitInfo.selisih_bobot > 0 ? "lebih" : "kurang"
-                        } ${Math.abs(rakitInfo.selisih_bobot)}); kombinasi butir yang ada tidak bisa lebih dekat.`}
+                      ? t.rakit.hasil.bobotTepat(rakitInfo.target_bobot)
+                      : t.rakit.hasil.bobotMeleset(
+                          rakitInfo.total_bobot,
+                          rakitInfo.target_bobot,
+                          rakitInfo.selisih_bobot > 0,
+                          Math.abs(rakitInfo.selisih_bobot),
+                        )}
                   </div>
                 )}
                 {rakitInfo.ada_cakupan && (
@@ -378,28 +382,27 @@ export default function RakitUjianPage() {
                         : "text-[#8A5A00]"
                     }`}
                   >
-                    {rakitInfo.cocok_cakupan} dari {rakitInfo.butir_ids.length} butir cocok dengan cakupan bab
+                    {t.rakit.hasil.cakupanCocok(rakitInfo.cocok_cakupan, rakitInfo.butir_ids.length)}
                     {rakitInfo.cocok_cakupan < rakitInfo.butir_ids.length &&
-                      "; bank soal kekurangan butir untuk cakupan ini."}
+                      t.rakit.hasil.cakupanKurang}
                   </div>
                 )}
                 {(Object.keys(rakitInfo.kekurangan).length > 0 || rakitInfo.kurang_total > 0) && (
                   <div className="p-2 rounded bg-[#FBF1D9] border border-[#8A5A00]/30 text-[#8A5A00]">
                     {Object.keys(rakitInfo.kekurangan).length > 0 && (
                       <div>
-                        Bank soal kurang untuk{" "}
+                        {t.rakit.hasil.bankKurangUntuk}{" "}
                         <BloomText
                           text={Object.entries(rakitInfo.kekurangan)
-                            .map(([lv, n]) => `${lv} (kurang ${n})`)
+                            .map(([lv, n]) => t.rakit.hasil.levelKurang(lv, n))
                             .join(", ")}
                         />
-                        ; kuotanya diisi dari level lain.
+                        {t.rakit.hasil.kuotaDariLain}
                       </div>
                     )}
                     {rakitInfo.kurang_total > 0 && (
                       <div>
-                        Paket kurang {rakitInfo.kurang_total} butir dari target. Jalankan
-                        generasi butir baru dari menu Kisi-kisi.
+                        {t.rakit.hasil.paketKurang(rakitInfo.kurang_total)}
                       </div>
                     )}
                   </div>
@@ -412,11 +415,10 @@ export default function RakitUjianPage() {
             <div className="flex flex-col gap-3 pb-3 mb-3 border-b border-[var(--line)] sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-sm font-medium text-[var(--ink)] block">
-                  Pilih Butir Soal
+                  {t.rakit.pilih.judul}
                 </span>
                 <span className="text-xs text-[var(--ink-muted)] font-mono tabular-nums">
-                  Terpilih: {selectedIds.length} dari {butirList.length + arsipList.length} butir · total bobot{" "}
-                  {totalBobotTerpilih}
+                  {t.rakit.pilih.terpilih(selectedIds.length, butirList.length + arsipList.length, totalBobotTerpilih)}
                 </span>
               </div>
               <Button
@@ -428,20 +430,20 @@ export default function RakitUjianPage() {
                 {(() => {
                   const tampil = sumber === "arsip" ? arsipTampil : butirTampil;
                   return tampil.length > 0 && tampil.every((b) => selectedIds.includes(b.id))
-                    ? "Batal Pilih Semua"
+                    ? t.rakit.pilih.batalPilihSemua
                     : sedangMenyaring
-                      ? `Pilih Semua (${tampil.length})`
-                      : "Pilih Semua";
+                      ? t.rakit.pilih.pilihSemuaN(tampil.length)
+                      : t.rakit.pilih.pilihSemua;
                 })()}
               </Button>
             </div>
 
             <div className="mb-3">
-            <div role="tablist" aria-label="Sumber butir" className="inline-flex border border-[var(--line-strong)]">
+            <div role="tablist" aria-label={t.rakit.pilih.sumber} className="inline-flex border border-[var(--line-strong)]">
               {(
                 [
-                  ["bank", `Bank Soal (${butirList.length})`],
-                  ["arsip", `Pilih dari Arsip (${arsipList.length})`],
+                  ["bank", t.rakit.pilih.tabBank(butirList.length)],
+                  ["arsip", t.rakit.pilih.tabArsip(arsipList.length)],
                 ] as const
               ).map(([nilai, label]) => (
                 <button
@@ -477,14 +479,14 @@ export default function RakitUjianPage() {
                   <p className="px-4 py-8 text-center font-sans text-sm text-[var(--ink-muted)]">
                     {arsipList.length === 0 ? (
                       <>
-                        Arsip masih kosong. Simpan soal dari ronde awal butir diterima lewat{" "}
+                        {t.rakit.pilih.arsipKosongAwal}{" "}
                         <Link href="/riwayat-diterima" className="underline underline-offset-4 text-[var(--accent)]">
-                          Riwayat Diterima
+                          {t.rakit.pilih.riwayatDiterima}
                         </Link>
                         .
                       </>
                     ) : (
-                      "Tidak ada soal arsip yang cocok dengan filter."
+                      t.rakit.pilih.arsipTakCocok
                     )}
                   </p>
                 )}
@@ -511,7 +513,7 @@ export default function RakitUjianPage() {
                               }}
                               className="ml-auto text-[11px] font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
                             >
-                              {isPreview ? "Tutup" : "Pratinjau"}
+                              {isPreview ? t.rakit.pilih.tutup : t.rakit.pilih.pratinjau}
                             </button>
                           </div>
                           <p
@@ -546,7 +548,7 @@ export default function RakitUjianPage() {
             <div className={`daftar-gulir space-y-3 sm:pr-1 ${sumber === "arsip" ? "hidden" : ""}`}>
               {grup.length === 0 && (
                 <p className="border border-dashed border-[var(--line-strong)] px-4 py-8 text-center font-sans text-sm text-[var(--ink-muted)]">
-                  Tidak ada butir yang cocok dengan filter.
+                  {t.rakit.pilih.butirTakCocok}
                 </p>
               )}
               {grup.map((g) => {
@@ -565,7 +567,7 @@ export default function RakitUjianPage() {
                         <span className="font-mono tabular-nums text-[var(--accent)]">
                           {idsGrup.filter((id) => selectedIds.includes(id)).length}
                         </span>{" "}
-                        dipilih
+                        {t.rakit.pilih.dipilih}
                       </span>
                     }
                     aksi={
@@ -574,7 +576,7 @@ export default function RakitUjianPage() {
                         onClick={() => pilihKelompok(idsGrup)}
                         className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none"
                       >
-                        {semuaTerpilih ? "Batal pilih kelompok" : "Pilih kelompok"}
+                        {semuaTerpilih ? t.rakit.pilih.batalPilihKelompok : t.rakit.pilih.pilihKelompok}
                       </button>
                     }
                   >
@@ -604,7 +606,7 @@ export default function RakitUjianPage() {
                             }}
                             className="ml-auto text-[11px] text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
                           >
-                            {isPreview ? "Tutup" : "Pratinjau"}
+                            {isPreview ? t.rakit.pilih.tutup : t.rakit.pilih.pratinjau}
                           </button>
                         </div>
                         <p
@@ -656,7 +658,7 @@ export default function RakitUjianPage() {
               disabled={loading || selectedIds.length === 0}
               size="lg"
             >
-              {loading ? "Menyusun Paket..." : "Terbitkan Draft Paket Ujian"}
+              {loading ? t.rakit.terbitkanProses : t.rakit.terbitkan}
             </Button>
           </div>
         </form>

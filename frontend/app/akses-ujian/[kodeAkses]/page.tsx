@@ -7,12 +7,14 @@ import { ambilToken, headerPeserta, simpanToken } from "@/lib/peserta";
 import { SoalUjian } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import MathText from "@/components/ui/MathText";
+import { useTeks } from "@/lib/teks";
 
 export default function UjianSiswaPage({
   params,
 }: {
   params: Promise<{ kodeAkses: string }>;
 }) {
+  const t = useTeks().ujian;
   const resolvedParams = use(params);
   const kodeAkses = resolvedParams.kodeAkses;
   const router = useRouter();
@@ -35,7 +37,7 @@ export default function UjianSiswaPage({
   async function handleMasuk(e: React.FormEvent) {
     e.preventDefault();
     if (!namaSiswa.trim()) {
-      setError("Silakan isi nama lengkap terlebih dahulu.");
+      setError(t.siswa.isiNama);
       return;
     }
     setError("");
@@ -65,7 +67,7 @@ export default function UjianSiswaPage({
       setJawaban(soalData.jawaban_tersimpan || {});
       setStep("ujian");
     } catch (err: any) {
-      setError(err.message || "Kode akses tidak valid atau ujian belum aktif.");
+      setError(err.message || t.siswa.kodeTidakValid);
     } finally {
       setLoading(false);
     }
@@ -86,10 +88,10 @@ export default function UjianSiswaPage({
         `/akses-ujian/${kodeAkses}/hasil?nama=${encodeURIComponent(namaSiswa)}`
       );
     } catch (err: any) {
-      setError(err.message || "Gagal mengumpulkan lembar ujian.");
+      setError(err.message || t.siswa.galatKumpul);
       setSubmitted(false);
     }
-  }, [kodeAkses, namaSiswa, submitted, router]);
+  }, [kodeAkses, namaSiswa, submitted, router, t]);
 
   useEffect(() => {
     if (step !== "ujian" || !waktuSelesai || submitted) return;
@@ -122,7 +124,7 @@ export default function UjianSiswaPage({
       setGalatSimpan("");
     } catch (err: any) {
       setGalatSimpan(
-        err?.message ? `Jawaban belum tersimpan: ${err.message}` : "Jawaban belum tersimpan. Periksa koneksi Anda."
+        err?.message ? t.siswa.belumTersimpanDengan(err.message) : t.siswa.belumTersimpan
       );
     }
   }
@@ -144,16 +146,16 @@ export default function UjianSiswaPage({
         <div className="w-full max-w-sm border border-[var(--line)] bg-[var(--surface)] p-8">
           <div className="text-center mb-6">
             <span className="font-serif text-2xl font-medium tracking-tight text-[var(--ink)] block">
-              BUTIR
+              {t.siswa.brand}
             </span>
             <span className="text-xs text-[var(--ink-muted)] block mt-0.5 font-sans">
-              Lembar Pengerjaan Peserta
+              {t.siswa.lembarPengerjaan}
             </span>
           </div>
 
           <div className="border border-[var(--line)] bg-[var(--canvas)] p-3 text-center mb-5">
             <span className="text-xs font-sans text-[var(--ink-muted)] block mb-1">
-              Kode Akses Naskah
+              {t.siswa.kodeAksesNaskah}
             </span>
             <span className="font-mono text-2xl font-bold tracking-[0.2em] text-[var(--ink)] block pl-[0.2em]">
               {kodeAkses}
@@ -166,14 +168,14 @@ export default function UjianSiswaPage({
                 htmlFor="nama"
                 className="text-xs font-medium text-[var(--ink)] font-sans"
               >
-                Nama Lengkap Peserta
+                {t.siswa.namaLengkap}
               </label>
               <input
                 id="nama"
                 type="text"
                 value={namaSiswa}
                 onChange={(e) => setNamaSiswa(e.target.value)}
-                placeholder="Masukkan nama lengkap Anda"
+                placeholder={t.siswa.placeholderNama}
                 className="bg-[var(--canvas)] border border-[var(--line-strong)] rounded px-3 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-muted)]/60 focus:outline-none focus:border-[var(--accent)]"
                 autoComplete="name"
                 required
@@ -191,12 +193,12 @@ export default function UjianSiswaPage({
               disabled={loading}
               className="w-full min-h-[44px] mt-2 text-sm"
             >
-              {loading ? "Menyiapkan Naskah..." : "Mulai Pengerjaan Ujian"}
+              {loading ? t.siswa.menyiapkan : t.siswa.mulai}
             </Button>
           </form>
 
           <p className="text-[11px] text-[var(--ink-muted)] text-center mt-6">
-            Pastikan koneksi internet stabil selama sesi ujian berlangsung.
+            {t.siswa.koneksi}
           </p>
         </div>
       </div>
@@ -230,7 +232,7 @@ export default function UjianSiswaPage({
             {timeLeft !== null && (
               <div
                 className={`font-mono text-xs font-semibold px-2.5 py-1 rounded border tabular-nums ${timerClass}`}
-                aria-label={`Sisa waktu pengerjaan: ${formatTimer(timeLeft)}`}
+                aria-label={t.siswa.sisaWaktu(formatTimer(timeLeft))}
               >
                 {formatTimer(timeLeft)}
               </div>
@@ -241,7 +243,7 @@ export default function UjianSiswaPage({
               onClick={() => setShowConfirmModal(true)}
               className="text-xs min-h-[36px]"
             >
-              Kumpulkan
+              {t.siswa.kumpulkan}
             </Button>
           </div>
         </div>
@@ -253,15 +255,15 @@ export default function UjianSiswaPage({
             role="alert"
             className="mb-4 text-xs leading-relaxed text-[#A4262C]"
           >
-            {galatSimpan} Pilih ulang jawabannya setelah koneksi pulih agar tersimpan.
+            {galatSimpan} {t.siswa.pilihUlang}
           </div>
         )}
         
         <div className="mb-6 pb-4 border-b border-[var(--line)]">
           <div className="flex items-center justify-between text-xs text-[var(--ink-muted)] mb-2.5 font-mono">
-            <span>Daftar Butir Soal</span>
+            <span>{t.siswa.daftarButir}</span>
             <span className="tabular-nums">
-              {totalTerjawab}/{soalList.length} Terjawab
+              {t.siswa.terjawabDari(totalTerjawab, soalList.length)}
             </span>
           </div>
 
@@ -281,9 +283,7 @@ export default function UjianSiswaPage({
                       ? "border border-[var(--line)] bg-[var(--canvas)] text-[var(--ink)]"
                       : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink-muted)]"
                   }`}
-                  aria-label={`Soal nomor ${idx + 1}${
-                    hasAnswer ? " sudah terjawab" : " belum terjawab"
-                  }`}
+                  aria-label={t.siswa.soalNomor(idx + 1, hasAnswer)}
                 >
                   <span className="tabular-nums">{idx + 1}</span>
                   {hasAnswer && !isCurrent && (
@@ -300,9 +300,9 @@ export default function UjianSiswaPage({
             <div>
               <div className="flex items-center justify-between mb-3 text-xs font-mono text-[var(--ink-muted)]">
                 <span>
-                  Butir {currentIdx + 1} dari {soalList.length}
+                  {t.siswa.butirKe(currentIdx + 1, soalList.length)}
                 </span>
-                <span>Pilihan Ganda</span>
+                <span>{t.siswa.pilihanGanda}</span>
               </div>
 
               <div className="mb-6 sm:mb-8">
@@ -353,7 +353,7 @@ export default function UjianSiswaPage({
                 disabled={currentIdx === 0}
                 className="min-h-[44px]"
               >
-                ← Sebelumnya
+                {t.siswa.sebelumnya}
               </Button>
 
               {currentIdx < soalList.length - 1 ? (
@@ -364,7 +364,7 @@ export default function UjianSiswaPage({
                   }
                   className="min-h-[44px]"
                 >
-                  Selanjutnya
+                  {t.siswa.selanjutnya}
                 </Button>
               ) : (
                 <Button
@@ -373,7 +373,7 @@ export default function UjianSiswaPage({
                   onClick={() => setShowConfirmModal(true)}
                   className="min-h-[44px]"
                 >
-                  Selesai & Kumpulkan
+                  {t.siswa.selesaiKumpulkan}
                 </Button>
               )}
             </div>
@@ -388,35 +388,35 @@ export default function UjianSiswaPage({
             style={{ boxShadow: "var(--shadow-overlay)" }}
           >
             <h2 className="font-serif text-xl font-normal text-[var(--ink)] mb-2">
-              Kumpulkan Lembar Ujian?
+              {t.siswa.konfirmasi.judul}
             </h2>
 
             <div className="border border-[var(--line)] bg-[var(--surface)] p-3.5 my-4 text-xs font-mono space-y-1">
               <div className="flex justify-between">
-                <span className="text-[var(--ink-muted)]">Soal Terjawab:</span>
+                <span className="text-[var(--ink-muted)]">{t.siswa.konfirmasi.soalTerjawab}</span>
                 <span className="font-medium text-[var(--ink)] tabular-nums">
-                  {totalTerjawab} dari {soalList.length}
+                  {t.siswa.konfirmasi.terjawabDari(totalTerjawab, soalList.length)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[var(--ink-muted)]">Belum Terjawab:</span>
+                <span className="text-[var(--ink-muted)]">{t.siswa.konfirmasi.belumTerjawab}</span>
                 <span
                   className={`font-medium tabular-nums ${
                     totalBelumDijawab > 0 ? "text-[#A4262C]" : "text-[#1F6B3A]"
                   }`}
                 >
-                  {totalBelumDijawab} butir
+                  {t.siswa.konfirmasi.butir(totalBelumDijawab)}
                 </span>
               </div>
             </div>
 
             {totalBelumDijawab > 0 ? (
               <p className="text-xs text-[#8A5A00] mb-5 leading-relaxed">
-                Peringatan: Masih terdapat {totalBelumDijawab} butir soal yang belum Anda jawab. Jawaban yang belum terisi akan dihitung salah.
+                {t.siswa.konfirmasi.peringatan(totalBelumDijawab)}
               </p>
             ) : (
               <p className="text-xs text-[var(--ink-muted)] mb-5 leading-relaxed">
-                Semua butir soal telah terisi. Setelah dikumpulkan, Anda tidak dapat mengubah jawaban lagi.
+                {t.siswa.konfirmasi.semuaTerisi}
               </p>
             )}
 
@@ -426,7 +426,7 @@ export default function UjianSiswaPage({
                 size="sm"
                 onClick={() => setShowConfirmModal(false)}
               >
-                Lanjutkan Mengerjakan
+                {t.siswa.konfirmasi.lanjutkan}
               </Button>
               <Button
                 variant="primary"
@@ -434,7 +434,7 @@ export default function UjianSiswaPage({
                 onClick={handleSubmit}
                 disabled={submitted}
               >
-                {submitted ? "Mengirim..." : "Ya, Kumpulkan Jawaban"}
+                {submitted ? t.siswa.konfirmasi.mengirim : t.siswa.konfirmasi.ya}
               </Button>
             </div>
           </div>

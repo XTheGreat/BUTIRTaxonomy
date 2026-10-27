@@ -9,12 +9,14 @@ import Button from "@/components/ui/Button";
 import BloomChip from "@/components/ui/BloomChip";
 import { PackageOpen } from "lucide-react";
 import MathText from "@/components/ui/MathText";
+import { useTeks } from "@/lib/teks";
 
 export default function LaporanPage({
   params,
 }: {
   params: Promise<{ ujianId: string }>;
 }) {
+  const t = useTeks().ujian;
   const resolvedParams = use(params);
   const ujianId = resolvedParams.ujianId;
 
@@ -33,7 +35,7 @@ export default function LaporanPage({
   if (loading) {
     return (
       <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-        Mengompilasi laporan analisis butir empiris...
+        {t.laporan.memuat}
       </div>
     );
   }
@@ -41,7 +43,7 @@ export default function LaporanPage({
   if (!laporan) {
     return (
       <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-        Laporan belum tersedia atau data peserta belum terkumpul.
+        {t.laporan.belumTersedia}
       </div>
     );
   }
@@ -59,12 +61,12 @@ export default function LaporanPage({
   return (
     <div>
       <PageHeader
-        title={`Laporan Analisis: ${laporan.judul}`}
-        description="Evaluasi empiris tingkat kesukaran prediksi versus aktual serta daya pembeda butir soal."
+        title={t.laporan.judul(laporan.judul)}
+        description={t.laporan.deskripsi}
         action={
           <Link href={`/ujian/${ujianId}`}>
             <Button variant="secondary" size="sm">
-              ← Kembali ke Detail Ujian
+              {t.laporan.kembali}
             </Button>
           </Link>
         }
@@ -73,10 +75,8 @@ export default function LaporanPage({
       {laporan.daya_beda_indikatif && (
         <div className="p-3 mb-4 border border-[#8A5A00]/30 bg-[#FBF1D9] text-xs text-[#8A5A00] leading-relaxed">
           {dayaBedaAda
-            ? `Baru ${laporan.total_peserta} peserta, di bawah ${
-                laporan.min_peserta_bermakna ?? 30
-              } yang dibutuhkan agar daya beda bermakna. Anggap daya beda dan tingkat kesukaran aktual sebagai indikasi awal, bukan nilai final.`
-            : `Baru ${laporan.total_peserta} peserta, terlalu sedikit untuk menghitung daya beda (minimal 4). Hanya tingkat kesukaran yang ditampilkan, dan itu pun indikatif.`}
+            ? t.laporan.peringatanIndikatif(laporan.total_peserta, laporan.min_peserta_bermakna ?? 30)
+            : t.laporan.peringatanSangatSedikit(laporan.total_peserta)}
         </div>
       )}
 
@@ -84,31 +84,31 @@ export default function LaporanPage({
         <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--line)]">
           <div className="p-6">
             <span className="text-xs font-medium text-[var(--ink-muted)] font-sans block mb-1.5">
-              Total Peserta Ujian
+              {t.laporan.ringkasan.totalPeserta}
             </span>
             <div className="font-serif text-4xl font-normal text-[var(--ink)] tabular-nums">
               {laporan.total_peserta}
             </div>
             <p className="text-xs text-[var(--ink-muted)] mt-1.5">
-              Peserta yang telah menyelesaikan lembar ujian
+              {t.laporan.ringkasan.totalPesertaKet}
             </p>
           </div>
 
           <div className="p-6">
             <span className="text-xs font-medium text-[var(--ink-muted)] font-sans block mb-1.5">
-              Jumlah Butir Soal
+              {t.laporan.ringkasan.jumlahButir}
             </span>
             <div className="font-serif text-4xl font-normal text-[var(--ink)] tabular-nums">
               {laporan.analisis_butir.length}
             </div>
             <p className="text-xs text-[var(--ink-muted)] mt-1.5">
-              Butir naskah aktif dalam instrumen evaluasi
+              {t.laporan.ringkasan.jumlahButirKet}
             </p>
           </div>
 
           <div className="p-6">
             <span className="text-xs font-medium text-[var(--ink-muted)] font-sans block mb-1.5">
-              Butir Perlu Ditinjau
+              {t.laporan.ringkasan.perluDitinjau}
             </span>
             <div
               className={`font-serif text-4xl font-normal tabular-nums ${
@@ -118,7 +118,7 @@ export default function LaporanPage({
               {butirPerluTinjau}
             </div>
             <p className="text-xs text-[var(--ink-muted)] mt-1.5">
-              Butir dengan anomali selisih prediksi atau daya beda rendah
+              {t.laporan.ringkasan.perluDitinjauKet}
             </p>
           </div>
         </div>
@@ -127,10 +127,10 @@ export default function LaporanPage({
       <section className="space-y-4">
         <div className="flex items-baseline justify-between border-b border-[var(--line)] pb-2">
           <h2 className="font-serif text-lg font-normal text-[var(--ink)]">
-            Kalibrasi Prediksi vs Aktual
+            {t.laporan.kalibrasi}
           </h2>
           <span className="text-xs text-[var(--ink-muted)] font-mono">
-            {laporan.analisis_butir.length} Butir Naskah
+            {t.laporan.butirNaskah(laporan.analisis_butir.length)}
           </span>
         </div>
 
@@ -142,22 +142,22 @@ export default function LaporanPage({
                   #
                 </th>
                 <th className="px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Pertanyaan Naskah
+                  {t.laporan.kolom.pertanyaan}
                 </th>
                 <th className="w-20 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Bloom
+                  {t.laporan.kolom.bloom}
                 </th>
                 <th className="w-52 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Prediksi vs Aktual
+                  {t.laporan.kolom.prediksiAktual}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] font-mono">
-                  Daya Beda
+                  {t.laporan.kolom.dayaBeda}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] font-mono">
-                  Rasio Benar
+                  {t.laporan.kolom.rasioBenar}
                 </th>
                 <th className="w-32 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-right">
-                  Status
+                  {t.laporan.kolom.status}
                 </th>
               </tr>
             </thead>
@@ -174,7 +174,7 @@ export default function LaporanPage({
                         strokeWidth={1.25}
                         className="text-[var(--ink-muted)]/65"
                       />
-                      <span>Belum ada data analisis butir untuk paket ujian ini.</span>
+                      <span>{t.laporan.kosong}</span>
                     </div>
                   </td>
                 </tr>
@@ -252,11 +252,11 @@ export default function LaporanPage({
                     <td className="px-3 py-2.5 text-right">
                       {isDiscrepant ? (
                         <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-[#FBF1D9] text-[#8A5A00] border border-[#8A5A00]/30">
-                          Perlu ditinjau
+                          {t.laporan.perluDitinjauBadge}
                         </span>
                       ) : (
                         <span className="text-xs text-[var(--ink-muted)] font-mono">
-                          Stabil
+                          {t.laporan.stabil}
                         </span>
                       )}
                     </td>
@@ -269,10 +269,10 @@ export default function LaporanPage({
 
         <div className="border border-[var(--line)] bg-[var(--surface)] p-4 text-xs text-[var(--ink-muted)] max-w-lg space-y-1">
           <div className="font-mono text-[11px] uppercase tracking-wider text-[var(--ink)] font-semibold">
-            Pedoman Interpretasi Daya Beda:
+            {t.laporan.pedomanJudul}
           </div>
           <div className="font-mono text-[11px]">
-            ≥ 0.30: Daya Beda Baik (Hijau) | 0.20–0.29: Cukup (Kuning) | &lt; 0.20: Lemah (Merah)
+            {t.laporan.pedoman}
           </div>
         </div>
       </section>

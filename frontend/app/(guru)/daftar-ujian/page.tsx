@@ -9,8 +9,10 @@ import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import { SkeletonTable } from "@/components/ui/Skeleton";
+import { useTeks } from "@/lib/teks";
 
 export default function DaftarUjianPage() {
+  const t = useTeks().ujian;
   const [ujianList, setUjianList] = useState<PaketUjian[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,11 +26,11 @@ export default function DaftarUjianPage() {
   return (
     <div>
       <PageHeader
-        title="Daftar Paket Ujian"
-        description="Seluruh paket ujian yang telah disusun beserta status dan konfigurasi pelaksanaan."
+        title={t.daftar.judul}
+        description={t.daftar.deskripsi}
         action={
           <Link href="/rakit-ujian">
-            <Button size="sm">Rakit Ujian Baru</Button>
+            <Button size="sm">{t.daftar.rakitBaru}</Button>
           </Link>
         }
       />
@@ -37,11 +39,11 @@ export default function DaftarUjianPage() {
         <SkeletonTable rows={4} cols={5} />
       ) : ujianList.length === 0 ? (
         <EmptyState
-          title="Belum ada paket ujian"
-          description="Rakit paket ujian dari butir soal yang telah tervalidasi di bank soal."
+          title={t.daftar.kosongJudul}
+          description={t.daftar.kosongDeskripsi}
           action={
             <Link href="/rakit-ujian">
-              <Button size="sm">Rakit Ujian Pertama</Button>
+              <Button size="sm">{t.daftar.rakitPertama}</Button>
             </Link>
           }
         />
@@ -54,25 +56,25 @@ export default function DaftarUjianPage() {
                   #
                 </th>
                 <th className="px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Judul Paket
+                  {t.daftar.kolom.judulPaket}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Status
+                  {t.daftar.kolom.status}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-center font-mono">
-                  Soal
+                  {t.daftar.kolom.soal}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-center font-mono">
-                  Durasi
+                  {t.daftar.kolom.durasi}
                 </th>
                 <th className="w-36 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] font-mono">
-                  Kode Akses
+                  {t.daftar.kolom.kodeAkses}
                 </th>
                 <th className="w-36 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] font-mono">
-                  Dibuat
+                  {t.daftar.kolom.dibuat}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-right">
-                  Aksi
+                  {t.daftar.kolom.aksi}
                 </th>
               </tr>
             </thead>
@@ -97,7 +99,7 @@ export default function DaftarUjianPage() {
                     {ujian.butir_list?.length || 0}
                   </td>
                   <td className="px-3 py-2.5 text-center font-mono text-xs tabular-nums text-[var(--ink)]">
-                    {ujian.durasi_menit} mnt
+                    {t.daftar.menit(ujian.durasi_menit)}
                   </td>
                   <td className="px-3 py-2.5">
                     {ujian.kode_akses ? (
@@ -111,7 +113,7 @@ export default function DaftarUjianPage() {
                     )}
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-[var(--ink-muted)]">
-                    {new Date(ujian.created_at).toLocaleDateString("id-ID", {
+                    {new Date(ujian.created_at).toLocaleDateString(t.lokal, {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -123,14 +125,14 @@ export default function DaftarUjianPage() {
                         href={`/ujian/${ujian.id}`}
                         className="text-xs text-[var(--accent)] hover:underline font-medium"
                       >
-                        Detail
+                        {t.daftar.detail}
                       </Link>
                       {ujian.status === "aktif" && (
                         <Link
                           href={`/laporan/${ujian.id}`}
                           className="text-xs text-[var(--ink-muted)] hover:text-[var(--ink)] underline"
                         >
-                          Laporan
+                          {t.daftar.laporan}
                         </Link>
                       )}
                     </div>

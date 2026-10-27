@@ -7,12 +7,14 @@ import { ApiError, apiFetch } from "@/lib/api";
 import { headerPeserta } from "@/lib/peserta";
 import { HasilUjian } from "@/lib/types";
 import MathText from "@/components/ui/MathText";
+import { useTeks } from "@/lib/teks";
 
 export default function HasilUjianPage({
   params,
 }: {
   params: Promise<{ kodeAkses: string }>;
 }) {
+  const t = useTeks().ujian;
   const resolvedParams = use(params);
   const kodeAkses = resolvedParams.kodeAkses;
   const searchParams = useSearchParams();
@@ -48,7 +50,7 @@ export default function HasilUjianPage({
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center p-4">
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Mengalkulasi skor hasil ujian...
+          {t.siswa.hasil.mengalkulasi}
         </div>
       </div>
     );
@@ -58,15 +60,15 @@ export default function HasilUjianPage({
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center p-4">
         <div className="border border-[var(--line-strong)] bg-[var(--surface)] p-8 text-center max-w-sm space-y-4">
-          <span className="font-serif text-2xl font-medium tracking-tight text-[var(--ink)] block">BUTIR</span>
-          <p className="font-serif text-base text-[var(--ink)]">Jawaban Anda sudah terkumpul</p>
+          <span className="font-serif text-2xl font-medium tracking-tight text-[var(--ink)] block">{t.siswa.brand}</span>
+          <p className="font-serif text-base text-[var(--ink)]">{t.siswa.hasil.sudahTerkumpul}</p>
           <p className="text-xs text-[var(--ink-muted)] leading-relaxed">{ditahan}</p>
           <button
             type="button"
             onClick={muatHasil}
             className="px-4 py-2 text-sm font-medium rounded border border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink)] hover:border-[var(--ink)] transition-colors duration-[140ms]"
           >
-            Muat Ulang
+            {t.siswa.hasil.muatUlang}
           </button>
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function HasilUjianPage({
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center p-4">
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono max-w-sm">
-          Data hasil ujian tidak ditemukan. Pastikan nama peserta dan kode akses sesuai.
+          {t.siswa.hasil.tidakDitemukan}
         </div>
       </div>
     );
@@ -89,10 +91,10 @@ export default function HasilUjianPage({
         
         <div className="text-center pb-6 mb-8 border-b border-[var(--line)]">
           <span className="font-serif text-2xl font-medium tracking-tight text-[var(--ink)] block">
-            BUTIR
+            {t.siswa.brand}
           </span>
           <span className="text-xs text-[var(--ink-muted)] block mt-0.5 font-sans">
-            Lembar Hasil Penilaian Peserta
+            {t.siswa.hasil.lembarHasil}
           </span>
         </div>
 
@@ -106,7 +108,7 @@ export default function HasilUjianPage({
 
           <div className="border-t border-b border-[var(--line)] py-4 my-3 max-w-[200px] mx-auto">
             <span className="text-xs font-sans text-[var(--ink-muted)] block mb-1">
-              Skor Perolehan
+              {t.siswa.hasil.skor}
             </span>
             <div className="font-serif text-5xl font-normal text-[var(--ink)] tabular-nums">
               {hasil.skor.toFixed(1)}
@@ -114,17 +116,17 @@ export default function HasilUjianPage({
           </div>
 
           <div className="font-mono text-xs text-[var(--ink-muted)] tabular-nums mt-2">
-            Ringkasan: {hasil.total_benar} benar dari total {hasil.total_soal} butir soal
+            {t.siswa.hasil.ringkasan(hasil.total_benar, hasil.total_soal)}
           </div>
         </div>
 
         <section className="space-y-4">
           <div className="flex items-baseline justify-between border-b border-[var(--line)] pb-2">
             <h2 className="font-serif text-lg font-normal text-[var(--ink)]">
-              Rincian Jawaban
+              {t.siswa.hasil.rincian}
             </h2>
             <span className="font-mono text-xs text-[var(--ink-muted)]">
-              {hasil.detail.length} Butir Soal
+              {t.siswa.hasil.jumlahButir(hasil.detail.length)}
             </span>
           </div>
 
@@ -144,14 +146,14 @@ export default function HasilUjianPage({
                         size={20}
                         strokeWidth={2.5}
                         className="text-[#1F6B3A]"
-                        aria-label="Benar"
+                        aria-label={t.siswa.hasil.benar}
                       />
                     ) : (
                       <X
                         size={20}
                         strokeWidth={2.5}
                         className="text-[#A4262C]"
-                        aria-label="Salah"
+                        aria-label={t.siswa.hasil.salah}
                       />
                     )}
                   </span>
@@ -159,13 +161,13 @@ export default function HasilUjianPage({
 
                 <div className="flex items-center justify-between gap-4 text-xs font-mono text-[var(--ink-muted)] pt-2 mt-2 border-t border-[var(--line)]/50">
                   <span>
-                    Jawaban Peserta:{" "}
+                    {t.siswa.hasil.jawabanPeserta}{" "}
                     <strong className="text-[var(--ink)]">
-                      {item.jawaban_siswa || "(Kosong)"}
+                      {item.jawaban_siswa || t.siswa.hasil.kosong}
                     </strong>
                   </span>
                   <span>
-                    Kunci Jawaban:{" "}
+                    {t.siswa.hasil.kunci}{" "}
                     <strong className="text-[#1F6B3A]">
                       {item.kunci_jawaban}
                     </strong>
@@ -177,7 +179,7 @@ export default function HasilUjianPage({
         </section>
 
         <div className="text-center text-[11px] text-[var(--ink-muted)] font-mono pt-8 mt-8 border-t border-[var(--line)]">
-          Naskah ujian telah tersimpan dan terarsip ke dalam basis data akademik.
+          {t.siswa.hasil.tersimpan}
         </div>
       </div>
     </div>
