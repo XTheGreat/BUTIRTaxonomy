@@ -10,21 +10,26 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import { Upload } from "lucide-react";
+import { useBahasa, useTeks } from "@/lib/teks";
+import type { Kamus } from "@/lib/teks";
 
 const FORMAT_DIDUKUNG = /\.(pdf|docx|txt|md|text)$/i;
 const MAKS_UKURAN_MB = 10;
 
-function periksaBerkas(berkas: File): string | null {
+function periksaBerkas(berkas: File, t: Kamus): string | null {
   if (!FORMAT_DIDUKUNG.test(berkas.name)) {
-    return "Format berkas tidak didukung. Gunakan PDF, DOCX, TXT, atau MD.";
+    return t.persiapan.materi.formatTidakDidukung;
   }
   if (berkas.size > MAKS_UKURAN_MB * 1024 * 1024) {
-    return `Ukuran berkas melebihi batas ${MAKS_UKURAN_MB} MB.`;
+    return t.persiapan.materi.ukuranMelebihi(MAKS_UKURAN_MB);
   }
   return null;
 }
 
 export default function MateriPage() {
+  const t = useTeks();
+  const { bahasa } = useBahasa();
+  const tm = t.persiapan.materi;
   const [materiList, setMateriList] = useState<Materi[]>([]);
   const [judul, setJudul] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -59,7 +64,7 @@ export default function MateriPage() {
     const terimaBerkas = (daftar?: FileList | null) => {
       const berkas = daftar?.[0];
       if (!berkas) return;
-      const galat = periksaBerkas(berkas);
+      const galat = periksaBerkas(berkas, t);
       if (galat) {
         setError(galat);
         return;
@@ -109,12 +114,12 @@ export default function MateriPage() {
       window.removeEventListener("dragleave", keluar);
       window.removeEventListener("drop", lepas);
     };
-  }, []);
+  }, [t]);
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError("Silakan pilih file materi terlebih dahulu.");
+      setError(tm.pilihBerkasDulu);
       return;
     }
     setError("");
@@ -132,7 +137,7 @@ export default function MateriPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
       await loadMateri();
     } catch (err: any) {
-      setError(err.message || "Gagal mengunggah materi.");
+      setError(err.message || tm.gagalUnggah);
     } finally {
       setLoading(false);
     }
@@ -154,31 +159,31 @@ export default function MateriPage() {
   return (
     <div>
       <PageHeader
-        title="Materi Ajar"
-        description="Dokumen rujukan kurikulum dan materi pembelajaran sebagai sumber penyusunan butir soal."
+        title={tm.judul}
+        description={tm.deskripsi}
       />
 
       <section className="border border-[var(--line)] bg-[var(--surface)] p-6 mb-8 w-full rounded-md">
         <h2 className="font-serif text-lg font-normal text-[var(--ink)] mb-1">
-          Unggah Materi Baru
+          {tm.unggah.judul}
         </h2>
         <p className="text-xs text-[var(--ink-muted)] mb-5">
-          Teks materi akan dipecah secara semantik untuk referensi konteks agen AI.
+          {tm.unggah.keterangan}
         </p>
 
         <form onSubmit={handleUpload} className="flex flex-col gap-5">
           <Input
-            label="Judul Materi Pembelajaran"
+            label={tm.unggah.labelJudul}
             value={judul}
             onChange={(e) => setJudul(e.target.value)}
-            placeholder="Contoh: Bab 3 - Dinamika Gerak dan Hukum Newton"
-            helper="Tuliskan nama bab atau topik yang spesifik dan jelas"
+            placeholder={tm.unggah.placeholderJudul}
+            helper={tm.unggah.bantuanJudul}
             required
           />
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-[var(--ink)]">
-              Berkas Naskah Materi
+              {tm.unggah.labelBerkas}
             </label>
             <div
               onDragOver={() => setDragDiZona(true)}
@@ -198,7 +203,7 @@ export default function MateriPage() {
                 accept=".txt,.md,.text,.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={(e) => {
                   const berkas = e.target.files?.[0] || null;
-                  const galat = berkas ? periksaBerkas(berkas) : null;
+                  const galat = berkas ? periksaBerkas(berkas, t) : null;
                   if (galat) {
                     setError(galat);
                     e.target.value = "";
@@ -217,8 +222,8 @@ export default function MateriPage() {
                     <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
                     <div className="font-serif text-lg text-[var(--accent)]">
                       {dragDiZona
-                        ? "Lepaskan untuk memilih berkas ini"
-                        : "Lepaskan berkas di mana saja pada halaman ini"}
+                        ? tm.unggah.lepasDiZona
+                        : tm.unggah.lepasDiHalaman}
                     </div>
                   </>
                 ) : (
@@ -235,19 +240,19 @@ export default function MateriPage() {
                         </span>
                       ) : (
                         <span className="group-hover:text-[var(--accent)] transition-colors duration-[140ms]">
-                          Klik untuk memilih berkas atau seret ke sini
+                          {tm.unggah.klikAtauSeret}
                         </span>
                       )}
                     </div>
                   </>
                 )}
                 <p className="text-xs text-[var(--ink-muted)]">
-                  Format berkas: PDF (.pdf), Word (.docx), Teks (.txt, .md) UTF-8 · maks {MAKS_UKURAN_MB} MB
+                  {tm.unggah.formatBerkas(MAKS_UKURAN_MB)}
                 </p>
               </div>
             </div>
             <span className="text-xs text-[var(--ink-muted)]">
-              Berkas PDF dan DOCX otomatis dikonversi menjadi Markdown secara deterministik sebelum diindeks ke dalam potongan materi.
+              {tm.unggah.catatanKonversi}
             </span>
           </div>
 
@@ -259,7 +264,7 @@ export default function MateriPage() {
 
           <div className="pt-2">
             <Button type="submit" disabled={loading} size="md">
-              {loading ? "Menyimpan Berkas..." : "Unggah & Simpan Materi"}
+              {loading ? tm.unggah.menyimpan : tm.unggah.tombolUnggah}
             </Button>
           </div>
         </form>
@@ -269,11 +274,11 @@ export default function MateriPage() {
         <div className="flex items-baseline justify-between">
           <div>
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] tracking-tight">
-              Daftar Materi Terdaftar
+              {tm.daftar.judul}
             </h2>
             {!pageLoading && materiList.length > 0 && (
               <p className="text-xs text-[var(--ink-muted)] mt-0.5 font-mono tabular-nums">
-                {materiList.length} dokumen tersimpan
+                {tm.daftar.jumlahDokumen(materiList.length)}
               </p>
             )}
           </div>
@@ -283,8 +288,8 @@ export default function MateriPage() {
           <SkeletonTable rows={3} cols={4} />
         ) : materiList.length === 0 ? (
           <EmptyState
-            title="Belum ada materi pembelajaran"
-            description="Unggah materi pertama melalui formulir di atas untuk mulai menyusun kisi-kisi dan butir soal."
+            title={tm.daftar.kosongJudul}
+            description={tm.daftar.kosongDeskripsi}
           />
         ) : (
           <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
@@ -295,13 +300,13 @@ export default function MateriPage() {
                     #
                   </th>
                   <th className="px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                    Judul Materi
+                    {tm.daftar.kolomJudul}
                   </th>
                   <th className="w-40 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] font-mono">
-                    Tanggal Unggah
+                    {tm.daftar.kolomTanggal}
                   </th>
                   <th className="w-24 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-right">
-                    Aksi
+                    {tm.daftar.kolomAksi}
                   </th>
                 </tr>
               </thead>
@@ -320,7 +325,7 @@ export default function MateriPage() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-[var(--ink-muted)]">
-                      {new Date(item.created_at).toLocaleDateString("id-ID", {
+                      {new Date(item.created_at).toLocaleDateString(bahasa === "en" ? "en-US" : "id-ID", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -331,7 +336,7 @@ export default function MateriPage() {
                         onClick={() => setDeleteTarget(item)}
                         className="text-xs text-[var(--ink-muted)] hover:text-[#A4262C] transition-colors duration-[140ms] underline focus-visible:outline-none"
                       >
-                        Hapus
+                        {t.persiapan.umum.hapus}
                       </button>
                     </td>
                   </tr>
@@ -344,9 +349,9 @@ export default function MateriPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Hapus Materi Ajar"
-        description={`Materi "${deleteTarget?.judul}" beserta seluruh potongan teksnya akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.`}
-        confirmLabel="Hapus Permanen"
+        title={tm.hapusDialog.judul}
+        description={tm.hapusDialog.deskripsi(deleteTarget?.judul)}
+        confirmLabel={tm.hapusDialog.konfirmasi}
         variant="destructive"
         loading={deleting}
         onConfirm={handleDelete}
