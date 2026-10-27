@@ -1,12 +1,27 @@
+import { terjemahkanGalat } from "@/lib/teks/galat";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  kode?: string;
+  param?: Record<string, unknown>;
+  constructor(message: string, status: number, kode?: string, param?: Record<string, unknown>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.kode = kode;
+    this.param = param;
   }
+}
+
+// Bila server mengirim `kode` yang ada di kamus galat, pesan tampil dalam bahasa aktif;
+// selain itu dipakai kalimat `detail` dari server apa adanya.
+function bentukApiError(err: any, status: number): ApiError {
+  const kode = typeof err?.kode === "string" ? err.kode : undefined;
+  const param = err?.param && typeof err.param === "object" ? err.param : undefined;
+  const pesan = terjemahkanGalat(kode, param) || pesanGalat(err?.detail) || `HTTP ${status}`;
+  return new ApiError(pesan, status, kode, param);
 }
 
 function pesanGalat(detail: unknown): string {
@@ -30,7 +45,7 @@ export async function unduhBerkas(path: string, namaCadangan: string): Promise<v
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Gagal mengunduh berkas." }));
-    throw new ApiError(pesanGalat(err.detail) || `HTTP ${res.status}`, res.status);
+    throw bentukApiError(err, res.status);
   }
 
   const nama =
@@ -72,7 +87,7 @@ export async function apiFetch(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new ApiError(pesanGalat(err.detail) || `HTTP ${res.status}`, res.status);
+    throw bentukApiError(err, res.status);
   }
 
   const text = await res.text();

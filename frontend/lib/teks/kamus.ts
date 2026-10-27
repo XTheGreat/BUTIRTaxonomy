@@ -1,6 +1,7 @@
 import idAkun from "./id/akun";
 import idAuth from "./id/auth";
 import idDashboard from "./id/dashboard";
+import idGalat from "./id/galat";
 import idInfo from "./id/info";
 import idKomponen from "./id/komponen";
 import idPersiapan from "./id/persiapan";
@@ -13,6 +14,7 @@ import idUmum from "./id/umum";
 import enAkun from "./en/akun";
 import enAuth from "./en/auth";
 import enDashboard from "./en/dashboard";
+import enGalat from "./en/galat";
 import enInfo from "./en/info";
 import enKomponen from "./en/komponen";
 import enPersiapan from "./en/persiapan";
@@ -28,6 +30,7 @@ export const id = {
   akun: idAkun,
   auth: idAuth,
   dashboard: idDashboard,
+  galat: idGalat,
   info: idInfo,
   komponen: idKomponen,
   persiapan: idPersiapan,
@@ -44,6 +47,7 @@ export const en: Kamus = {
   akun: enAkun,
   auth: enAuth,
   dashboard: enDashboard,
+  galat: enGalat,
   info: enInfo,
   komponen: enKomponen,
   persiapan: enPersiapan,

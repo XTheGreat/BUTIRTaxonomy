@@ -1,9 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { KUNCI_BAHASA, setBahasaAktif } from "./aktif";
 import { bahasaBawaan, daftarBahasa, kamusPerBahasa, type Bahasa, type Kamus } from "./kamus";
-
-const KUNCI_BAHASA = "butir_bahasa";
 
 interface NilaiKonteks {
   bahasa: Bahasa;
@@ -32,7 +31,10 @@ export function BahasaProvider({ children }: { children: React.ReactNode }) {
   // Dibaca setelah mount supaya HTML dari server dan render pertama klien sama.
   useEffect(() => {
     const tersimpan = bacaTersimpan();
-    if (tersimpan) setBahasaState(tersimpan);
+    if (tersimpan) {
+      setBahasaAktif(tersimpan);
+      setBahasaState(tersimpan);
+    }
   }, []);
 
   useEffect(() => {
@@ -53,6 +55,7 @@ export function BahasaProvider({ children }: { children: React.ReactNode }) {
   }, [bahasa]);
 
   const setBahasa = useCallback((b: Bahasa) => {
+    setBahasaAktif(b);
     setBahasaState(b);
     try {
       localStorage.setItem(KUNCI_BAHASA, b);

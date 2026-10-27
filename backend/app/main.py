@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
+from app.core.galat import Galat, tangani_galat
 from app.core.keamanan import pasang_keamanan, periksa_rahasia_produksi
 from app.routers import auth, materi, kisi_kisi, generasi, butir, bank_soal, ujian, siswa, laporan, log_llm, paket, institusi, marketplace, arsip
 from app.database import engine, Base, tambah_kolom_yang_hilang
@@ -28,6 +29,7 @@ settings = get_settings()
 
 app = FastAPI(title="BUTIR API", version="1.0.0")
 pasang_keamanan(app, settings.PAKSA_HTTPS)
+app.add_exception_handler(Galat, tangani_galat)
 
 app.add_middleware(
     CORSMiddleware,

@@ -3,11 +3,12 @@ import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, func, select
 from app.config import get_settings
+from app.core.galat import Galat
 from app.database import get_db
 from app.models.kode_masuk import KodeMasuk
 from app.models.token_dicabut import TokenDicabut
@@ -43,7 +44,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
+        raise Galat(400, "email_sudah_terdaftar", "Email sudah terdaftar")
 
     user = User(
         nama=data.nama,
@@ -67,7 +68,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Email atau password salah")
+        raise Galat(401, "kredensial_salah", "Email atau password salah")
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(
@@ -122,8 +123,8 @@ async def forgot_password(
 
 @router.post("/reset-password")
 async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    galat = HTTPException(
-        status_code=400, detail="Tautan reset tidak valid, sudah dipakai, atau kedaluwarsa"
+    galat = Galat(
+        400, "tautan_reset_tidak_valid", "Tautan reset tidak valid, sudah dipakai, atau kedaluwarsa"
     )
     payload = decode_access_token(data.token)
     if not payload or payload.get("type") != "reset":
@@ -175,7 +176,7 @@ async def metode_masuk():
 async def masuk_google(data: GoogleMasuk, db: AsyncSession = Depends(get_db)):
     klaim = await verifikasi_token_google(data.credential)
     if not klaim:
-        raise HTTPException(status_code=401, detail="Masuk dengan Google gagal. Coba lagi.")
+        raise Galat(401, "masuk_google_gagal", "Masuk dengan Google gagal. Coba lagi.")
     return _sesi(await _cari_atau_buat(db, klaim["email"], klaim["nama"]))
 
 
@@ -194,7 +195,7 @@ async def minta_kode(data: KodeMinta, background_tasks: BackgroundTasks, db: Asy
         await db.execute(select(func.max(KodeMasuk.dibuat_pada)).where(KodeMasuk.email == email))
     ).scalar()
     if terbaru and sekarang - terbaru < timedelta(seconds=s.KODE_MASUK_JEDA_DETIK):
-        raise HTTPException(status_code=429, detail="Kode baru saja dikirim. Tunggu sebentar sebelum meminta lagi.")
+        raise Galat(429, "kode_baru_dikirim", "Kode baru saja dikirim. Tunggu sebentar sebelum meminta lagi.")
     sejam = (
         await db.execute(
             select(func.count(KodeMasuk.id)).where(
@@ -203,7 +204,7 @@ async def minta_kode(data: KodeMinta, background_tasks: BackgroundTasks, db: Asy
         )
     ).scalar() or 0
     if sejam >= s.KODE_MASUK_MAKS_PER_JAM:
-        raise HTTPException(status_code=429, detail="Terlalu banyak permintaan kode. Coba lagi dalam satu jam.")
+        raise Galat(429, "kode_terlalu_sering", "Terlalu banyak permintaan kode. Coba lagi dalam satu jam.")
 
     kode = f"{secrets.randbelow(1_000_000):06d}"
     db.add(
@@ -221,7 +222,7 @@ async def minta_kode(data: KodeMinta, background_tasks: BackgroundTasks, db: Asy
 @router.post("/kode/verifikasi", response_model=TokenResponse)
 async def verifikasi_kode(data: KodeVerifikasi, db: AsyncSession = Depends(get_db)):
     s = get_settings()
-    galat = HTTPException(status_code=400, detail="Kode salah atau sudah kedaluwarsa")
+    galat = Galat(400, "kode_salah", "Kode salah atau sudah kedaluwarsa")
     email = data.email.strip().lower()
     kode = data.kode.strip().replace(" ", "")
     sekarang = datetime.now(timezone.utc)
