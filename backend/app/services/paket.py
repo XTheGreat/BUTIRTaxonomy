@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import HTTPException, status
+from app.core.galat import Galat
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -99,8 +99,8 @@ async def token_bulan_ini(db: AsyncSession, guru_id) -> int:
     return int(hasil.scalar() or 0)
 
 
-def _ditolak(pesan: str) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=pesan)
+def _ditolak(kode: str, pesan: str, **param) -> Galat:
+    return Galat(402, kode, pesan, **param)
 
 
 async def pastikan_kuota_soal(db: AsyncSession, user: User, jumlah: int) -> None:
@@ -113,10 +113,18 @@ async def pastikan_kuota_soal(db: AsyncSession, user: User, jumlah: int) -> None
     terpakai = await soal_terpakai(db, user, k["institusi"])
     if terpakai + jumlah > batas:
         sisa = max(0, batas - terpakai)
-        sumber = f"institusi {k['institusi'].nama}" if k["institusi"] else f"paket {NAMA_PAKET.get(k['paket'], k['paket'])}"
-        saran = "Kurangi jumlah butir atau hubungi admin institusi." if k["institusi"] else "Kurangi jumlah butir atau upgrade ke paket Pro."
+        institusi = k["institusi"]
+        nama_paket = NAMA_PAKET.get(k["paket"], k["paket"])
+        if institusi:
+            raise _ditolak(
+                "paket_kuota_soal_institusi",
+                f"Kuota soal institusi {institusi.nama} bulan ini tinggal {sisa} dari {batas}, sedangkan kisi-kisi ini meminta {jumlah}. Kurangi jumlah butir atau hubungi admin institusi.",
+                institusi=institusi.nama, sisa=sisa, batas=batas, jumlah=jumlah,
+            )
         raise _ditolak(
-            f"Kuota soal {sumber} bulan ini tinggal {sisa} dari {batas}, sedangkan kisi-kisi ini meminta {jumlah}. {saran}"
+            "paket_kuota_soal_paket",
+            f"Kuota soal paket {nama_paket} bulan ini tinggal {sisa} dari {batas}, sedangkan kisi-kisi ini meminta {jumlah}. Kurangi jumlah butir atau upgrade ke paket Pro.",
+            paket=nama_paket, sisa=sisa, batas=batas, jumlah=jumlah,
         )
 
 
@@ -126,9 +134,12 @@ async def pastikan_kuota_materi(db: AsyncSession, user: User) -> None:
     k = await konteks_kuota(db, user)
     batas = k["batas"]["materi"]
     if batas is not None and await jumlah_materi(db, user.id) >= batas:
+        nama_paket = NAMA_PAKET.get(k["paket"], k["paket"])
         raise _ditolak(
-            f"Paket {NAMA_PAKET.get(k['paket'], k['paket'])} dibatasi {batas} materi ajar. "
-            "Hapus materi yang tidak dipakai atau upgrade ke paket Pro."
+            "paket_kuota_materi",
+            f"Paket {nama_paket} dibatasi {batas} materi ajar. "
+            "Hapus materi yang tidak dipakai atau upgrade ke paket Pro.",
+            paket=nama_paket, batas=batas,
         )
 
 
@@ -136,7 +147,7 @@ async def pastikan_ekspor(db: AsyncSession, user: User) -> None:
     if _tanpa_batas(user):
         return
     if not (await konteks_kuota(db, user))["batas"]["ekspor"]:
-        raise _ditolak("Ekspor PDF dan DOCX tersedia di paket Pro. Upgrade untuk memakai fitur ini.")
+        raise _ditolak("paket_ekspor_butuh_pro", "Ekspor PDF dan DOCX tersedia di paket Pro. Upgrade untuk memakai fitur ini.")
 
 
 async def ringkasan_pemakaian(db: AsyncSession, user: User) -> dict:
