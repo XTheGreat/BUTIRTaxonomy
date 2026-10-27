@@ -12,8 +12,10 @@ import RondeIndicator from "@/components/ui/RondeIndicator";
 import EmptyState from "@/components/ui/EmptyState";
 import MathText from "@/components/ui/MathText";
 import { RingkasanStatus } from "@/components/ui/HistoryParts";
+import { useTeks } from "@/lib/teks";
 
 export default function HistoryPage() {
+  const t = useTeks().telaah;
   const [data, setData] = useState<HistoryDebatTerakhir | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,18 +29,18 @@ export default function HistoryPage() {
   return (
     <div>
       <PageHeader
-        title="History Debat"
-        description="Seluruh butir dari generasi terakhir yang telah selesai diproses. Halaman ini hanya untuk dibaca; saat generasi baru selesai, isinya digantikan oleh generasi tersebut."
+        title={t.history.judul}
+        description={t.history.deskripsi}
       />
 
       {loading ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Memuat history debat...
+          {t.history.memuat}
         </div>
       ) : !data ? (
         <EmptyState
-          title="Belum ada history debat"
-          description="Setelah sebuah generasi butir selesai diproses, ringkasan dan seluruh soalnya akan tampil di sini."
+          title={t.history.kosongJudul}
+          description={t.history.kosongDeskripsi}
         />
       ) : (
         <div className="space-y-6">
@@ -48,7 +50,7 @@ export default function HistoryPage() {
                 {data.label}
               </h2>
               <p className="mt-1 font-mono text-xs text-[var(--ink-muted)] tabular-nums">
-                {formatWaktu(data.mulai)} – {formatWaktu(data.selesai)} · {data.total} butir
+                {formatWaktu(data.mulai)} – {formatWaktu(data.selesai)} · {t.history.jumlahButir(data.total)}
               </p>
             </div>
             <RingkasanStatus hitung={data.hitung} total={data.total} ukuranTeks="text-xs" />
@@ -69,7 +71,7 @@ export default function HistoryPage() {
                     <BloomChip level={butir.level_bloom} />
                     {butir.percobaan_ke > 1 && (
                       <span className="font-mono text-[11px] text-[var(--ink-muted)]">
-                        percobaan ke-{butir.percobaan_ke}
+                        {t.history.percobaanKe(butir.percobaan_ke)}
                       </span>
                     )}
                   </div>
@@ -103,9 +105,9 @@ export default function HistoryPage() {
                             {isKey && (
                               <span
                                 className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
-                                title="Kunci jawaban"
+                                title={t.umum.kunciJawaban}
                               >
-                                <Lock size={14} strokeWidth={2} aria-label="Kunci jawaban" />
+                                <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />
                               </span>
                             )}
                           </div>
@@ -116,7 +118,7 @@ export default function HistoryPage() {
                     {butir.pembahasan && (
                       <div className="mt-4 bg-[var(--surface)] border border-[var(--line)] p-3 text-xs">
                         <div className="font-sans text-xs font-medium text-[var(--ink-muted)] mb-1">
-                          Pembahasan
+                          {t.history.pembahasan}
                         </div>
                         <p className="font-serif text-[var(--ink)] leading-relaxed">
                           <MathText text={butir.pembahasan} />
@@ -126,7 +128,7 @@ export default function HistoryPage() {
                   </>
                 ) : (
                   <p className="font-serif text-sm italic text-[var(--ink-muted)]">
-                    Naskah butir ini belum tersusun karena proses debat tertunda.
+                    {t.history.naskahBelumTersusun}
                   </p>
                 )}
               </article>

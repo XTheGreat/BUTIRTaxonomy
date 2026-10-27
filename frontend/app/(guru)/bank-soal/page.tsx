@@ -14,8 +14,10 @@ import MathText from "@/components/ui/MathText";
 import EditButirDialog from "@/components/ui/EditButirDialog";
 import KelompokLipat, { useBukaTutup } from "@/components/ui/KelompokLipat";
 import { KelompokBank, kelompokkan } from "@/lib/kelompokBank";
+import { useTeks } from "@/lib/teks";
 
 export default function BankSoalPage() {
+  const t = useTeks().telaah;
   const [butirList, setButirList] = useState<ButirSoal[]>([]);
   const [kelompokList, setKelompokList] = useState<KelompokBank[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,13 +48,13 @@ export default function BankSoalPage() {
   const grup = useMemo(() => kelompokkan(butirList, kelompokList), [butirList, kelompokList]);
 
   async function handleDelete(id: string) {
-    if (!confirm("Hapus butir soal ini dari Bank Soal?")) return;
+    if (!confirm(t.bankSoal.konfirmasiHapus)) return;
     setPesanHapus("");
     try {
       await apiFetch(`/api/bank-soal/${id}`, { method: "DELETE" });
       await loadBank();
     } catch (err: any) {
-      setPesanHapus(err.message || "Gagal menghapus butir.");
+      setPesanHapus(err.message || t.bankSoal.hapusGagal);
     }
   }
 
@@ -65,7 +67,7 @@ export default function BankSoalPage() {
         `bank_soal.${format}`
       );
     } catch (err: any) {
-      setPesanHapus(err.message || "Gagal mengekspor bank soal.");
+      setPesanHapus(err.message || t.bankSoal.eksporGagal);
     } finally {
       setMengekspor(null);
     }
@@ -74,8 +76,8 @@ export default function BankSoalPage() {
   return (
     <div>
       <PageHeader
-        title="Bank Soal Tervalidasi"
-        description="Repositori butir soal yang telah lulus proses deliberasi dan siap dirakit ke dalam paket ujian."
+        title={t.bankSoal.judul}
+        description={t.bankSoal.deskripsi}
         action={
           butirList.length > 0 ? (
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -86,7 +88,7 @@ export default function BankSoalPage() {
                   onChange={(e) => setDenganKunci(e.target.checked)}
                   className="accent-[var(--accent)]"
                 />
-                Sertakan kunci
+                {t.bankSoal.sertakanKunci}
               </label>
               {(["pdf", "docx", "json"] as const).map((f) => (
                 <Button
@@ -96,11 +98,11 @@ export default function BankSoalPage() {
                   disabled={mengekspor !== null}
                   onClick={() => handleExport(f)}
                 >
-                  {mengekspor === f ? "Menyiapkan..." : `Ekspor ${f.toUpperCase()}`}
+                  {mengekspor === f ? t.bankSoal.menyiapkan : t.bankSoal.ekspor(f.toUpperCase())}
                 </Button>
               ))}
               <Link href="/rakit-ujian">
-                <Button size="sm">Rakit Ujian</Button>
+                <Button size="sm">{t.bankSoal.rakitUjian}</Button>
               </Link>
             </div>
           ) : undefined
@@ -115,15 +117,15 @@ export default function BankSoalPage() {
 
       {loading ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Memuat bank soal...
+          {t.bankSoal.memuat}
         </div>
       ) : butirList.length === 0 ? (
         <EmptyState
-          title="Bank soal masih kosong"
-          description="Belum ada butir soal yang disetujui. Susun kisi-kisi dan jalankan debat multi-agen untuk mengisi bank soal."
+          title={t.bankSoal.kosongJudul}
+          description={t.bankSoal.kosongDeskripsi}
           action={
             <Link href="/kisi-kisi">
-              <Button size="sm">Buat Kisi-kisi Baru</Button>
+              <Button size="sm">{t.bankSoal.buatKisiKisiBaru}</Button>
             </Link>
           }
         />
@@ -145,22 +147,22 @@ export default function BankSoalPage() {
                   #
                 </th>
                 <th className="px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Pertanyaan
+                  {t.bankSoal.kolom.pertanyaan}
                 </th>
                 <th className="w-20 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Bloom
+                  {t.bankSoal.kolom.bloom}
                 </th>
                 <th className="w-20 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-right font-mono">
-                  Bobot
+                  {t.bankSoal.kolom.bobot}
                 </th>
                 <th className="w-40 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Prediksi Kesukaran
+                  {t.bankSoal.kolom.prediksiKesukaran}
                 </th>
                 <th className="w-28 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)]">
-                  Status
+                  {t.bankSoal.kolom.status}
                 </th>
                 <th className="w-32 px-3 py-2.5 text-xs font-medium text-[var(--ink-muted)] text-right">
-                  Aksi
+                  {t.bankSoal.kolom.aksi}
                 </th>
               </tr>
             </thead>
@@ -224,19 +226,19 @@ export default function BankSoalPage() {
                             }
                             className="text-xs text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
                           >
-                            {isExpanded ? "Tutup" : "Lihat Soal"}
+                            {isExpanded ? t.bankSoal.tutup : t.bankSoal.lihatSoal}
                           </button>
                           <button
                             onClick={() => setEditing(butir)}
                             className="text-xs text-[var(--accent)] hover:underline font-medium focus-visible:outline-none"
                           >
-                            Edit
+                            {t.bankSoal.edit}
                           </button>
                           <button
                             onClick={() => handleDelete(butir.id)}
                             className="text-xs text-[var(--ink-muted)] hover:text-[#A4262C] transition-colors underline focus-visible:outline-none"
                           >
-                            Hapus
+                            {t.bankSoal.hapus}
                           </button>
                         </div>
                       </td>
@@ -248,7 +250,7 @@ export default function BankSoalPage() {
                           <div className="max-w-3xl space-y-4">
                             <div>
                               <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-1">
-                                Pertanyaan Naskah:
+                                {t.bankSoal.pertanyaanNaskah}
                               </span>
                               <p className="font-serif text-base text-[var(--ink)] leading-relaxed">
                                 <MathText text={butir.pertanyaan} />
@@ -258,7 +260,7 @@ export default function BankSoalPage() {
                             {butir.pilihan && (
                               <div className="space-y-1.5 pt-2">
                                 <span className="font-sans text-xs font-semibold text-[var(--ink-muted)] block mb-1">
-                                  Opsi Jawaban:
+                                  {t.bankSoal.opsiJawaban}
                                 </span>
                                 {Object.entries(butir.pilihan).map(([key, val]) => {
                                   const isKey = key === butir.kunci_jawaban;
@@ -280,9 +282,9 @@ export default function BankSoalPage() {
                                       {isKey && (
                                         <span
                                           className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
-                                          title="Kunci jawaban"
+                                          title={t.umum.kunciJawaban}
                                         >
-                                          <Lock size={14} strokeWidth={2} aria-label="Kunci jawaban" />
+                                          <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />
                                         </span>
                                       )}
                                     </div>
@@ -294,7 +296,7 @@ export default function BankSoalPage() {
                             {butir.pembahasan && (
                               <div className="bg-[var(--canvas)] border border-[var(--line)] p-4 text-xs mt-3">
                                 <div className="font-sans text-xs font-medium text-[var(--ink-muted)] mb-1">
-                                  Pembahasan Naskah:
+                                  {t.bankSoal.pembahasanNaskah}
                                 </div>
                                 <p className="font-serif text-[var(--ink)] leading-relaxed text-sm">
                                   <MathText text={butir.pembahasan} />

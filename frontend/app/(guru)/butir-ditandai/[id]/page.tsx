@@ -14,13 +14,7 @@ import RondeIndicator from "@/components/ui/RondeIndicator";
 import { Lock, PackageOpen } from "lucide-react";
 import MathText from "@/components/ui/MathText";
 import EditButirDialog from "@/components/ui/EditButirDialog";
-
-const agenLabels: Record<string, { role: string; model: string }> = {
-  penyusun: { role: "Agen Penyusun", model: "Penyedia Sekunder" },
-  kritikus: { role: "Agen Kritikus", model: "Penyedia Primer" },
-  penjawab_buta: { role: "Agen Penjawab Buta", model: "Penyedia Primer" },
-  arbiter: { role: "Agen Arbiter", model: "Penyedia Sekunder" },
-};
+import { useTeks } from "@/lib/teks";
 
 export default function DebatLogPage({
   params,
@@ -30,6 +24,13 @@ export default function DebatLogPage({
   const resolvedParams = use(params);
   const butirId = resolvedParams.id;
   const router = useRouter();
+  const t = useTeks().telaah;
+  const agenLabels: Record<string, { role: string; model: string }> = {
+    penyusun: { role: t.detailDitandai.agen.penyusun, model: t.detailDitandai.penyediaSekunder },
+    kritikus: { role: t.detailDitandai.agen.kritikus, model: t.detailDitandai.penyediaPrimer },
+    penjawab_buta: { role: t.detailDitandai.agen.penjawabButa, model: t.detailDitandai.penyediaPrimer },
+    arbiter: { role: t.detailDitandai.agen.arbiter, model: t.detailDitandai.penyediaSekunder },
+  };
 
   const [butir, setButir] = useState<ButirSoal | null>(null);
   const [logs, setLogs] = useState<DebatLog[]>([]);
@@ -95,18 +96,18 @@ export default function DebatLogPage({
   return (
     <div>
       <PageHeader
-        title="Riwayat Debat Naskah"
-        description="Transkrip deliberasi multi-agen AI serta verifikasi kelayakan butir soal."
+        title={t.detailDitandai.judul}
+        description={t.detailDitandai.deskripsi}
         breadcrumb={[
-          { label: "Butir Ditandai", href: "/butir-ditandai" },
-          { label: `Butir #${butirId.slice(0, 6)}...` },
+          { label: t.ditandai.judul, href: "/butir-ditandai" },
+          { label: t.detailDitandai.butirNomor(butirId.slice(0, 6)) },
         ]}
       />
 
       <div className="w-full">
         {loading ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-          Memuat riwayat debat butir...
+          {t.detailDitandai.memuat}
         </div>
       ) : (
         <div className="space-y-8">
@@ -119,7 +120,7 @@ export default function DebatLogPage({
                   <BloomChip level={butir.level_bloom} target={butir.level_target} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[var(--ink-muted)]">Ronde:</span>
+                  <span className="text-xs text-[var(--ink-muted)]">{t.umum.rondeLabel}</span>
                   <RondeIndicator ronde={butir.ronde_saat_ini} />
                 </div>
               </div>
@@ -151,9 +152,9 @@ export default function DebatLogPage({
                       {isKey && (
                         <span
                           className="inline-flex items-center text-[#1F6B3A] shrink-0 pt-0.5"
-                          title="Kunci jawaban"
+                          title={t.umum.kunciJawaban}
                         >
-                          <Lock size={14} strokeWidth={2} aria-label="Kunci jawaban" />
+                          <Lock size={14} strokeWidth={2} aria-label={t.umum.kunciJawaban} />
                         </span>
                       )}
                     </div>
@@ -164,7 +165,7 @@ export default function DebatLogPage({
               {butir.pembahasan && (
                 <div className="bg-[var(--surface)] border border-[var(--line)] p-3 text-xs">
                   <div className="font-sans text-xs font-medium text-[var(--ink-muted)] mb-1">
-                    Pembahasan Kunci
+                    {t.detailDitandai.pembahasanKunci}
                   </div>
                   <p className="font-serif text-[var(--ink)] leading-relaxed">
                     <MathText text={butir.pembahasan} />
@@ -176,7 +177,7 @@ export default function DebatLogPage({
 
           <section className="space-y-6">
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2">
-              Timeline Deliberasi Agen
+              {t.detailDitandai.timeline}
             </h2>
 
             {Object.keys(rondeMap).length === 0 ? (
@@ -186,7 +187,7 @@ export default function DebatLogPage({
                   strokeWidth={1.25}
                   className="text-[var(--ink-muted)]/65"
                 />
-                <span>Belum ada rekaman log debat yang tercatat.</span>
+                <span>{t.detailDitandai.belumAdaLog}</span>
               </div>
             ) : (
               <div>
@@ -204,14 +205,14 @@ export default function DebatLogPage({
 
                     <div className="min-w-0 pb-6 last:pb-0">
                       <div className="h-5 flex items-center font-mono text-xs font-semibold text-[var(--ink)]">
-                        Ronde {ronde}
+                        {t.umum.ronde(ronde)}
                       </div>
 
                       <div className="mt-3 space-y-5">
                         {entries.map((log) => {
                           const agentMeta = agenLabels[log.agen] || {
                             role: log.agen.toUpperCase(),
-                            model: "Agen AI",
+                            model: t.detailDitandai.agenAi,
                           };
                           const output = log.output_json || {};
 
@@ -252,7 +253,7 @@ export default function DebatLogPage({
                                   {(output.catatan_kritik || output.catatan_kritis) && (
                                     <div className="text-xs text-[var(--ink)] leading-relaxed">
                                       <span className="font-sans text-xs text-[var(--ink-muted)] block mb-0.5">
-                                        Catatan Kritik:
+                                        {t.detailDitandai.catatanKritik}
                                       </span>
                                       <p className="font-serif bg-[var(--surface)] p-2.5 border border-[var(--line)]">
                                         {output.catatan_kritik || output.catatan_kritis}
@@ -263,7 +264,7 @@ export default function DebatLogPage({
                                   {(output.usulan_perbaikan || output.rekomendasi_revisi) && (
                                     <div className="text-xs text-[var(--ink)] leading-relaxed">
                                       <span className="font-sans text-xs text-[var(--ink-muted)] block mb-0.5">
-                                        Arahan Revisi:
+                                        {t.detailDitandai.arahanRevisi}
                                       </span>
                                       <p className="font-serif">
                                         {output.usulan_perbaikan || output.rekomendasi_revisi}
@@ -277,7 +278,7 @@ export default function DebatLogPage({
                                 <div className="border border-[var(--ink)] p-3.5 bg-[var(--surface)]">
                                   <div className="flex items-center justify-between mb-2">
                                     <span className="font-mono text-xs font-semibold text-[var(--ink)]">
-                                      Putusan Arbiter
+                                      {t.detailDitandai.putusanArbiter}
                                     </span>
                                     <StatusBadge
                                       status={
@@ -289,7 +290,7 @@ export default function DebatLogPage({
                                     {output.alasan_putusan ||
                                       output.alasan ||
                                       output.catatan ||
-                                      "Tidak ada uraian putusan spesifik."}
+                                      t.detailDitandai.tanpaUraianPutusan}
                                   </p>
                                 </div>
                               )}
@@ -298,7 +299,7 @@ export default function DebatLogPage({
                                 <div className="text-xs space-y-2">
                                   <div className="flex items-center gap-2">
                                     <span className="text-[var(--ink-muted)]">
-                                      Jawaban Dipilih:
+                                      {t.detailDitandai.jawabanDipilih}
                                     </span>
                                     <span className="font-mono font-bold text-sm text-[var(--ink)] px-2 py-0.5 border border-[var(--line)] bg-[var(--surface)]">
                                       {output.jawaban_pilihan ||
@@ -308,7 +309,7 @@ export default function DebatLogPage({
                                     </span>
                                     {output.tingkat_keyakinan != null && (
                                       <span className="font-mono text-[11px] text-[var(--ink-muted)]">
-                                        keyakinan {output.tingkat_keyakinan}/5
+                                        {t.detailDitandai.keyakinan(output.tingkat_keyakinan)}
                                       </span>
                                     )}
                                   </div>
@@ -323,7 +324,7 @@ export default function DebatLogPage({
                               {log.agen === "penyusun" && (
                                 <div className="text-xs text-[var(--ink-muted)] font-serif leading-relaxed">
                                   <p className="line-clamp-2">
-                                    <MathText text={output.pertanyaan || "Naskah draf butir soal."} />
+                                    <MathText text={output.pertanyaan || t.detailDitandai.naskahDraf} />
                                   </p>
                                 </div>
                               )}
@@ -344,7 +345,7 @@ export default function DebatLogPage({
         <div className="flex items-center justify-between">
           <Link href="/butir-ditandai">
             <Button variant="secondary" size="sm">
-              Kembali ke Daftar
+              {t.detailDitandai.kembaliKeDaftar}
             </Button>
           </Link>
           <div className="flex items-center gap-3">
@@ -354,7 +355,7 @@ export default function DebatLogPage({
               disabled={actionLoading}
               onClick={handleReject}
             >
-              Tolak Butir
+              {t.umum.tolakButir}
             </Button>
             <Button
               variant="secondary"
@@ -362,7 +363,7 @@ export default function DebatLogPage({
               disabled={actionLoading || !butir}
               onClick={() => setEditing(true)}
             >
-              Revisi & Terima
+              {t.detailDitandai.revisiDanTerima}
             </Button>
             <Button
               variant="primary"
@@ -370,7 +371,7 @@ export default function DebatLogPage({
               disabled={actionLoading}
               onClick={handleApprove}
             >
-              {actionLoading ? "Memproses..." : "Setujui & Simpan ke Bank"}
+              {actionLoading ? t.umum.memproses : t.detailDitandai.setujuiDanSimpan}
             </Button>
           </div>
         </div>
