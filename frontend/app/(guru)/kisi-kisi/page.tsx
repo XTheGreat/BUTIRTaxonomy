@@ -14,18 +14,13 @@ import BloomPieChart from "@/components/ui/BloomPieChart";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { FolderOpen } from "lucide-react";
+import { useTeks } from "@/lib/teks";
 
 const BLOOM_LEVELS = ["C1", "C2", "C3", "C4", "C5", "C6"];
-const BLOOM_LABELS: Record<string, string> = {
-  C1: "Mengingat",
-  C2: "Memahami",
-  C3: "Menerapkan",
-  C4: "Menganalisis",
-  C5: "Mengevaluasi",
-  C6: "Mencipta",
-};
-
 export default function KisiKisiPage() {
+  const t = useTeks();
+  const tk = t.persiapan.kisiKisi;
+  const BLOOM_LABELS = tk.bloom;
   const router = useRouter();
   const [materiList, setMateriList] = useState<Materi[]>([]);
   const [selectedMateri, setSelectedMateri] = useState<string[]>([]);
@@ -116,15 +111,15 @@ export default function KisiKisiPage() {
 
   function validasiForm(): boolean {
     if (bloomTotal !== 100) {
-      setError(`Total persentase distribusi Bloom harus tepat 100% (saat ini ${bloomTotal}%).`);
+      setError(tk.pesan.totalBloom(bloomTotal));
       return false;
     }
     if (selectedMateri.length === 0) {
-      setError("Pilih minimal satu materi ajar sebagai rujukan.");
+      setError(tk.pesan.pilihMateri);
       return false;
     }
     if (jumlahButir < 1 || jumlahButir > 50) {
-      setError("Jumlah butir harus antara 1 dan 50.");
+      setError(tk.pesan.rentangButir);
       return false;
     }
     setError("");
@@ -148,7 +143,7 @@ export default function KisiKisiPage() {
       });
       return kk.id;
     } catch (err: any) {
-      setError(err.message || "Gagal menyimpan kisi-kisi.");
+      setError(err.message || tk.pesan.gagalSimpan);
       return null;
     }
   }
@@ -161,7 +156,7 @@ export default function KisiKisiPage() {
     setLoading(false);
     if (!id) return;
     await muatTersimpan();
-    setPesan(editId ? "Perubahan kisi-kisi disimpan." : "Kisi-kisi disimpan sebagai draf. Mulai debat kapan saja dari daftar di bawah.");
+    setPesan(editId ? tk.pesan.perubahanDisimpan : tk.pesan.disimpanSebagaiDraf);
     kosongkanForm();
     document.getElementById("kisi-tersimpan")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -184,7 +179,7 @@ export default function KisiKisiPage() {
         await apiFetch(`/api/kisi-kisi/${aksiBaris.item.id}`, { method: "DELETE" });
         if (editId === aksiBaris.item.id) kosongkanForm();
         await muatTersimpan();
-        setPesan("Kisi-kisi dihapus.");
+        setPesan(tk.pesan.dihapus);
         setAksiBaris(null);
       } else {
         const id = aksiBaris.item.id;
@@ -192,7 +187,7 @@ export default function KisiKisiPage() {
         await mulaiGenerasi(id);
       }
     } catch (err: any) {
-      setError(err.message || "Aksi gagal dijalankan.");
+      setError(err.message || tk.pesan.aksiGagal);
       setAksiBaris(null);
     } finally {
       setAksiLoading(false);
@@ -214,8 +209,8 @@ export default function KisiKisiPage() {
   return (
     <div>
       <PageHeader
-        title="Rancang Kisi-kisi"
-        description="Spesifikasi teknis proporsi kognitif Taksonomi Bloom dan materi rujukan butir ujian."
+        title={tk.judul}
+        description={tk.deskripsi}
       />
 
       {pesan && (
@@ -225,9 +220,9 @@ export default function KisiKisiPage() {
       )}
       {editId && (
         <div className="mb-4 p-3 rounded bg-[#FBF1D9] border border-[#8A5A00]/30 text-xs text-[#8A5A00] flex items-center justify-between gap-3">
-          <span>Sedang mengubah kisi-kisi tersimpan. Perubahan baru berlaku setelah disimpan.</span>
+          <span>{tk.sedangMengubah}</span>
           <button type="button" onClick={kosongkanForm} className="underline font-medium shrink-0">
-            Batal ubah
+            {tk.batalUbah}
           </button>
         </div>
       )}
@@ -242,10 +237,10 @@ export default function KisiKisiPage() {
         
         <div className="border border-[var(--line)] bg-[var(--surface)] p-5 rounded-lg">
           <label className="text-sm font-medium text-[var(--ink)] block mb-1">
-            Materi Pembelajaran Rujukan
+            {tk.materiRujukan.label}
           </label>
           <p className="text-xs text-[var(--ink-muted)] mb-3">
-            Pilih satu atau lebih dokumen materi yang akan dijadikan basis ekstraksi butir.
+            {tk.materiRujukan.keterangan}
           </p>
 
           {materiList.length === 0 ? (
@@ -256,9 +251,9 @@ export default function KisiKisiPage() {
                 className="text-[var(--ink-muted)]/65 fill-[var(--ink-muted)]/10"
               />
               <p>
-                Belum ada materi ajar terdaftar.{" "}
+                {tk.materiRujukan.kosong}{" "}
                 <Link href="/materi" className="text-[var(--accent)] underline font-medium hover:underline">
-                  Unggah dokumen materi terlebih dahulu
+                  {tk.materiRujukan.linkUnggah}
                 </Link>
                 .
               </p>
@@ -285,13 +280,13 @@ export default function KisiKisiPage() {
 
         <div className="border border-[var(--line)] bg-[var(--surface)] p-5 rounded-lg">
           <Input
-            label="Jumlah Target Butir Soal"
+            label={tk.jumlahButir.label}
             type="number"
             min={1}
             max={50}
             value={jumlahButir}
             onChange={(e) => setJumlahButir(parseInt(e.target.value) || 1)}
-            helper="Direkomendasikan 5–15 butir per siklus telaah deliberatif"
+            helper={tk.jumlahButir.bantuan}
             className="w-28 font-sans font-medium tabular-nums"
             required
           />
@@ -301,10 +296,10 @@ export default function KisiKisiPage() {
           <div className="flex items-baseline justify-between mb-2">
             <div>
               <label className="text-sm font-medium text-[var(--ink)] block">
-                Distribusi Tingkat Kognitif Bloom (%)
+                {tk.distribusi.label}
               </label>
               <p className="text-xs text-[var(--ink-muted)]">
-                Proporsi bobot butir soal dari tingkat dasar hingga tingkat tinggi (HOTS)
+                {tk.distribusi.keterangan}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -314,14 +309,14 @@ export default function KisiKisiPage() {
                 onClick={() => setBloom({ C1: 0, C2: 0, C3: 0, C4: 0, C5: 0, C6: 0 })}
                 className="font-sans text-xs font-medium text-[var(--accent)] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-[var(--ink-muted)] disabled:no-underline focus-visible:outline-none"
               >
-                Kosongkan semua
+                {tk.distribusi.kosongkanSemua}
               </button>
               <div
                 className={`font-sans text-xs font-medium tabular-nums transition-colors ${
                   bloomTotal === 100 ? "text-[#1F6B3A]" : "text-[#A4262C]"
                 }`}
               >
-                Total: <span className="font-semibold">{bloomTotal}%</span>
+                {tk.distribusi.total} <span className="font-semibold">{bloomTotal}%</span>
               </div>
             </div>
           </div>
@@ -330,7 +325,7 @@ export default function KisiKisiPage() {
 
           {bloomTotal !== 100 && (
             <p className="text-xs text-[#A4262C] mb-3">
-              Total distribusi saat ini {bloomTotal}%. Harus persis 100% untuk melanjutkan.
+              {tk.distribusi.totalTidakPas(bloomTotal)}
             </p>
           )}
 
@@ -366,19 +361,19 @@ export default function KisiKisiPage() {
 
         <div className="border border-[var(--line)] bg-[var(--surface)] p-5 rounded-lg space-y-4">
           <Input
-            label="Nama Kisi-kisi (Opsional)"
+            label={tk.opsional.labelNama}
             value={namaKisi}
             onChange={(e) => setNamaKisi(e.target.value)}
             maxLength={255}
-            placeholder="Misal: Kisi-kisi A, atau UTS Fisika Kelas X"
-            helper="Dipakai sebagai judul kelompok soal di Bank Soal dan Rakit Ujian. Bila kosong, memakai judul materi"
+            placeholder={tk.opsional.placeholderNama}
+            helper={tk.opsional.bantuanNama}
           />
           <Textarea
-            label="Cakupan Bab & Fokus Indikator (Opsional)"
+            label={tk.opsional.labelCakupan}
             value={cakupanBab}
             onChange={(e) => setCakupanBab(e.target.value)}
-            placeholder="Misal: Fokuskan pada Hukum Newton II dan penerapannya pada bidang miring..."
-            helper="Kata kunci dipakai untuk memilih potongan materi yang relevan, lalu diteruskan ke Agen Penyusun sebagai fokus soal"
+            placeholder={tk.opsional.placeholderCakupan}
+            helper={tk.opsional.bantuanCakupan}
             rows={3}
             autoResize
             maxHeight={220}
@@ -397,25 +392,25 @@ export default function KisiKisiPage() {
             size="lg"
             disabled={loading || bloomTotal !== 100 || selectedMateri.length === 0}
           >
-            {loading ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Simpan Kisi-kisi"}
+            {loading ? tk.tombol.menyimpan : editId ? tk.tombol.simpanPerubahan : tk.tombol.simpan}
           </Button>
           <span className="text-xs text-[var(--ink-muted)]">
-            Debat dimulai dari daftar Kisi-kisi Tersimpan di bawah, bukan otomatis.
+            {tk.tombol.catatanDebat}
           </span>
         </div>
       </form>
 
       <section id="kisi-tersimpan" className="mt-10">
         <div className="flex items-baseline justify-between border-b border-[var(--line)] pb-2 mb-4">
-          <h2 className="font-serif text-lg font-normal text-[var(--ink)]">Kisi-kisi Tersimpan</h2>
+          <h2 className="font-serif text-lg font-normal text-[var(--ink)]">{tk.tersimpan.judul}</h2>
           <span className="font-mono text-xs text-[var(--ink-muted)] tabular-nums">
-            {tersimpan.length} kisi-kisi
+            {tk.tersimpan.jumlah(tersimpan.length)}
           </span>
         </div>
 
         {tersimpan.length === 0 ? (
           <p className="text-xs text-[var(--ink-muted)]">
-            Belum ada kisi-kisi. Simpan satu di atas; draf yang belum dijalankan bisa diubah atau dihapus.
+            {tk.tersimpan.kosong}
           </p>
         ) : (
           <div className="border border-[var(--line)] bg-[var(--canvas)] divide-y divide-[var(--line)]">
@@ -432,11 +427,11 @@ export default function KisiKisiPage() {
                       </span>
                     </div>
                     <p className="font-serif text-sm text-[var(--ink)] truncate">
-                      {k.nama || k.materi.map((m) => m.judul).join(", ") || "Tanpa materi"}
+                      {k.nama || k.materi.map((m) => m.judul).join(", ") || tk.tersimpan.tanpaMateri}
                     </p>
                     {k.nama && k.materi.length > 0 && (
                       <p className="mt-0.5 text-xs text-[var(--ink-muted)] truncate">
-                        Materi: {k.materi.map((m) => m.judul).join(", ")}
+                        {tk.tersimpan.materi} {k.materi.map((m) => m.judul).join(", ")}
                       </p>
                     )}
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
@@ -452,14 +447,14 @@ export default function KisiKisiPage() {
                     </div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-[var(--ink-muted)]">
                       <span>
-                        Target <span className="font-mono tabular-nums text-[var(--ink)]">{k.jumlah_butir}</span> butir
+                        {tk.tersimpan.targetAwal} <span className="font-mono tabular-nums text-[var(--ink)]">{k.jumlah_butir}</span> {tk.tersimpan.targetAkhir}
                       </span>
                       {!draf && (
                         <span>
-                          <span className="font-mono tabular-nums text-[var(--ink)]">{k.butir_dibuat}</span> butir dibuat
+                          <span className="font-mono tabular-nums text-[var(--ink)]">{k.butir_dibuat}</span> {tk.tersimpan.butirDibuat}
                         </span>
                       )}
-                      {k.cakupan_bab && <span>Cakupan: {k.cakupan_bab}</span>}
+                      {k.cakupan_bab && <span>{tk.tersimpan.cakupan} {k.cakupan_bab}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 text-xs">
@@ -470,26 +465,26 @@ export default function KisiKisiPage() {
                           onClick={() => setAksiBaris({ tipe: "mulai", item: k })}
                           className="text-[var(--accent)] hover:underline font-medium"
                         >
-                          Mulai Generasi
+                          {tk.tersimpan.mulaiGenerasi}
                         </button>
                         <button
                           type="button"
                           onClick={() => mulaiUbah(k)}
                           className="text-[var(--accent)] hover:underline font-medium"
                         >
-                          Ubah
+                          {tk.tersimpan.ubah}
                         </button>
                         <button
                           type="button"
                           onClick={() => setAksiBaris({ tipe: "hapus", item: k })}
                           className="text-[var(--ink-muted)] hover:text-[#A4262C] underline"
                         >
-                          Hapus
+                          {t.persiapan.umum.hapus}
                         </button>
                       </>
                     ) : (
                       <Link href={`/generasi/${k.id}`} className="text-[var(--accent)] hover:underline font-medium">
-                        Lihat Progres
+                        {tk.tersimpan.lihatProgres}
                       </Link>
                     )}
                   </div>
@@ -502,9 +497,9 @@ export default function KisiKisiPage() {
 
       <ConfirmDialog
         open={aksiBaris?.tipe === "mulai"}
-        title="Mulai Debat Multi-Agen"
-        description="Kisi-kisi ini akan dijalankan sekarang. Setelah dimulai, kisi-kisi tidak bisa diubah atau dihapus."
-        confirmLabel="Mulai Generasi"
+        title={tk.dialogMulai.judul}
+        description={tk.dialogMulai.deskripsi}
+        confirmLabel={tk.dialogMulai.konfirmasi}
         loading={aksiLoading}
         onConfirm={handleAksiBaris}
         onCancel={() => setAksiBaris(null)}
@@ -512,13 +507,13 @@ export default function KisiKisiPage() {
         {aksiBaris?.tipe === "mulai" && (
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-baseline">
-              <span className="text-[var(--ink-muted)] text-xs">Jumlah butir target</span>
+              <span className="text-[var(--ink-muted)] text-xs">{tk.dialogMulai.jumlahTarget}</span>
               <span className="font-mono tabular-nums font-medium text-[var(--ink)]">
                 {aksiBaris.item.jumlah_butir}
               </span>
             </div>
             <div className="flex justify-between items-baseline">
-              <span className="text-[var(--ink-muted)] text-xs">Materi rujukan</span>
+              <span className="text-[var(--ink-muted)] text-xs">{tk.dialogMulai.materiRujukan}</span>
               <span className="text-xs text-[var(--ink)] text-right max-w-[200px] truncate">
                 {aksiBaris.item.materi.map((m) => m.judul).join(", ")}
               </span>
@@ -530,9 +525,9 @@ export default function KisiKisiPage() {
 
       <ConfirmDialog
         open={aksiBaris?.tipe === "hapus"}
-        title="Hapus Kisi-kisi"
-        description="Kisi-kisi draf ini akan dihapus permanen. Materi ajar tidak ikut terhapus."
-        confirmLabel="Hapus"
+        title={tk.dialogHapus.judul}
+        description={tk.dialogHapus.deskripsi}
+        confirmLabel={tk.dialogHapus.konfirmasi}
         variant="destructive"
         loading={aksiLoading}
         onConfirm={handleAksiBaris}
@@ -543,6 +538,7 @@ export default function KisiKisiPage() {
 }
 
 function PratinjauCakupan({ cek }: { cek: CekCakupan | null }) {
+  const tk = useTeks().persiapan.kisiKisi;
   if (!cek || !cek.ada_cakupan) return null;
   const cocok = cek.potongan_cocok > 0;
   return (
@@ -552,8 +548,8 @@ function PratinjauCakupan({ cek }: { cek: CekCakupan | null }) {
       }`}
     >
       {cocok
-        ? `Cakupan cocok dengan ${cek.potongan_cocok} dari ${cek.jumlah_potongan} potongan materi; soal dibuat dari potongan itu.`
-        : `Cakupan tidak ditemukan di materi (kata kunci: ${cek.kata_kunci.join(", ")}). Seluruh materi akan dipakai.`}
+        ? tk.cakupan.cocok(cek.potongan_cocok, cek.jumlah_potongan)
+        : tk.cakupan.tidakCocok(cek.kata_kunci.join(", "))}
     </div>
   );
 }
