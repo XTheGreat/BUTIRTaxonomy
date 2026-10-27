@@ -9,6 +9,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
 import Input from "@/components/ui/Input";
+import { useTeks } from "@/lib/teks";
 
 function untukInputWaktu(d: Date) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
@@ -21,6 +22,7 @@ export default function UjianDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = useTeks().ujian;
   const resolvedParams = use(params);
   const ujianId = resolvedParams.id;
 
@@ -56,11 +58,11 @@ export default function UjianDetailPage({
     const mulai = new Date(waktuMulai);
     const selesai = new Date(waktuSelesai);
     if (isNaN(mulai.getTime()) || isNaN(selesai.getTime())) {
-      setError("Isi waktu mulai dan waktu selesai.");
+      setError(t.detail.jadwal.isiWaktu);
       return;
     }
     if (selesai <= mulai) {
-      setError("Waktu selesai harus setelah waktu mulai.");
+      setError(t.detail.jadwal.selesaiSetelahMulai);
       return;
     }
     setLoading(true);
@@ -75,7 +77,7 @@ export default function UjianDetailPage({
       });
       await loadUjian();
     } catch (err: any) {
-      setError(err.message || "Gagal menerbitkan ujian.");
+      setError(err.message || t.detail.jadwal.galat);
     } finally {
       setLoading(false);
     }
@@ -96,9 +98,7 @@ export default function UjianDetailPage({
   async function handleLepasSesi(p: PesertaUjian) {
     if (!p.id) return;
     if (
-      !confirm(
-        `Izinkan ${p.nama_siswa} masuk ulang? Perangkat lamanya tidak bisa lagi mengirim jawaban; jawaban yang sudah tersimpan tetap ada.`
-      )
+      !confirm(t.detail.peserta.konfirmasiLepas(p.nama_siswa))
     )
       return;
     setError("");
@@ -106,7 +106,7 @@ export default function UjianDetailPage({
       await apiFetch(`/api/ujian/${ujianId}/peserta/${p.id}/lepas-sesi`, { method: "POST" });
       await muatPeserta();
     } catch (err: any) {
-      setError(err.message || "Gagal melepas sesi peserta.");
+      setError(err.message || t.detail.peserta.galatLepas);
     }
   }
 
@@ -120,7 +120,7 @@ export default function UjianDetailPage({
       });
       setUjian(baru);
     } catch (err: any) {
-      setError(err.message || "Gagal mengubah rilis hasil.");
+      setError(err.message || t.detail.hasil.galat);
     } finally {
       setRilisLoading(false);
     }
@@ -135,7 +135,7 @@ export default function UjianDetailPage({
         `ujian.${format}`
       );
     } catch (err: any) {
-      setError(err.message || "Gagal mengunduh naskah.");
+      setError(err.message || t.detail.cetak.galat);
     } finally {
       setMengekspor(null);
     }
@@ -155,7 +155,7 @@ export default function UjianDetailPage({
   if (!ujian) {
     return (
       <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
-        Memuat rincian paket ujian...
+        {t.detail.memuat}
       </div>
     );
   }
@@ -164,11 +164,11 @@ export default function UjianDetailPage({
     <div>
       <PageHeader
         title={ujian.judul}
-        description="Spesifikasi paket ujian, kode otorisasi akses peserta, dan status penerbitan."
+        description={t.detail.deskripsi}
         action={
           <Link href={`/laporan/${ujianId}`}>
             <Button variant="secondary" size="sm">
-              Laporan Analisis
+              {t.detail.laporanAnalisis}
             </Button>
           </Link>
         }
@@ -177,14 +177,13 @@ export default function UjianDetailPage({
       {ujian.kode_akses && (
         <div className="border border-[var(--line-strong)] bg-[var(--surface)] p-4 sm:p-6 mb-8 text-center rounded-none">
           <span className="text-xs font-sans text-[var(--ink-muted)] block">
-            Kode Akses Peserta
+            {t.detail.kode.judul}
           </span>
           <div className="font-mono text-3xl sm:text-5xl font-bold tracking-widest sm:tracking-[0.3em] text-[var(--ink)] my-3 select-all break-all sm:pl-[0.3em]">
             {ujian.kode_akses}
           </div>
           <p className="text-xs text-[var(--ink-muted)] mb-4 max-w-sm mx-auto">
-            Peserta membuka halaman Masuk ke Ujian lalu memasukkan kode ini, atau langsung
-            memakai tautan ujian.
+            {t.detail.kode.petunjuk}
           </p>
           <div className="flex items-center justify-center gap-2">
             <Button
@@ -193,7 +192,7 @@ export default function UjianDetailPage({
               onClick={() => handleCopy("kode")}
               className="font-mono text-xs"
             >
-              {copied === "kode" ? "✓ Kode tersalin" : "Salin Kode Akses"}
+              {copied === "kode" ? t.detail.kode.kodeTersalin : t.detail.kode.salinKode}
             </Button>
             <Button
               variant="secondary"
@@ -201,7 +200,7 @@ export default function UjianDetailPage({
               onClick={() => handleCopy("tautan")}
               className="font-mono text-xs"
             >
-              {copied === "tautan" ? "✓ Tautan tersalin" : "Salin Tautan Ujian"}
+              {copied === "tautan" ? t.detail.kode.tautanTersalin : t.detail.kode.salinTautan}
             </Button>
           </div>
         </div>
@@ -210,10 +209,10 @@ export default function UjianDetailPage({
       {ujian.status === "aktif" && (
         <div className="border border-[var(--line)] bg-[var(--canvas)] p-6 mb-6">
           <div className="flex items-baseline justify-between border-b border-[var(--line)] pb-2 mb-4">
-            <h2 className="font-serif text-lg font-normal text-[var(--ink)]">Peserta</h2>
+            <h2 className="font-serif text-lg font-normal text-[var(--ink)]">{t.detail.peserta.judul}</h2>
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs text-[var(--ink-muted)] tabular-nums">
-                {peserta.filter((p) => p.terkumpul).length} / {peserta.length} terkumpul
+                {t.detail.peserta.terkumpul(peserta.filter((p) => p.terkumpul).length, peserta.length)}
               </span>
               <button
                 type="button"
@@ -221,12 +220,12 @@ export default function UjianDetailPage({
                 disabled={pesertaLoading}
                 className="text-xs text-[var(--accent)] hover:underline font-medium disabled:opacity-50"
               >
-                {pesertaLoading ? "Memuat..." : "Muat ulang"}
+                {pesertaLoading ? t.detail.peserta.memuat : t.detail.peserta.muatUlang}
               </button>
             </div>
           </div>
           {peserta.length === 0 ? (
-            <p className="text-xs text-[var(--ink-muted)]">Belum ada peserta yang masuk.</p>
+            <p className="text-xs text-[var(--ink-muted)]">{t.detail.peserta.kosong}</p>
           ) : (
             <div className="divide-y divide-[var(--line)] text-sm">
               {peserta.map((p) => (
@@ -235,25 +234,25 @@ export default function UjianDetailPage({
                     <span className="font-serif text-[var(--ink)]">{p.nama_siswa}</span>
                     {p.masuk_pada && (
                       <span className="ml-2 font-mono text-[11px] text-[var(--ink-muted)] tabular-nums">
-                        masuk {formatWaktu(p.masuk_pada)}
+                        {t.detail.peserta.masuk(formatWaktu(p.masuk_pada))}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-3 text-xs">
                     <span className="font-mono tabular-nums text-[var(--ink-muted)]">
-                      {p.terjawab}/{p.total_soal} terjawab
+                      {t.detail.peserta.terjawab(p.terjawab, p.total_soal)}
                     </span>
                     <span className={p.terkumpul ? "text-[#1F6B3A] font-medium" : "text-[#8A5A00] font-medium"}>
-                      {p.terkumpul ? "Terkumpul" : "Mengerjakan"}
+                      {p.terkumpul ? t.detail.peserta.statusTerkumpul : t.detail.peserta.statusMengerjakan}
                     </span>
                     {p.id && !p.terkumpul && (
                       <button
                         type="button"
                         onClick={() => handleLepasSesi(p)}
-                        title="Izinkan peserta ini masuk dari perangkat lain"
+                        title={t.detail.peserta.izinkanTitle}
                         className="text-[var(--ink-muted)] hover:text-[var(--ink)] underline"
                       >
-                        Izinkan masuk ulang
+                        {t.detail.peserta.izinkanMasukUlang}
                       </button>
                     )}
                   </div>
@@ -267,7 +266,7 @@ export default function UjianDetailPage({
       {ujian.status === "aktif" && (
         <div className="border border-[var(--line)] bg-[var(--canvas)] p-6 mb-6">
           <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-4">
-            Hasil Peserta
+            {t.detail.hasil.judul}
           </h2>
           {ujian.rilis_hasil === "manual" ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -275,12 +274,12 @@ export default function UjianDetailPage({
                 <span
                   className={`font-medium ${ujian.hasil_dirilis ? "text-[#1F6B3A]" : "text-[#8A5A00]"}`}
                 >
-                  {ujian.hasil_dirilis ? "Hasil sudah dirilis" : "Hasil belum dirilis"}
+                  {ujian.hasil_dirilis ? t.detail.hasil.sudahDirilis : t.detail.hasil.belumDirilis}
                 </span>
                 <p className="text-xs text-[var(--ink-muted)] mt-0.5">
                   {ujian.hasil_dirilis
-                    ? "Peserta yang sudah mengumpulkan dapat melihat skor dan kunci jawaban."
-                    : "Peserta yang sudah mengumpulkan hanya melihat pesan bahwa hasil belum tersedia."}
+                    ? t.detail.hasil.ketSudahDirilis
+                    : t.detail.hasil.ketBelumDirilis}
                 </p>
               </div>
               <Button
@@ -289,12 +288,12 @@ export default function UjianDetailPage({
                 disabled={rilisLoading}
                 onClick={() => handleRilis(!ujian.hasil_dirilis)}
               >
-                {rilisLoading ? "Memproses..." : ujian.hasil_dirilis ? "Tarik Kembali" : "Rilis Hasil Sekarang"}
+                {rilisLoading ? t.detail.hasil.memproses : ujian.hasil_dirilis ? t.detail.hasil.tarikKembali : t.detail.hasil.rilisSekarang}
               </Button>
             </div>
           ) : (
             <p className="text-xs text-[var(--ink-muted)]">
-              Rilis otomatis: peserta melihat skor dan kunci jawaban begitu mengumpulkan.
+              {t.detail.hasil.otomatis}
             </p>
           )}
         </div>
@@ -302,11 +301,10 @@ export default function UjianDetailPage({
 
       <div className="border border-[var(--line)] bg-[var(--canvas)] p-6 mb-6">
         <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-4">
-          Cetak Naskah
+          {t.detail.cetak.judul}
         </h2>
         <p className="text-xs text-[var(--ink-muted)] mb-3">
-          Unduh naskah soal untuk ujian luring atau arsip. Tanpa kunci, hasilnya adalah lembar
-          soal untuk peserta.
+          {t.detail.cetak.deskripsi}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-1.5 text-xs text-[var(--ink-muted)] cursor-pointer select-none mr-2">
@@ -316,7 +314,7 @@ export default function UjianDetailPage({
               onChange={(e) => setDenganKunci(e.target.checked)}
               className="accent-[var(--accent)]"
             />
-            Sertakan kunci jawaban dan pembahasan
+            {t.detail.cetak.sertakanKunci}
           </label>
           {(["pdf", "docx"] as const).map((f) => (
             <Button
@@ -326,7 +324,7 @@ export default function UjianDetailPage({
               disabled={mengekspor !== null}
               onClick={() => handleExport(f)}
             >
-              {mengekspor === f ? "Menyiapkan..." : `Unduh ${f.toUpperCase()}`}
+              {mengekspor === f ? t.detail.cetak.menyiapkan : t.detail.cetak.unduh(f.toUpperCase())}
             </Button>
           ))}
         </div>
@@ -334,42 +332,42 @@ export default function UjianDetailPage({
 
       <div className="border border-[var(--line)] bg-[var(--canvas)] p-6 mb-6">
         <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-4">
-          Spesifikasi Naskah
+          {t.detail.spesifikasi.judul}
         </h2>
 
         <div className="divide-y divide-[var(--line)] text-sm">
           <div className="py-2.5 flex justify-between items-center">
             <span className="text-xs text-[var(--ink-muted)] font-sans">
-              Status Ujian
+              {t.detail.spesifikasi.status}
             </span>
             <StatusBadge status={ujian.status} />
           </div>
 
           <div className="py-2.5 flex justify-between items-center">
             <span className="text-xs text-[var(--ink-muted)] font-sans">
-              Jumlah Butir Soal
+              {t.detail.spesifikasi.jumlahButir}
             </span>
             <span className="font-mono font-medium text-[var(--ink)] tabular-nums">
-              {ujian.butir_list?.length ?? 0} butir
+              {t.detail.spesifikasi.butir(ujian.butir_list?.length ?? 0)}
             </span>
           </div>
 
           <div className="py-2.5 flex justify-between items-center">
             <span className="text-xs text-[var(--ink-muted)] font-sans">
-              Alokasi Waktu
+              {t.detail.spesifikasi.alokasi}
             </span>
             <span className="font-mono font-medium text-[var(--ink)] tabular-nums">
-              {ujian.durasi_menit} menit
+              {t.detail.spesifikasi.menit(ujian.durasi_menit)}
             </span>
           </div>
 
           {ujian.waktu_mulai && (
             <div className="py-2.5 flex justify-between items-center">
               <span className="text-xs text-[var(--ink-muted)] font-sans">
-                Waktu Terbit
+                {t.detail.spesifikasi.waktuTerbit}
               </span>
               <span className="font-mono text-xs text-[var(--ink)] tabular-nums">
-                {new Date(ujian.waktu_mulai).toLocaleString("id-ID", {
+                {new Date(ujian.waktu_mulai).toLocaleString(t.lokal, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -380,10 +378,10 @@ export default function UjianDetailPage({
           {ujian.waktu_selesai && (
             <div className="py-2.5 flex justify-between items-center">
               <span className="text-xs text-[var(--ink-muted)] font-sans">
-                Batas Pengumpulan
+                {t.detail.spesifikasi.batasPengumpulan}
               </span>
               <span className="font-mono text-xs text-[var(--ink)] tabular-nums">
-                {new Date(ujian.waktu_selesai).toLocaleString("id-ID", {
+                {new Date(ujian.waktu_selesai).toLocaleString(t.lokal, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -402,42 +400,42 @@ export default function UjianDetailPage({
       {ujian.status === "draft" && (
         <div className="border border-[var(--line)] bg-[var(--canvas)] p-6 mb-6">
           <h2 className="font-serif text-lg font-normal text-[var(--ink)] border-b border-[var(--line)] pb-2 mb-4">
-            Jadwal Penerbitan
+            {t.detail.jadwal.judul}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             <Input
-              label="Waktu Mulai"
+              label={t.detail.jadwal.waktuMulai}
               type="datetime-local"
               value={waktuMulai}
               onChange={(e) => setWaktuMulai(e.target.value)}
-              helper="Peserta baru bisa masuk setelah waktu ini."
+              helper={t.detail.jadwal.bantuanMulai}
             />
             <Input
-              label="Waktu Selesai"
+              label={t.detail.jadwal.waktuSelesai}
               type="datetime-local"
               value={waktuSelesai}
               onChange={(e) => setWaktuSelesai(e.target.value)}
-              helper="Jawaban dikumpulkan otomatis pada waktu ini."
+              helper={t.detail.jadwal.bantuanSelesai}
             />
           </div>
           <label className="flex flex-col gap-1 max-w-sm mb-5">
-            <span className="text-sm font-medium text-[var(--ink)]">Rilis Hasil ke Peserta</span>
+            <span className="text-sm font-medium text-[var(--ink)]">{t.detail.jadwal.rilisLabel}</span>
             <select
               value={rilisHasil}
               onChange={(e) => setRilisHasil(e.target.value as "otomatis" | "manual")}
               className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)]"
             >
-              <option value="otomatis">Otomatis setelah siswa mengumpulkan</option>
-              <option value="manual">Manual: saya yang merilis</option>
+              <option value="otomatis">{t.detail.jadwal.rilisOtomatis}</option>
+              <option value="manual">{t.detail.jadwal.rilisManual}</option>
             </select>
             <span className="text-xs text-[var(--ink-muted)]">
               {rilisHasil === "manual"
-                ? "Siswa melihat pesan \"hasil belum dirilis\" sampai Anda merilisnya."
-                : "Siswa langsung melihat skor dan kunci jawaban begitu mengumpulkan."}
+                ? t.detail.jadwal.ketManual
+                : t.detail.jadwal.ketOtomatis}
             </span>
           </label>
           <Button onClick={handleTerbitkan} disabled={loading} size="lg">
-            {loading ? "Menerbitkan..." : "Terbitkan Ujian & Generate Kode Akses"}
+            {loading ? t.detail.jadwal.menerbitkan : t.detail.jadwal.terbitkan}
           </Button>
         </div>
       )}
