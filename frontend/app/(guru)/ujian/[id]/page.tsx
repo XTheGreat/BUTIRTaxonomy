@@ -51,6 +51,7 @@ export default function UjianDetailPage({
 
   useEffect(() => {
     loadUjian();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dimuat ulang hanya saat id ujian berganti
   }, [ujianId]);
 
   async function handleTerbitkan() {

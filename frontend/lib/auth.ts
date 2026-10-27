@@ -42,6 +42,8 @@ export async function logout() {
       ]);
     } catch {}
   }
+  // Muat ulang penuh, bukan router.push, agar seluruh state klien ikut bersih.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.href = "/login";
 }
 

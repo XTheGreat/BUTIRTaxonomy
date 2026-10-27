@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import FooterSitus from "@/components/layout/FooterSitus";
 import { useTeks } from "@/lib/teks";
+import { useJudulTab } from "@/lib/teks/judulTab";
 
 export function Bagian({ judul, children }: { judul: string; children: React.ReactNode }) {
   return (
@@ -25,6 +26,7 @@ export default function HalamanInfo({
   children: React.ReactNode;
 }) {
   const t = useTeks();
+  useJudulTab(judul.includes("BUTIR") ? judul : `${judul} - BUTIR`);
   return (
     <div className="flex min-h-screen flex-col bg-[var(--canvas)] text-[var(--ink)]">
       <header className="bg-[var(--accent)] text-white">
