@@ -1,11 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_admin, get_current_guru
+from app.core.galat import Galat
 from app.database import get_db
 from app.models.institusi import Institusi
 from app.models.user import User
@@ -48,7 +49,7 @@ async def _ringkas(db: AsyncSession, i: Institusi) -> dict:
 async def _ambil(db: AsyncSession, institusi_id: uuid.UUID) -> Institusi:
     i = (await db.execute(select(Institusi).where(Institusi.id == institusi_id))).scalar_one_or_none()
     if i is None:
-        raise HTTPException(status_code=404, detail="Institusi tidak ditemukan")
+        raise Galat(404, "institusi_tidak_ditemukan", "Institusi tidak ditemukan")
     return i
 
 
@@ -62,9 +63,9 @@ async def buat_institusi(
 ):
     pengelola = (await db.execute(select(User).where(func.lower(User.email) == data.email_admin.lower()))).scalar_one_or_none()
     if pengelola is None:
-        raise HTTPException(status_code=404, detail="Akun dengan email itu belum terdaftar. Minta guru mendaftar dulu.")
+        raise Galat(404, "institusi_akun_belum_terdaftar", "Akun dengan email itu belum terdaftar. Minta guru mendaftar dulu.")
     if pengelola.institusi_id is not None:
-        raise HTTPException(status_code=409, detail="Akun itu sudah menjadi anggota institusi lain")
+        raise Galat(409, "institusi_akun_sudah_anggota_lain", "Akun itu sudah menjadi anggota institusi lain")
     i = Institusi(nama=data.nama.strip(), kursi=data.kursi)
     db.add(i)
     await db.flush()
@@ -89,7 +90,7 @@ async def ubah_institusi(
 ):
     i = await _ambil(db, institusi_id)
     if data.kursi is not None and data.kursi < await _jumlah_anggota(db, i.id):
-        raise HTTPException(status_code=409, detail="Kursi tidak boleh kurang dari jumlah anggota saat ini")
+        raise Galat(409, "institusi_kursi_kurang_dari_anggota", "Kursi tidak boleh kurang dari jumlah anggota saat ini")
     if data.nama is not None:
         i.nama = data.nama.strip()
     if data.kursi is not None:
@@ -133,20 +134,19 @@ async def tambah_anggota(
     db: AsyncSession = Depends(get_db),
 ):
     if not _boleh_kelola(guru, institusi_id):
-        raise HTTPException(status_code=403, detail="Hanya admin institusi yang dapat menambah anggota")
+        raise Galat(403, "institusi_hanya_admin_tambah_anggota", "Hanya admin institusi yang dapat menambah anggota")
     i = await _ambil(db, institusi_id)
     if not i.aktif:
-        raise HTTPException(status_code=409, detail="Lisensi institusi tidak aktif")
+        raise Galat(409, "institusi_lisensi_tidak_aktif", "Lisensi institusi tidak aktif")
     if await _jumlah_anggota(db, i.id) >= i.kursi:
-        raise HTTPException(status_code=409, detail=f"Kursi penuh ({i.kursi}). Tambah kursi lisensi untuk menambah anggota.")
+        raise Galat(409, "institusi_kursi_penuh", f"Kursi penuh ({i.kursi}). Tambah kursi lisensi untuk menambah anggota.", kursi=i.kursi)
     u = (await db.execute(select(User).where(func.lower(User.email) == data.email.lower()))).scalar_one_or_none()
     if u is None:
-        raise HTTPException(status_code=404, detail="Akun dengan email itu belum terdaftar. Minta guru mendaftar dulu.")
+        raise Galat(404, "institusi_akun_belum_terdaftar", "Akun dengan email itu belum terdaftar. Minta guru mendaftar dulu.")
     if u.institusi_id is not None:
-        raise HTTPException(
-            status_code=409,
-            detail="Akun itu sudah menjadi anggota institusi" + (" ini" if u.institusi_id == i.id else " lain"),
-        )
+        if u.institusi_id == i.id:
+            raise Galat(409, "institusi_akun_sudah_anggota_ini", "Akun itu sudah menjadi anggota institusi ini")
+        raise Galat(409, "institusi_akun_sudah_anggota_lain", "Akun itu sudah menjadi anggota institusi lain")
     u.institusi_id = i.id
     await db.commit()
     return {"id": str(u.id), "email": u.email, "institusi_id": str(i.id)}
@@ -160,14 +160,14 @@ async def keluarkan_anggota(
     db: AsyncSession = Depends(get_db),
 ):
     if not _boleh_kelola(guru, institusi_id):
-        raise HTTPException(status_code=403, detail="Hanya admin institusi yang dapat mengeluarkan anggota")
+        raise Galat(403, "institusi_hanya_admin_keluarkan_anggota", "Hanya admin institusi yang dapat mengeluarkan anggota")
     u = (
         await db.execute(select(User).where(User.id == user_id, User.institusi_id == institusi_id))
     ).scalar_one_or_none()
     if u is None:
-        raise HTTPException(status_code=404, detail="Anggota tidak ditemukan di institusi ini")
+        raise Galat(404, "institusi_anggota_tidak_ditemukan", "Anggota tidak ditemukan di institusi ini")
     if u.admin_institusi and guru.peran != "admin":
-        raise HTTPException(status_code=403, detail="Admin institusi hanya dapat dikeluarkan oleh admin sistem")
+        raise Galat(403, "institusi_admin_hanya_oleh_admin_sistem", "Admin institusi hanya dapat dikeluarkan oleh admin sistem")
     u.institusi_id = None
     u.admin_institusi = False
     await db.commit()
