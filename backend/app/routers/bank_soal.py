@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, select
@@ -12,6 +12,7 @@ from app.models.paket_ujian import PaketUjian, PaketUjianButir
 from app.schemas.butir import ButirSoalResponse
 from app.services.export_dokumen import buat_dokumen
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 import io
 import json
 
@@ -93,7 +94,7 @@ async def delete_from_bank(
     )
     butir = result.scalar_one_or_none()
     if not butir:
-        raise HTTPException(status_code=404, detail="Butir tidak ditemukan")
+        raise Galat(404, "bank_soal_butir_tidak_ditemukan", "Butir tidak ditemukan")
 
     dipakai = await db.execute(
         select(PaketUjian.id)
@@ -102,9 +103,10 @@ async def delete_from_bank(
         .limit(1)
     )
     if dipakai.first():
-        raise HTTPException(
-            status_code=409,
-            detail="Butir sedang dipakai dalam ujian yang aktif dan tidak bisa dihapus",
+        raise Galat(
+            409,
+            "bank_soal_butir_dipakai_ujian_aktif",
+            "Butir sedang dipakai dalam ujian yang aktif dan tidak bisa dihapus",
         )
 
     await db.delete(butir)
@@ -121,7 +123,7 @@ async def export_bank_soal(
     db: AsyncSession = Depends(get_db),
 ):
     if format not in ("json", "txt", "pdf", "docx"):
-        raise HTTPException(status_code=400, detail="Format ekspor harus json, txt, pdf, atau docx")
+        raise Galat(400, "bank_soal_format_ekspor_tidak_valid", "Format ekspor harus json, txt, pdf, atau docx")
     if format in ("pdf", "docx"):
         await pastikan_ekspor(db, guru)
 
@@ -134,7 +136,7 @@ async def export_bank_soal(
         try:
             id_list = [uuid.UUID(i.strip()) for i in ids.split(",")]
         except ValueError:
-            raise HTTPException(status_code=400, detail="Daftar id butir tidak valid")
+            raise Galat(400, "bank_soal_daftar_id_tidak_valid", "Daftar id butir tidak valid")
         query = query.where(ButirSoal.id.in_(id_list))
 
     result = await db.execute(query.order_by(ButirSoal.created_at))

@@ -1,8 +1,9 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.database import get_db
 from app.models.butir_soal import ButirSoal
 from app.models.debat_log import DebatLog
@@ -52,17 +53,19 @@ async def simpan_ke_arsip(data: ArsipSimpan, guru: User = Depends(get_current_gu
         )
     ).first()
     if not baris or baris[0].status == "arsip":
-        raise HTTPException(status_code=404, detail="Butir tidak ditemukan")
+        raise Galat(404, "arsip_butir_tidak_ditemukan", "Butir tidak ditemukan")
     butir, kisi = baris
     if butir.status != "diterima":
-        raise HTTPException(
-            status_code=409,
-            detail="Soal hanya bisa diarsipkan dari butir yang sudah diterima, lewat Riwayat Diterima.",
+        raise Galat(
+            409,
+            "arsip_butir_belum_diterima",
+            "Soal hanya bisa diarsipkan dari butir yang sudah diterima, lewat Riwayat Diterima.",
         )
     if data.ronde >= butir.ronde_saat_ini:
-        raise HTTPException(
-            status_code=409,
-            detail="Ronde yang menghasilkan butir diterima tidak bisa diarsipkan karena sudah ada di Bank Soal.",
+        raise Galat(
+            409,
+            "arsip_ronde_sudah_di_bank_soal",
+            "Ronde yang menghasilkan butir diterima tidak bisa diarsipkan karena sudah ada di Bank Soal.",
         )
 
     logs = (
@@ -79,9 +82,9 @@ async def simpan_ke_arsip(data: ArsipSimpan, guru: User = Depends(get_current_gu
     terakhir: dict[str, dict] = {l.agen: l.output_json for l in logs}
     draf = terakhir.get("penyusun")
     if not draf or not draf.get("pertanyaan"):
-        raise HTTPException(status_code=404, detail="Soal pada ronde ini tidak ditemukan")
+        raise Galat(404, "arsip_soal_ronde_tidak_ditemukan", "Soal pada ronde ini tidak ditemukan")
     if (terakhir.get("arbiter") or {}).get("verdict") == "diterima":
-        raise HTTPException(status_code=409, detail="Ronde ini diterima Arbiter, jadi tidak bisa diarsipkan.")
+        raise Galat(409, "arsip_ronde_diterima_arbiter", "Ronde ini diterima Arbiter, jadi tidak bisa diarsipkan.")
 
     sudah = (
         await db.execute(
@@ -91,7 +94,7 @@ async def simpan_ke_arsip(data: ArsipSimpan, guru: User = Depends(get_current_gu
     for a in sudah:
         m = a.arsip_meta or {}
         if m.get("sumber_butir_id") == str(butir.id) and m.get("ronde") == data.ronde:
-            raise HTTPException(status_code=409, detail="Soal pada ronde ini sudah ada di Arsip.")
+            raise Galat(409, "arsip_soal_sudah_diarsipkan", "Soal pada ronde ini sudah ada di Arsip.")
 
     buta = terakhir.get("penjawab_buta") or {}
     arsip = ButirSoal(
@@ -127,11 +130,11 @@ async def hapus_arsip(arsip_id: uuid.UUID, guru: User = Depends(get_current_guru
         )
     ).scalar_one_or_none()
     if not arsip:
-        raise HTTPException(status_code=404, detail="Soal arsip tidak ditemukan")
+        raise Galat(404, "arsip_soal_tidak_ditemukan", "Soal arsip tidak ditemukan")
     dipakai = (
         await db.execute(select(PaketUjianButir.paket_ujian_id).where(PaketUjianButir.butir_id == arsip.id).limit(1))
     ).first()
     if dipakai:
-        raise HTTPException(status_code=409, detail="Soal ini sudah dipakai dalam paket ujian dan tidak bisa dihapus.")
+        raise Galat(409, "arsip_soal_dipakai_paket_ujian", "Soal ini sudah dipakai dalam paket ujian dan tidak bisa dihapus.")
     await db.delete(arsip)
     await db.commit()
