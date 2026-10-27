@@ -6,6 +6,7 @@ import Image from "next/image";
 import LatarLabirin from "./LatarLabirin";
 import FooterSitus from "./FooterSitus";
 import AlurKerjaAnimasi from "./AlurKerjaAnimasi";
+import PemilihBahasa from "./PemilihBahasa";
 import { useTeks } from "@/lib/teks";
 
 interface AuthShellProps {
@@ -116,6 +117,7 @@ export default function AuthShell({
 
       <div className="relative order-1 lg:order-2 flex-1 flex items-center justify-center overflow-hidden bg-[var(--canvas)] p-6 sm:p-10">
         <LatarLabirin />
+        <PemilihBahasa className="absolute right-4 top-4 z-10" />
 
         <div className="relative w-full max-w-[420px]">
           <div className="border border-[var(--line-strong)] rounded-md bg-[var(--canvas)] overflow-hidden">

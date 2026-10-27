@@ -1,4 +1,11 @@
 const shell = {
+  pemilihBahasa: {
+    label: "Bahasa",
+    idSingkat: "ID",
+    enSingkat: "EN",
+    idNama: "Bahasa Indonesia",
+    enNama: "English",
+  },
   sidebar: {
     logoKeDashboard: "BUTIR — ke dashboard",
     tutupNavigasi: "Tutup navigasi",

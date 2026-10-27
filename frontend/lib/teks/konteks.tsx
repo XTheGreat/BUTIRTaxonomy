@@ -37,6 +37,19 @@ export function BahasaProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.lang = bahasa;
+    // Judul bawaan situs ikut bahasa; judul khusus halaman (mis. halaman info) dibiarkan.
+    const judulBawaan = daftarBahasa.map((b) => kamusPerBahasa[b].umum.judulSitus);
+    const judulSekarang = kamusPerBahasa[bahasa].umum.judulSitus;
+    const terapkan = () => {
+      if (judulBawaan.includes(document.title) && document.title !== judulSekarang) {
+        document.title = judulSekarang;
+      }
+    };
+    terapkan();
+    // Next menulis ulang <title> saat metadata selesai dimuat, jadi diawasi.
+    const pengamat = new MutationObserver(terapkan);
+    pengamat.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => pengamat.disconnect();
   }, [bahasa]);
 
   const setBahasa = useCallback((b: Bahasa) => {

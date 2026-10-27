@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { ambilToken, headerPeserta, simpanToken } from "@/lib/peserta";
+import PemilihBahasa from "@/components/layout/PemilihBahasa";
 import { SoalUjian } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import MathText from "@/components/ui/MathText";
@@ -142,7 +143,8 @@ export default function UjianSiswaPage({
 
   if (step === "login") {
     return (
-      <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center p-4">
+      <div className="relative min-h-screen bg-[var(--canvas)] flex items-center justify-center p-4">
+        <PemilihBahasa className="absolute right-4 top-4" />
         <div className="w-full max-w-sm border border-[var(--line)] bg-[var(--surface)] p-8">
           <div className="text-center mb-6">
             <span className="font-serif text-2xl font-medium tracking-tight text-[var(--ink)] block">

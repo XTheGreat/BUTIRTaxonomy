@@ -1,6 +1,13 @@
 import type id from "../id/shell";
 
 const shell: typeof id = {
+  pemilihBahasa: {
+    label: "Language",
+    idSingkat: "ID",
+    enSingkat: "EN",
+    idNama: "Bahasa Indonesia",
+    enNama: "English",
+  },
   sidebar: {
     logoKeDashboard: "BUTIR — to dashboard",
     tutupNavigasi: "Close navigation",
