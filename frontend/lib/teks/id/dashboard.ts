@@ -1,7 +1,6 @@
 const dashboard = {
   judul: "Dashboard Naskah",
-  deskripsi: (nama: string) => `Lembar kerja telaah dan validasi butir soal. Selamat bertugas, ${nama}.`,
-  pengajarDefault: "Pengajar",
+  deskripsi: "Lembar kerja telaah dan validasi butir soal.",
   buatKisiKisi: "Buat Kisi-kisi",
   statistik: {
     materi: { judul: "Materi Ajar", ket: "Dokumen kurikulum tersimpan" },

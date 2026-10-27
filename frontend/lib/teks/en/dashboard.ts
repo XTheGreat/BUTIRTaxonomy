@@ -2,8 +2,7 @@ import type dashboardId from "../id/dashboard";
 
 const dashboard: typeof dashboardId = {
   judul: "Manuscript Dashboard",
-  deskripsi: (nama) => `Your workspace for reviewing and validating exam items. Welcome back, ${nama}.`,
-  pengajarDefault: "Instructor",
+  deskripsi: "Your workspace for reviewing and validating exam items.",
   buatKisiKisi: "Create Blueprint",
   statistik: {
     materi: { judul: "Course Materials", ket: "Curriculum documents saved" },

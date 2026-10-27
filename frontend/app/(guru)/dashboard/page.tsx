@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
-import { getCurrentUser } from "@/lib/auth";
 import { ButirSoal } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
@@ -27,7 +26,6 @@ const BLOOM_BAR: Record<string, { fill: string; edge: string }> = {
 };
 
 export default function DashboardPage() {
-  const user = getCurrentUser();
   const { dashboard: t, komponen } = useTeks();
   const BLOOM_LABELS = komponen.bloom.tingkat;
   const [stats, setStats] = useState({
@@ -155,7 +153,7 @@ export default function DashboardPage() {
     <div>
       <PageHeader
         title={t.judul}
-        description={t.deskripsi(user?.nama || t.pengajarDefault)}
+        description={t.deskripsi}
         action={
           <Link href="/kisi-kisi">
             <Button size="sm">{t.buatKisiKisi}</Button>
