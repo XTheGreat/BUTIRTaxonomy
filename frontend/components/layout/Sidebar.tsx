@@ -25,59 +25,63 @@ import {
 } from "lucide-react";
 import HistoryDebat from "@/components/layout/HistoryDebat";
 import ProfilMenu from "@/components/layout/ProfilMenu";
+import { useTeks, type Kamus } from "@/lib/teks";
+
+type KunciMenu = keyof Kamus["shell"]["sidebar"]["menu"];
+type KunciGrup = keyof Kamus["shell"]["sidebar"]["grup"];
 
 interface NavItem {
   href: string;
-  label: string;
+  label: KunciMenu;
   icon: LucideIcon;
   isMarkedCount?: boolean;
   isPendingCount?: boolean;
 }
 
 interface NavGroup {
-  group?: string;
+  group?: KunciGrup;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+    items: [{ href: "/dashboard", label: "dashboard", icon: LayoutDashboard }],
   },
   {
-    group: "Persiapan",
+    group: "persiapan",
     items: [
-      { href: "/materi", label: "Materi Ajar", icon: BookOpen },
-      { href: "/kisi-kisi", label: "Kisi-kisi", icon: ClipboardList },
+      { href: "/materi", label: "materiAjar", icon: BookOpen },
+      { href: "/kisi-kisi", label: "kisiKisi", icon: ClipboardList },
     ],
   },
   {
-    group: "Telaah",
+    group: "telaah",
     items: [
-      { href: "/butir-ditandai", label: "Butir Ditandai", icon: Flag, isMarkedCount: true },
-      { href: "/butir-tertunda", label: "Butir Tertunda", icon: Hourglass, isPendingCount: true },
-      { href: "/bank-soal", label: "Bank Soal", icon: Archive },
-      { href: "/marketplace", label: "Marketplace", icon: Store },
+      { href: "/butir-ditandai", label: "butirDitandai", icon: Flag, isMarkedCount: true },
+      { href: "/butir-tertunda", label: "butirTertunda", icon: Hourglass, isPendingCount: true },
+      { href: "/bank-soal", label: "bankSoal", icon: Archive },
+      { href: "/marketplace", label: "marketplace", icon: Store },
     ],
   },
   {
-    group: "Ujian",
+    group: "ujian",
     items: [
-      { href: "/daftar-ujian", label: "Daftar Ujian", icon: CalendarCheck },
-      { href: "/rakit-ujian", label: "Rakit Ujian", icon: Layers },
+      { href: "/daftar-ujian", label: "daftarUjian", icon: CalendarCheck },
+      { href: "/rakit-ujian", label: "rakitUjian", icon: Layers },
     ],
   },
   {
-    group: "Sistem",
+    group: "sistem",
     items: [
-      { href: "/paket", label: "Paket & Pemakaian", icon: Gauge },
-      { href: "/log-llm", label: "Log LLM", icon: Activity },
+      { href: "/paket", label: "paketPemakaian", icon: Gauge },
+      { href: "/log-llm", label: "logLlm", icon: Activity },
     ],
   },
   {
-    group: "Arsip",
+    group: "arsip",
     items: [
-      { href: "/riwayat-diterima", label: "Riwayat Diterima", icon: History },
-      { href: "/arsip", label: "Arsip Soal", icon: BookmarkCheck },
+      { href: "/riwayat-diterima", label: "riwayatDiterima", icon: History },
+      { href: "/arsip", label: "arsipSoal", icon: BookmarkCheck },
     ],
   },
 ];
@@ -94,6 +98,7 @@ export default function Sidebar({
   onToggle,
 }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTeks();
   const [markedCount, setMarkedCount] = useState<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [terbuka, setTerbuka] = useState<Record<string, boolean>>({});
@@ -103,7 +108,7 @@ export default function Sidebar({
   )?.group;
 
   useEffect(() => {
-    if (grupAktif) setTerbuka((t) => (t[grupAktif] ? t : { ...t, [grupAktif]: true }));
+    if (grupAktif) setTerbuka((prev) => (prev[grupAktif] ? prev : { ...prev, [grupAktif]: true }));
   }, [grupAktif]);
 
   useEffect(() => {
@@ -133,7 +138,7 @@ export default function Sidebar({
         <Link
           href="/dashboard"
           className="block focus-visible:outline-none group"
-          aria-label="BUTIR — ke dashboard"
+          aria-label={t.shell.sidebar.logoKeDashboard}
         >
           <Image
             src="/ButirLogoSidebar.png"
@@ -147,25 +152,25 @@ export default function Sidebar({
         <button
           onClick={onToggle || onClose}
           className="shrink-0 rounded p-1.5 text-[var(--ink-muted)] transition-colors duration-[140ms] hover:bg-[var(--line)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-          aria-label="Tutup navigasi"
-          title="Tutup bilah samping"
+          aria-label={t.shell.sidebar.tutupNavigasi}
+          title={t.shell.sidebar.tutupBilahSamping}
         >
           <PanelLeftClose size={16} strokeWidth={1.5} />
         </button>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--line-strong)_transparent]">
-        <nav className="px-3 pb-3 pt-4 space-y-5" aria-label="Navigasi utama">
+        <nav className="px-3 pb-3 pt-4 space-y-5" aria-label={t.shell.sidebar.navigasiUtama}>
           {navGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-0.5">
               {group.group && (
                 <button
                   type="button"
-                  onClick={() => setTerbuka((t) => ({ ...t, [group.group!]: !t[group.group!] }))}
+                  onClick={() => setTerbuka((prev) => ({ ...prev, [group.group!]: !prev[group.group!] }))}
                   aria-expanded={!!terbuka[group.group]}
                   className="flex w-full items-center justify-between rounded px-3 pb-1.5 pt-0.5 font-sans text-xs font-bold text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 >
-                  {group.group}
+                  {t.shell.sidebar.grup[group.group]}
                   <ChevronDown
                     size={14}
                     strokeWidth={1.8}
@@ -209,7 +214,7 @@ export default function Sidebar({
                       }`}
                     />
                     <span className="relative inline-flex min-w-0 flex-col items-start">
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{t.shell.sidebar.menu[item.label]}</span>
                       <span
                         aria-hidden="true"
                         className={`mt-0.5 h-[2px] origin-left bg-[var(--accent)] transition-all duration-300 ease-out ${

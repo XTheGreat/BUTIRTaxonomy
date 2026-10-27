@@ -8,9 +8,12 @@ import { saveToken, saveUser } from "@/lib/auth";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthShell from "@/components/layout/AuthShell";
+import { useTeks } from "@/lib/teks";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTeks();
+  const d = t.auth.daftar;
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +33,7 @@ export default function RegisterPage() {
       saveUser(data.user);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Pendaftaran gagal. Silakan coba kembali.");
+      setError(err.message || d.gagal);
     } finally {
       setLoading(false);
     }
@@ -39,44 +42,44 @@ export default function RegisterPage() {
   return (
     <AuthShell
       denganFooterSitus
-      title="Daftar Akun Guru / Dosen"
-      subtitle="Buat akun penguji untuk mulai menyusun dan menelaah naskah soal."
+      title={d.judul}
+      subtitle={d.subjudul}
       footer={
         <div>
-          Sudah memiliki akun?{" "}
+          {d.sudahPunyaAkun}{" "}
           <Link
             href="/login"
             className="text-[var(--accent)] hover:underline font-medium"
           >
-            Masuk ke lembar kerja
+            {d.masukKeLembarKerja}
           </Link>
         </div>
       }
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
-          label="Nama Lengkap"
+          label={d.namaLengkap}
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          placeholder="Dra. Siti Aminah, M.Pd."
+          placeholder={d.namaContoh}
           required
         />
         <Input
-          label="Email"
+          label={d.email}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="nama@study.id"
+          placeholder={d.emailContoh}
           autoComplete="email"
           required
         />
         <Input
-          label="Password"
+          label={d.password}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Minimal 8 karakter"
-          helper="Gunakan minimal 8 karakter kombinasi huruf dan angka"
+          placeholder={d.passwordPlaceholder}
+          helper={d.passwordBantuan}
           minLength={8}
           autoComplete="new-password"
           required
@@ -87,7 +90,7 @@ export default function RegisterPage() {
           </div>
         )}
         <Button type="submit" disabled={loading} className="w-full mt-2">
-          {loading ? "Mendaftarkan..." : "Daftar Akun"}
+          {loading ? d.mendaftarkan : d.tombol}
         </Button>
       </form>
     </AuthShell>

@@ -7,16 +7,16 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthShell from "@/components/layout/AuthShell";
 import MasukGuru from "./MasukGuru";
+import { useTeks } from "@/lib/teks";
 
 type Peran = "guru" | "siswa";
 
-const PERAN: { id: Peran; label: string }[] = [
-  { id: "guru", label: "Guru / Dosen" },
-  { id: "siswa", label: "Siswa / Mahasiswa" },
-];
+const DAFTAR_PERAN: Peran[] = ["guru", "siswa"];
 
 export default function LoginForm({ awal }: { awal: Peran }) {
   const router = useRouter();
+  const t = useTeks();
+  const l = t.auth.login;
   const [peran, setPeran] = useState<Peran>(awal);
   const [kode, setKode] = useState("");
   const [error, setError] = useState("");
@@ -49,7 +49,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
     e.preventDefault();
     const bersih = kode.trim().toUpperCase();
     if (!bersih) {
-      setError("Masukkan kode akses ujian.");
+      setError(l.siswa.kodeKosong);
       return;
     }
     setError("");
@@ -66,24 +66,24 @@ export default function LoginForm({ awal }: { awal: Peran }) {
   return (
     <AuthShell
       denganFooterSitus
-      title={siswa ? "Masuk ke Ujian" : "Masuk ke Akun"}
+      title={siswa ? l.siswa.judul : l.guru.judul}
       subtitle={
         siswa
-          ? "Masukkan kode akses ujian dari guru atau dosen Anda untuk mulai mengerjakan."
-          : "Masuk dengan Google, atau dengan email dan kata sandi yang Anda daftarkan."
+          ? l.siswa.subjudul
+          : l.guru.subjudul
       }
       footer={
         siswa ? (
-          <span>Kode akses diberikan oleh guru atau dosen saat ujian diterbitkan.</span>
+          <span>{l.siswa.catatan}</span>
         ) : (
           <div className="space-y-1.5">
             <div>
-              Belum memiliki akun?{" "}
+              {l.guru.belumPunyaAkun}{" "}
               <Link
                 href="/register"
                 className="text-[var(--accent)] hover:underline font-medium"
               >
-                Daftar baru
+                {l.guru.daftarBaru}
               </Link>
             </div>
             <div>
@@ -91,7 +91,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
                 href="/reset-password"
                 className="text-[var(--ink-muted)] hover:text-[var(--ink)] hover:underline"
               >
-                Lupa password?
+                {l.guru.lupaPassword}
               </Link>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
     >
       <div
         role="tablist"
-        aria-label="Masuk sebagai"
+        aria-label={l.labelPeran}
         onKeyDown={handleTabKey}
         className="relative grid grid-cols-2 mb-6 overflow-hidden rounded border border-[var(--line-strong)] bg-[var(--surface)]"
       >
@@ -116,23 +116,23 @@ export default function LoginForm({ awal }: { awal: Peran }) {
           aria-hidden="true"
           className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--line-strong)] z-[1]"
         />
-        {PERAN.map((p) => {
-          const aktif = peran === p.id;
+        {DAFTAR_PERAN.map((p) => {
+          const aktif = peran === p;
           return (
             <button
-              key={p.id}
+              key={p}
               type="button"
               role="tab"
-              id={`tab-${p.id}`}
+              id={`tab-${p}`}
               aria-selected={aktif}
-              aria-controls={`panel-${p.id}`}
+              aria-controls={`panel-${p}`}
               tabIndex={aktif ? 0 : -1}
-              onClick={() => pilihPeran(p.id)}
+              onClick={() => pilihPeran(p)}
               className={`relative z-[2] py-2.5 text-sm font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/70 ${
                 aktif ? "text-white" : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
               }`}
             >
-              {p.label}
+              {l.peran[p]}
             </button>
           );
         })}
@@ -161,11 +161,11 @@ export default function LoginForm({ awal }: { awal: Peran }) {
           <form onSubmit={handleMasukSiswa} className="flex flex-col gap-4">
             <Input
               ref={kodeRef}
-              label="Kode Akses Ujian"
+              label={l.siswa.labelKode}
               value={kode}
               onChange={(e) => setKode(e.target.value.toUpperCase())}
               placeholder="A1B2C3D4"
-              helper="Nama lengkap diisi pada langkah berikutnya."
+              helper={l.siswa.bantuanKode}
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
@@ -177,7 +177,7 @@ export default function LoginForm({ awal }: { awal: Peran }) {
               </div>
             )}
             <Button type="submit" disabled={!kode.trim()} className="w-full mt-2">
-              Lanjutkan
+              {l.siswa.lanjutkan}
             </Button>
           </form>
         </div>

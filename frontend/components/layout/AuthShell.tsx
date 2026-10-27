@@ -1,9 +1,12 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import LatarLabirin from "./LatarLabirin";
 import FooterSitus from "./FooterSitus";
 import AlurKerjaAnimasi from "./AlurKerjaAnimasi";
+import { useTeks } from "@/lib/teks";
 
 interface AuthShellProps {
   title: string;
@@ -20,6 +23,7 @@ export default function AuthShell({
   footer,
   denganFooterSitus = false,
 }: AuthShellProps) {
+  const t = useTeks();
   return (
     <div className="min-h-screen bg-[var(--canvas)] flex flex-col text-[var(--ink)]">
       <div className="flex min-h-screen flex-col lg:flex-row">
@@ -40,7 +44,7 @@ export default function AuthShell({
           </div>
 
           <p className="text-sm text-[var(--accent)] leading-relaxed mb-10 max-w-sm">
-            Sistem validasi dan standardisasi butir soal ujian akademik berbasis simulasi deliberasi agen kecerdasan buatan.
+            {t.auth.shell.deskripsi}
           </p>
 
           <AlurKerjaAnimasi />
@@ -106,7 +110,7 @@ export default function AuthShell({
         </div>
 
         <div className="text-[11px] text-[var(--accent)]/80 font-mono pt-8 border-t border-[var(--accent)]/20 mt-8 lg:mt-0">
-          Standar Evaluasi Naskah Akademik
+          {t.auth.shell.standar}
         </div>
       </div>
 

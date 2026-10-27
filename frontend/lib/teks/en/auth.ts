@@ -1,5 +1,105 @@
 import type id from "../id/auth";
 
-const auth: typeof id = {};
+const auth: typeof id = {
+  shell: {
+    deskripsi:
+      "A system for validating and standardizing academic exam items, built on simulated deliberation between AI agents.",
+    standar: "Academic Assessment Standard",
+  },
+  alurKerja: {
+    judulPanel: "System Workflow",
+    labelBagian: "System workflow",
+    langkah: [
+      { judul: "Building the Blueprint", uraian: "Set the course material and the Bloom's Taxonomy mix (C1–C6)." },
+      { judul: "Multi-Agent Debate", uraian: "Critical review by four agents (Drafter, Critic, Blind Answerer, Arbiter)." },
+      { judul: "Assembly & Evaluation", uraian: "Issue exam access codes and empirically calibrate item discrimination." },
+    ],
+  },
+  login: {
+    peran: {
+      guru: "Teacher / Lecturer",
+      siswa: "Student",
+    },
+    labelPeran: "Sign in as",
+    siswa: {
+      judul: "Enter an Exam",
+      subjudul: "Enter the exam access code from your teacher or lecturer to get started.",
+      catatan: "Your teacher or lecturer gives you the access code when the exam is published.",
+      labelKode: "Exam Access Code",
+      bantuanKode: "You'll enter your full name in the next step.",
+      kodeKosong: "Enter the exam access code.",
+      lanjutkan: "Continue",
+    },
+    guru: {
+      judul: "Sign In",
+      subjudul: "Sign in with Google, or with the email and password you registered.",
+      belumPunyaAkun: "Don't have an account?",
+      daftarBaru: "Sign up",
+      lupaPassword: "Forgot password?",
+    },
+  },
+  masukGuru: {
+    gagalMasuk: "Sign-in failed. Check your email and password.",
+    googleGagal: "Google sign-in failed.",
+    googleBelumAktif: "Google sign-in isn't enabled yet. Use your email and password.",
+    lanjutkanGoogle: "Continue with Google",
+    atau: "or",
+    email: "Email",
+    emailContoh: "name@university.edu",
+    kataSandi: "Password",
+    memverifikasi: "Verifying...",
+    masuk: "Sign in",
+    masukDenganKode: "Sign in with an email code",
+    kodeTerkirim: (email: string) =>
+      `We sent a 6-digit code to ${email}. Check your inbox and spam folder.`,
+    gagalKirimKode: "Couldn't send the code.",
+    kodeSalah: "The code is incorrect or has expired.",
+    labelKode: "Sign-in code",
+    kembali: "Back",
+    kirimUlang: "Resend code",
+  },
+  tombolGoogle: {
+    skripGagal: "The Google script failed to load",
+    tidakDapatDimuat: "The Google button couldn't be loaded. Check your connection, or sign in with email.",
+  },
+  daftar: {
+    judul: "Teacher / Lecturer Sign-up",
+    subjudul: "Create an examiner account to start drafting and reviewing exam items.",
+    sudahPunyaAkun: "Already have an account?",
+    masukKeLembarKerja: "Go to your workspace",
+    namaLengkap: "Full Name",
+    namaContoh: "Dr. Jane Smith",
+    email: "Email",
+    emailContoh: "name@university.edu",
+    password: "Password",
+    passwordPlaceholder: "At least 8 characters",
+    passwordBantuan: "Use at least 8 characters, combining letters and numbers",
+    gagal: "Sign-up failed. Please try again.",
+    mendaftarkan: "Creating account...",
+    tombol: "Create Account",
+  },
+  resetPassword: {
+    judul: "Reset Password",
+    subjudulReset: "Create a new password for your account.",
+    subjudulMinta: "Enter your registered email address to receive a recovery link.",
+    kembaliKeMasuk: "← Back to sign in",
+    berhasil: "Your password has been updated. Please sign in with your new password.",
+    keHalamanMasuk: "Go to Sign In",
+    passwordBaru: "New Password",
+    passwordPlaceholder: "At least 8 characters",
+    passwordBantuan: "At least 8 characters, including letters and numbers",
+    mintaTautanBaru: "Request a new link",
+    menyimpan: "Saving...",
+    simpanPasswordBaru: "Save New Password",
+    gagalPerbarui: "Couldn't update the password.",
+    emailTerdaftar: "Registered Email",
+    emailContoh: "name@university.edu",
+    tautanTerkirim:
+      "If the email is registered, a link to reset your password has been sent. Check your inbox and spam folder.",
+    gagalProses: "Couldn't process the request.",
+    mengirim: "Sending...",
+    kirimTautan: "Send Recovery Link",
+  },
+};
 
 export default auth;

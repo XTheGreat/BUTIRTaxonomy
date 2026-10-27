@@ -7,18 +7,19 @@ import { ArrowRight, History } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { formatWaktu } from "@/lib/format";
 import { HistoryDebatTerakhir } from "@/lib/types";
+import { useTeks } from "@/lib/teks";
 import MathText from "@/components/ui/MathText";
 import {
   Kotak,
   PipRonde,
   RingkasanStatus,
-  STATUS_HISTORY,
   warnaPenanda,
   warnaStatus,
 } from "@/components/ui/HistoryParts";
 
 export default function HistoryDebat() {
   const pathname = usePathname();
+  const t = useTeks();
   const [data, setData] = useState<HistoryDebatTerakhir | null>(null);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function HistoryDebat() {
 
   return (
     <section
-      aria-label="History debat terakhir"
+      aria-label={t.shell.historyDebat.labelBagian}
       className="mx-3 mt-2 mb-4 border border-[var(--line)] rounded-md bg-[var(--surface)] overflow-hidden"
     >
       <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--line)] bg-[var(--canvas)]">
@@ -62,17 +63,17 @@ export default function HistoryDebat() {
             aria-hidden="true"
           />
           <h2 className="font-serif text-[13px] font-medium text-[var(--ink)]">
-            History
+            {t.shell.historyDebat.judul}
           </h2>
         </div>
         <span className="font-mono text-[10px] text-[var(--ink-muted)]">
-          debat terakhir
+          {t.shell.historyDebat.keterangan}
         </span>
       </header>
 
       {!data ? (
         <p className="px-3 py-3.5 font-serif text-xs leading-relaxed text-[var(--ink-muted)]">
-          Belum ada riwayat debat. Ringkasan generasi yang telah selesai akan tampil di sini.
+          {t.shell.historyDebat.kosong}
         </p>
       ) : (
         <>
@@ -82,7 +83,7 @@ export default function HistoryDebat() {
                 {data.label}
               </p>
               <p className="mt-0.5 font-mono text-[10px] text-[var(--ink-muted)] tabular-nums">
-                {formatWaktu(data.selesai)} · {data.total} butir
+                {formatWaktu(data.selesai)} · {t.shell.historyDebat.jumlahButir(data.total)}
               </p>
             </div>
 
@@ -97,7 +98,7 @@ export default function HistoryDebat() {
                 </span>
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="font-serif text-[11px] leading-snug text-[var(--ink)] line-clamp-2 break-words">
-                    <MathText text={item.pertanyaan || `Butir ${i + 1}`} gulir={false} />
+                    <MathText text={item.pertanyaan || t.shell.historyDebat.butirKe(i + 1)} gulir={false} />
                   </p>
                   <div className="flex items-center justify-between gap-2 font-sans text-[10px]">
                     <span
@@ -110,7 +111,7 @@ export default function HistoryDebat() {
                         className="!w-1.5 !h-1.5"
                       />
                       <span className="truncate">
-                        {STATUS_HISTORY.find((s) => s.key === item.status)?.label ?? item.status}
+                        {t.shell.historyDebat.status[item.status] ?? item.status}
                       </span>
                     </span>
                     <PipRonde ronde={item.ronde_saat_ini} />
@@ -124,7 +125,7 @@ export default function HistoryDebat() {
             href="/history"
             className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--canvas)] px-3 py-2 font-sans text-[11px] font-medium text-[var(--accent)] transition-colors duration-[140ms] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-inset"
           >
-            <span>Lihat semua soal ({data.total})</span>
+            <span>{t.shell.historyDebat.lihatSemua(data.total)}</span>
             <ArrowRight size={12} strokeWidth={2} aria-hidden="true" />
           </Link>
         </>

@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
-
-const LANGKAH = [
-  { nomor: "1", judul: "Penyusunan Kisi-kisi", uraian: "Penetapan materi ajar dan proporsi Taksonomi Bloom (C1–C6)." },
-  { nomor: "2", judul: "Debat Multi-Agen", uraian: "Telaah kritis empat agen (Penyusun, Kritikus, Penjawab Buta, Arbiter)." },
-  { nomor: "3", judul: "Perakitan & Evaluasi", uraian: "Penerbitan kode ujian peserta dan kalibrasi empiris daya beda butir." },
-];
+import { useTeks } from "@/lib/teks";
 
 const PERSAMAAN = [
   String.raw`i\hbar\frac{\partial}{\partial t}\Psi=\left[-\frac{\hbar^{2}}{2m}\nabla^{2}+V\right]\Psi`,
@@ -30,7 +25,6 @@ const KECEPATAN_RUMUS = 26;
 const KECEPATAN_HAPUS = 45;
 const URUTAN_KELUAR = ["alur-keluar-kiri", "alur-keluar-atas", "alur-keluar-kanan"];
 const URUTAN_GILIRAN = [0, 2, 1];
-const JUDUL_PANEL = "Alur Kerja Sistem";
 
 function acak<T>(daftar: T[], n: number): T[] {
   const salinan = [...daftar];
@@ -74,6 +68,12 @@ function Rumus({ tex, jumlah }: { tex: string; jumlah: number }) {
 }
 
 export default function AlurKerjaAnimasi() {
+  const t = useTeks();
+  const judulPanel = t.auth.alurKerja.judulPanel;
+  const langkah = useMemo(
+    () => t.auth.alurKerja.langkah.map((l, i) => ({ nomor: String(i + 1), ...l })),
+    [t.auth.alurKerja.langkah],
+  );
   const [fase, setFase] = useState<Fase>("alur");
   const [pudar, setPudar] = useState(false);
   const [reduksi, setReduksi] = useState(false);
@@ -151,20 +151,20 @@ export default function AlurKerjaAnimasi() {
         setPudar(false);
         setFase("alur");
         await tunggu(300);
-        await ketik(JUDUL_PANEL, setJudul);
+        await ketik(judulPanel, setJudul);
         await tunggu(250);
-        for (let i = 0; i < LANGKAH.length; i++) {
+        for (let i = 0; i < langkah.length; i++) {
           ubahLarik<boolean>(setBulatTampil, i, true);
           await tunggu(220);
         }
         await tunggu(350);
-        for (let i = 0; i < LANGKAH.length; i++) {
+        for (let i = 0; i < langkah.length; i++) {
           if (batal) return;
           setAktif(i);
           ubahLarik<boolean>(setBulatIsi, i, true);
           await tunggu(380);
-          await ketik(LANGKAH[i].judul, (s) => ubahLarik(setJudulL, i, s));
-          await ketik(LANGKAH[i].uraian, (s) => ubahLarik(setUraianL, i, s));
+          await ketik(langkah[i].judul, (s) => ubahLarik(setJudulL, i, s));
+          await ketik(langkah[i].uraian, (s) => ubahLarik(setUraianL, i, s));
           await tunggu(350);
         }
         setAktif(-1);
@@ -239,20 +239,20 @@ export default function AlurKerjaAnimasi() {
       reduksiMq.removeEventListener("change", sinkron);
       lebarMq.removeEventListener("change", sinkron);
     };
-  }, []);
+  }, [langkah, judulPanel]);
 
 
     const kursor = (tampil: boolean) =>
     tampil ? <span aria-hidden="true" className="kursor-ketik" style={{ height: "0.9em", marginLeft: 1 }} /> : null;
 
   return (
-    <section aria-label="Alur kerja sistem" className="alur-panel border-t border-[var(--accent)]/20 pt-8">
+    <section aria-label={t.auth.alurKerja.labelBagian} className="alur-panel border-t border-[var(--accent)]/20 pt-8">
       <div className={reduksi ? "" : "lg:hidden"}>
-        <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent)]">{JUDUL_PANEL}</div>
+        <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent)]">{judulPanel}</div>
         <ol>
-          {LANGKAH.map((l, i) => (
-            <li key={l.nomor} className={`relative flex items-start gap-3.5 ${i === LANGKAH.length - 1 ? "" : "pb-4"}`}>
-              {i < LANGKAH.length - 1 && (
+          {langkah.map((l, i) => (
+            <li key={l.nomor} className={`relative flex items-start gap-3.5 ${i === langkah.length - 1 ? "" : "pb-4"}`}>
+              {i < langkah.length - 1 && (
                 <span aria-hidden="true" className="absolute bg-[var(--accent)]/40" style={{ left: 12, width: 3, top: 30, bottom: 2 }} />
               )}
               <span
@@ -275,11 +275,11 @@ export default function AlurKerjaAnimasi() {
         <div className={pudar ? "alur-pudar" : ""}>
           <div className="mb-4 h-4 font-sans text-sm font-medium leading-4 text-[var(--accent)]">
             {judul}
-            {kursor(judul.length > 0 && judul.length < JUDUL_PANEL.length)}
+            {kursor(judul.length > 0 && judul.length < judulPanel.length)}
           </div>
           <ol>
-            {LANGKAH.map((l, i) => {
-              const terakhir = i === LANGKAH.length - 1;
+            {langkah.map((l, i) => {
+              const terakhir = i === langkah.length - 1;
               const tampil = bulatTampil[i];
               const isi = bulatIsi[i];
               return (

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { DAFTAR_FAKTA } from "@/lib/faktaUnik";
+import { useTeks } from "@/lib/teks";
 
 interface ItemFakta {
   id: number;
-  teks: string;
+  indeksFakta: number;
   topPercent: number;
   delayAwal: number;
 }
@@ -22,14 +22,17 @@ const ZONA = [
 
 // Item awal terdistribusi di 3 zona dengan offset berbeda agar langsung hidup saat dimuat
 const ITEMS_AWAL: ItemFakta[] = [
-  { id: 1, teks: DAFTAR_FAKTA[0], topPercent: ZONA[0].topPercent, delayAwal: -18 },
-  { id: 2, teks: DAFTAR_FAKTA[1], topPercent: ZONA[1].topPercent, delayAwal: -26 },
-  { id: 3, teks: DAFTAR_FAKTA[2], topPercent: ZONA[1].topPercent, delayAwal: -8 },
-  { id: 4, teks: DAFTAR_FAKTA[3], topPercent: ZONA[2].topPercent, delayAwal: -14 },
-  { id: 5, teks: DAFTAR_FAKTA[4], topPercent: ZONA[2].topPercent, delayAwal: 0 },
+  { id: 1, indeksFakta: 0, topPercent: ZONA[0].topPercent, delayAwal: -18 },
+  { id: 2, indeksFakta: 1, topPercent: ZONA[1].topPercent, delayAwal: -26 },
+  { id: 3, indeksFakta: 2, topPercent: ZONA[1].topPercent, delayAwal: -8 },
+  { id: 4, indeksFakta: 3, topPercent: ZONA[2].topPercent, delayAwal: -14 },
+  { id: 5, indeksFakta: 4, topPercent: ZONA[2].topPercent, delayAwal: 0 },
 ];
 
 export default function FaktaUnikBerjalan() {
+  const t = useTeks();
+  const fakta = t.shell.faktaBerjalan.daftar;
+  const jumlahFakta = fakta.length;
   const [items, setItems] = useState<ItemFakta[]>(ITEMS_AWAL);
   const idCounter = useRef(6);
   const riwayatFakta = useRef<number[]>([0, 1, 2, 3, 4]);
@@ -39,11 +42,11 @@ export default function FaktaUnikBerjalan() {
     const timerList: NodeJS.Timeout[] = [];
 
     // Mengambil fakta acak dari koleksi tanpa pengulangan langsung
-    function ambilFaktaAcak(): string {
+    function ambilIndeksFaktaAcak(): number {
       let index: number;
       let percobaan = 0;
       do {
-        index = Math.floor(Math.random() * DAFTAR_FAKTA.length);
+        index = Math.floor(Math.random() * jumlahFakta);
         percobaan++;
       } while (riwayatFakta.current.includes(index) && percobaan < 35);
 
@@ -51,13 +54,13 @@ export default function FaktaUnikBerjalan() {
       if (riwayatFakta.current.length > 30) {
         riwayatFakta.current.shift();
       }
-      return DAFTAR_FAKTA[index];
+      return index;
     }
 
     function buatItem(topPercent: number): ItemFakta {
       return {
         id: idCounter.current++,
-        teks: ambilFaktaAcak(),
+        indeksFakta: ambilIndeksFaktaAcak(),
         topPercent,
         delayAwal: 0,
       };
@@ -98,7 +101,7 @@ export default function FaktaUnikBerjalan() {
       dibatalkan = true;
       timerList.forEach((t) => clearTimeout(t));
     };
-  }, []);
+  }, [jumlahFakta]);
 
   function handleAnimationEnd(id: number) {
     setItems((prev) => prev.filter((item) => item.id !== id));
@@ -107,7 +110,7 @@ export default function FaktaUnikBerjalan() {
   return (
     <div
       className="relative w-full h-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_48px,black_calc(100%-48px),transparent)] select-none"
-      aria-label="Fakta Pengetahuan Berjalan"
+      aria-label={t.shell.faktaBerjalan.labelBagian}
     >
       {/* Render teks fakta murni tanpa border dan tanpa background */}
       {items.map((item) => (
@@ -122,7 +125,7 @@ export default function FaktaUnikBerjalan() {
           }}
           className="absolute whitespace-nowrap font-serif text-sm sm:text-base text-[var(--ink)] tracking-normal cursor-default transition-colors duration-150 hover:text-[var(--accent)] hover:[animation-play-state:paused]"
         >
-          {item.teks}
+          {fakta[item.indeksFakta]}
         </p>
       ))}
     </div>

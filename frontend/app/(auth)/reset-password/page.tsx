@@ -6,8 +6,11 @@ import { apiFetch } from "@/lib/api";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthShell from "@/components/layout/AuthShell";
+import { useTeks } from "@/lib/teks";
 
 export default function ResetPasswordPage() {
+  const t = useTeks();
+  const r = t.auth.resetPassword;
   const [token, setToken] = useState<string | null>(null);
   const [siap, setSiap] = useState(false);
   const [email, setEmail] = useState("");
@@ -32,11 +35,9 @@ export default function ResetPasswordPage() {
         method: "POST",
         body: JSON.stringify({ email }),
       });
-      setMessage(
-        "Jika email terdaftar, tautan untuk mengatur ulang password sudah dikirim. Periksa kotak masuk dan folder spam."
-      );
+      setMessage(r.tautanTerkirim);
     } catch (err: any) {
-      setError(err.message || "Gagal memproses permintaan.");
+      setError(err.message || r.gagalProses);
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ export default function ResetPasswordPage() {
       });
       setSelesai(true);
     } catch (err: any) {
-      setError(err.message || "Gagal memperbarui password.");
+      setError(err.message || r.gagalPerbarui);
     } finally {
       setLoading(false);
     }
@@ -64,11 +65,11 @@ export default function ResetPasswordPage() {
   return (
     <AuthShell
       denganFooterSitus
-      title="Atur Ulang Password"
+      title={r.judul}
       subtitle={
         modeReset
-          ? "Buat password baru untuk akun Anda."
-          : "Masukkan alamat email terdaftar untuk menerima tautan pemulihan."
+          ? r.subjudulReset
+          : r.subjudulMinta
       }
       footer={
         <div>
@@ -76,7 +77,7 @@ export default function ResetPasswordPage() {
             href="/login"
             className="text-[var(--ink-muted)] hover:text-[var(--ink)] hover:underline"
           >
-            ← Kembali ke halaman masuk
+            {r.kembaliKeMasuk}
           </Link>
         </div>
       }
@@ -84,22 +85,22 @@ export default function ResetPasswordPage() {
       {!siap ? null : selesai ? (
         <div className="flex flex-col gap-4">
           <div className="p-2.5 text-xs leading-relaxed text-[#1F6B3A]">
-            Password berhasil diperbarui. Silakan masuk dengan password baru.
+            {r.berhasil}
           </div>
           <Link href="/login">
-            <Button className="w-full">Ke Halaman Masuk</Button>
+            <Button className="w-full">{r.keHalamanMasuk}</Button>
           </Link>
         </div>
       ) : modeReset ? (
         <form onSubmit={handleReset} className="flex flex-col gap-4">
           <Input
-            label="Password Baru"
+            label={r.passwordBaru}
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Minimal 8 karakter"
+            placeholder={r.passwordPlaceholder}
             minLength={8}
-            helper="Minimal 8 karakter, memuat huruf dan angka"
+            helper={r.passwordBantuan}
             autoComplete="new-password"
             required
           />
@@ -107,22 +108,22 @@ export default function ResetPasswordPage() {
             <div className="p-2.5 text-xs leading-relaxed text-[#A4262C]">
               {error}{" "}
               <Link href="/reset-password" className="underline">
-                Minta tautan baru
+                {r.mintaTautanBaru}
               </Link>
             </div>
           )}
           <Button type="submit" disabled={loading} className="w-full mt-2">
-            {loading ? "Menyimpan..." : "Simpan Password Baru"}
+            {loading ? r.menyimpan : r.simpanPasswordBaru}
           </Button>
         </form>
       ) : (
         <form onSubmit={handleRequest} className="flex flex-col gap-4">
           <Input
-            label="Email Terdaftar"
+            label={r.emailTerdaftar}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="nama@study.id"
+            placeholder={r.emailContoh}
             autoComplete="email"
             required
           />
@@ -137,7 +138,7 @@ export default function ResetPasswordPage() {
             </div>
           )}
           <Button type="submit" disabled={loading} className="w-full mt-2">
-            {loading ? "Mengirim..." : "Kirim Tautan Pemulihan"}
+            {loading ? r.mengirim : r.kirimTautan}
           </Button>
         </form>
       )}

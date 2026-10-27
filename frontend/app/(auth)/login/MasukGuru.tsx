@@ -8,6 +8,7 @@ import { saveToken, saveUser } from "@/lib/auth";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import TombolGoogle from "@/components/auth/TombolGoogle";
+import { useTeks } from "@/lib/teks";
 
 const KODE_EMAIL_AKTIF = false;
 
@@ -18,6 +19,8 @@ const tautan =
 
 export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTMLInputElement | null> }) {
   const router = useRouter();
+  const t = useTeks();
+  const m = t.auth.masukGuru;
   const [googleClientId, setGoogleClientId] = useState<string | null>(null);
   const [langkah, setLangkah] = useState<Langkah>("sandi");
   const [email, setEmail] = useState("");
@@ -55,30 +58,30 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
     e.preventDefault();
     return jalankan(async () => {
       selesai(await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }));
-    }, "Gagal masuk. Periksa kembali email dan password.");
+    }, m.gagalMasuk);
   }
 
   function masukGoogle(credential: string) {
     return jalankan(async () => {
       selesai(await apiFetch("/api/auth/google", { method: "POST", body: JSON.stringify({ credential }) }));
-    }, "Masuk dengan Google gagal.");
+    }, m.googleGagal);
   }
 
   function kirimKode(e?: React.FormEvent) {
     e?.preventDefault();
     return jalankan(async () => {
       await apiFetch("/api/auth/kode/minta", { method: "POST", body: JSON.stringify({ email }) });
-      setInfo(`Kode 6 digit dikirim ke ${email.trim()}. Periksa kotak masuk dan folder spam.`);
+      setInfo(m.kodeTerkirim(email.trim()));
       setKode("");
       setLangkah("kode");
-    }, "Gagal mengirim kode.");
+    }, m.gagalKirimKode);
   }
 
   function verifikasiKode(e: React.FormEvent) {
     e.preventDefault();
     return jalankan(async () => {
       selesai(await apiFetch("/api/auth/kode/verifikasi", { method: "POST", body: JSON.stringify({ email, kode }) }));
-    }, "Kode salah atau sudah kedaluwarsa.");
+    }, m.kodeSalah);
   }
 
   const kotakGalat = galat && (
@@ -92,7 +95,7 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
       <form onSubmit={verifikasiKode} className="flex flex-col gap-4">
         <p className="text-sm leading-relaxed text-[var(--ink-muted)]">{info}</p>
         <Input
-          label="Kode masuk"
+          label={m.labelKode}
           value={kode}
           onChange={(e) => setKode(e.target.value.replace(/\D/g, "").slice(0, 6))}
           placeholder="123456"
@@ -104,14 +107,14 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
         />
         {kotakGalat}
         <Button type="submit" disabled={sibuk || kode.length !== 6} className="w-full">
-          {sibuk ? "Memverifikasi..." : "Masuk"}
+          {sibuk ? m.memverifikasi : m.masuk}
         </Button>
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <button type="button" onClick={() => setLangkah("sandi")} className={tautan}>
-            Kembali
+            {m.kembali}
           </button>
           <button type="button" disabled={sibuk} onClick={() => kirimKode()} className={tautan}>
-            Kirim ulang kode
+            {m.kirimUlang}
           </button>
         </div>
       </form>
@@ -126,33 +129,33 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
         <button
           type="button"
           disabled={googleClientId === null}
-          onClick={() => setGalat("Masuk dengan Google belum diaktifkan. Gunakan email dan kata sandi.")}
+          onClick={() => setGalat(m.googleBelumAktif)}
           className="flex w-full items-center justify-center gap-3 rounded border border-[var(--line-strong)] bg-[var(--canvas)] px-3.5 py-2 text-sm font-medium text-[var(--ink)] transition-colors duration-[140ms] hover:border-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-40"
         >
           <FcGoogle size={20} aria-hidden="true" />
-          Lanjutkan dengan Google
+          {m.lanjutkanGoogle}
         </button>
       )}
 
       <div className="flex items-center gap-3" aria-hidden="true">
         <span className="h-px flex-1 bg-[var(--line-strong)]" />
-        <span className="font-mono text-[11px] uppercase text-[var(--ink-muted)]">atau</span>
+        <span className="font-mono text-[11px] uppercase text-[var(--ink-muted)]">{m.atau}</span>
         <span className="h-px flex-1 bg-[var(--line-strong)]" />
       </div>
 
       <form onSubmit={masukSandi} className="flex flex-col gap-4">
         <Input
           ref={emailRef}
-          label="Email"
+          label={m.email}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="nama@kampus.ac.id"
+          placeholder={m.emailContoh}
           autoComplete="email"
           required
         />
         <Input
-          label="Kata sandi"
+          label={m.kataSandi}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -162,13 +165,13 @@ export default function MasukGuru({ emailRef }: { emailRef: React.RefObject<HTML
         />
         {kotakGalat}
         <Button type="submit" disabled={sibuk} className="w-full">
-          {sibuk ? "Memverifikasi..." : "Masuk"}
+          {sibuk ? m.memverifikasi : m.masuk}
         </Button>
       </form>
 
       {KODE_EMAIL_AKTIF && (
         <button type="button" disabled={sibuk || !email.trim()} onClick={() => kirimKode()} className={`${tautan} self-start text-xs`}>
-          Masuk dengan kode email
+          {m.masukDenganKode}
         </button>
       )}
     </div>
