@@ -239,9 +239,10 @@ export default function DebatLogPage({
                                         ([kriteria, skor]) => (
                                           <PipMeter
                                             key={kriteria}
-                                            label={kriteria
-                                              .replace(/_/g, " ")
-                                              .replace(/\b\w/g, (c) => c.toUpperCase())}
+                                            label={
+                                              t.rubrik[kriteria] ??
+                                              kriteria.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+                                            }
                                             score={typeof skor === "number" ? skor : 3}
                                             maxScore={5}
                                           />

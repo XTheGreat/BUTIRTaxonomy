@@ -329,7 +329,7 @@ export default function KisiKisiPage() {
             </p>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 pt-1">
             {BLOOM_LEVELS.map((level) => (
               <div
                 key={level}

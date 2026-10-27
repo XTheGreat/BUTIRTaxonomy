@@ -249,6 +249,15 @@ const telaah: typeof id = {
     naskahBelumTersusun: "This item's draft has not been written because the debate is pending.",
   },
 
+  // Nama kriteria rubrik Kritikus; kuncinya berasal dari backend (`app/services/agents/skema.py`).
+  rubrik: {
+    kesesuaian_materi: "Material Alignment",
+    kejelasan_stem: "Stem Clarity",
+    kualitas_pengecoh: "Distractor Quality",
+    kesesuaian_level_kognitif: "Cognitive Level Fit",
+    bebas_petunjuk: "Free of Cues",
+  } as Record<string, string>,
+
   debat: {
     judul: "Live Debate",
     deskripsi: "Watch the four agents debate this question as it happens. The page updates automatically.",

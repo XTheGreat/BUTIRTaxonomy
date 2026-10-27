@@ -250,6 +250,15 @@ const telaah = {
     naskahBelumTersusun: "Naskah butir ini belum tersusun karena proses debat tertunda.",
   },
 
+  // Nama kriteria rubrik Kritikus; kuncinya berasal dari backend (`app/services/agents/skema.py`).
+  rubrik: {
+    kesesuaian_materi: "Kesesuaian Materi",
+    kejelasan_stem: "Kejelasan Stem",
+    kualitas_pengecoh: "Kualitas Pengecoh",
+    kesesuaian_level_kognitif: "Kesesuaian Level Kognitif",
+    bebas_petunjuk: "Bebas Petunjuk",
+  } as Record<string, string>,
+
   debat: {
     judul: "Debat Live",
     deskripsi: "Pantau keempat agen berdebat soal ini langsung saat prosesnya berjalan. Halaman diperbarui otomatis.",

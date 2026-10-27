@@ -78,7 +78,8 @@ function IsiPenyusun({ o }: { o: Record<string, any> }) {
 }
 
 function IsiKritikus({ o }: { o: Record<string, any> }) {
-  const d = useTeks().telaah.debat;
+  const telaah = useTeks().telaah;
+  const d = telaah.debat;
   return (
     <div className="space-y-3">
       {o.skor_rubrik && (
@@ -86,7 +87,7 @@ function IsiKritikus({ o }: { o: Record<string, any> }) {
           {Object.entries(o.skor_rubrik as Record<string, number>).map(([k, v]) => (
             <PipMeter
               key={k}
-              label={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              label={telaah.rubrik[k] ?? k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
               score={typeof v === "number" ? v : 3}
               maxScore={5}
             />

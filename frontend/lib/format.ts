@@ -1,8 +1,10 @@
 import { useBahasa, type Bahasa } from "@/lib/teks";
+import { bahasaAktifSekarang } from "@/lib/teks/aktif";
 
 const LOKAL: Record<Bahasa, string> = { id: "id-ID", en: "en-US" };
 
-export function formatWaktu(iso: string | null, bahasa: Bahasa = "id"): string {
+// Tanpa argumen `bahasa`, memakai bahasa aktif saat ini, sehingga pemanggil lama ikut berganti bahasa.
+export function formatWaktu(iso: string | null, bahasa: Bahasa = bahasaAktifSekarang()): string {
   if (!iso) return "-";
   const utc = /[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`;
   return new Date(utc).toLocaleString(LOKAL[bahasa], {
@@ -13,7 +15,7 @@ export function formatWaktu(iso: string | null, bahasa: Bahasa = "id"): string {
   });
 }
 
-export function formatAngka(n: number, bahasa: Bahasa = "id"): string {
+export function formatAngka(n: number, bahasa: Bahasa = bahasaAktifSekarang()): string {
   return n.toLocaleString(LOKAL[bahasa]);
 }
 
