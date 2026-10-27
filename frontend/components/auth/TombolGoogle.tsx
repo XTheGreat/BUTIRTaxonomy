@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useBahasa, useTeks } from "@/lib/teks";
 
 const SKRIP = "https://accounts.google.com/gsi/client";
 
@@ -15,13 +16,13 @@ type GoogleWindow = Window & {
   };
 };
 
-function muatSkrip(): Promise<void> {
+function muatSkrip(pesanGagal: string): Promise<void> {
   return new Promise((selesai, gagal) => {
     if ((window as GoogleWindow).google?.accounts) return selesai();
     const ada = document.querySelector<HTMLScriptElement>(`script[src="${SKRIP}"]`);
     const skrip = ada ?? document.createElement("script");
     skrip.addEventListener("load", () => selesai());
-    skrip.addEventListener("error", () => gagal(new Error("Skrip Google gagal dimuat")));
+    skrip.addEventListener("error", () => gagal(new Error(pesanGagal)));
     if (!ada) {
       skrip.src = SKRIP;
       skrip.async = true;
@@ -39,6 +40,10 @@ export default function TombolGoogle({
   onCredential: (credential: string) => void;
   onGagal: (pesan: string) => void;
 }) {
+  const t = useTeks();
+  const { bahasa } = useBahasa();
+  const pesanSkripGagal = t.auth.tombolGoogle.skripGagal;
+  const pesanTidakDapatDimuat = t.auth.tombolGoogle.tidakDapatDimuat;
   const wadah = useRef<HTMLDivElement>(null);
   const callback = useRef(onCredential);
   const gagalRef = useRef(onGagal);
@@ -50,7 +55,7 @@ export default function TombolGoogle({
 
   useEffect(() => {
     let aktif = true;
-    muatSkrip()
+    muatSkrip(pesanSkripGagal)
       .then(() => {
         const g = (window as GoogleWindow).google;
         if (!aktif || !g || !wadah.current) return;
@@ -62,15 +67,15 @@ export default function TombolGoogle({
           text: "continue_with",
           shape: "rectangular",
           logo_alignment: "left",
-          locale: "id",
+          locale: bahasa,
           width: Math.min(400, Math.max(200, wadah.current.clientWidth || 320)),
         });
       })
-      .catch(() => aktif && gagalRef.current("Tombol Google tidak dapat dimuat. Periksa koneksi, atau masuk dengan email."));
+      .catch(() => aktif && gagalRef.current(pesanTidakDapatDimuat));
     return () => {
       aktif = false;
     };
-  }, [clientId]);
+  }, [clientId, bahasa, pesanSkripGagal, pesanTidakDapatDimuat]);
 
   return <div ref={wadah} className="flex min-h-[44px] w-full justify-center" />;
 }

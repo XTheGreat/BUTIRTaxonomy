@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import FooterSitus from "@/components/layout/FooterSitus";
+import { useTeks } from "@/lib/teks";
 
 export function Bagian({ judul, children }: { judul: string; children: React.ReactNode }) {
   return (
@@ -21,6 +24,7 @@ export default function HalamanInfo({
   ringkasan?: string;
   children: React.ReactNode;
 }) {
+  const t = useTeks();
   return (
     <div className="flex min-h-screen flex-col bg-[var(--canvas)] text-[var(--ink)]">
       <header className="bg-[var(--accent)] text-white">
@@ -32,7 +36,7 @@ export default function HalamanInfo({
             href="/login"
             className="font-sans text-xs text-white/85 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none"
           >
-            Masuk
+            {t.info.halaman.masuk}
           </Link>
         </div>
       </header>
@@ -43,7 +47,7 @@ export default function HalamanInfo({
           className="inline-flex items-center gap-1.5 font-sans text-xs text-[var(--ink-muted)] transition-colors duration-[140ms] hover:text-[var(--accent)]"
         >
           <ArrowLeft size={14} strokeWidth={1.8} aria-hidden="true" />
-          Kembali ke halaman masuk
+          {t.info.halaman.kembaliKeMasuk}
         </Link>
         <h1 className="mt-4 font-serif text-3xl font-normal tracking-tight">{judul}</h1>
         {ringkasan && <p className="mt-2 max-w-2xl font-sans text-sm leading-relaxed text-[var(--ink-muted)]">{ringkasan}</p>}

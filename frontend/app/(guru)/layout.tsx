@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { isLoggedIn } from "@/lib/auth";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { useTeks } from "@/lib/teks";
 
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const t = useTeks();
   const [ready, setReady] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -34,7 +36,7 @@ export default function GuruLayout({ children }: { children: React.ReactNode }) 
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--canvas)] text-[var(--ink-muted)] text-sm font-serif">
         <span className="inline-block w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse mr-2" />
-        Menyiapkan lembar kerja...
+        {t.shell.layoutGuru.menyiapkan}
       </div>
     );
   }

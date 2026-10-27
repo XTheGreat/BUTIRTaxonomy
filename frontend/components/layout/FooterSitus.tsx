@@ -3,7 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube } from "react-icons/si";
-import { SITUS, TAUTAN_FOOTER } from "@/lib/situs";
+import { SITUS } from "@/lib/situs";
+import { useTeks } from "@/lib/teks";
 import FaktaUnikBerjalan from "./FaktaUnikBerjalan";
 
 function TombolSosial({ href, label, warna, children }: { href: string; label: string; warna: string; children: React.ReactNode }) {
@@ -44,6 +45,8 @@ function Kolom({ judul, tautan }: { judul: string; tautan: { label: string; href
 }
 
 export default function FooterSitus() {
+  const t = useTeks();
+  const f = t.shell.footer;
   const { instagram, tiktok, youtube, email } = SITUS.sosial;
   const adaSosial = Boolean(instagram || tiktok || youtube || email);
 
@@ -63,15 +66,15 @@ export default function FooterSitus() {
             alt={SITUS.nama}
             className="h-auto w-full max-w-[340px]"
           />
-          <p className="mt-3 max-w-sm font-sans text-sm leading-relaxed text-white/80">{SITUS.deskripsi}</p>
+          <p className="mt-3 max-w-sm font-sans text-sm leading-relaxed text-white/80">{f.deskripsi}</p>
           <dl className="mt-5 space-y-1 font-sans text-sm text-white/80">
             <div className="flex gap-2">
-              <dt className="text-white/60">Layanan</dt>
-              <dd>{SITUS.jamLayanan}</dd>
+              <dt className="text-white/60">{f.layanan}</dt>
+              <dd>{f.jamLayanan}</dd>
             </div>
             {email && (
               <div className="flex gap-2">
-                <dt className="text-white/60">Email</dt>
+                <dt className="text-white/60">{f.email}</dt>
                 <dd>
                   <a href={`mailto:${email}`} className="underline-offset-4 hover:text-white hover:underline">{email}</a>
                 </dd>
@@ -80,27 +83,47 @@ export default function FooterSitus() {
           </dl>
           {adaSosial && (
             <div className="mt-6 flex items-center gap-2.5">
-              <TombolSosial href={instagram} label="Instagram BUTIR" warna="#E4405F">
+              <TombolSosial href={instagram} label={f.instagram} warna="#E4405F">
                 <SiInstagram size={18} aria-hidden="true" />
               </TombolSosial>
-              <TombolSosial href={tiktok} label="TikTok BUTIR" warna="#000000">
+              <TombolSosial href={tiktok} label={f.tiktok} warna="#000000">
                 <SiTiktok size={18} aria-hidden="true" />
               </TombolSosial>
-              <TombolSosial href={youtube} label="YouTube BUTIR" warna="#FF0000">
+              <TombolSosial href={youtube} label={f.youtube} warna="#FF0000">
                 <SiYoutube size={18} aria-hidden="true" />
               </TombolSosial>
-              <TombolSosial href={email ? `mailto:${email}` : ""} label="Kirim email ke BUTIR" warna="#0F5F66">
+              <TombolSosial href={email ? `mailto:${email}` : ""} label={f.kirimEmail} warna="#0F5F66">
                 <Mail size={18} strokeWidth={1.8} aria-hidden="true" />
               </TombolSosial>
             </div>
           )}
         </div>
-        <Kolom judul="Tentang" tautan={TAUTAN_FOOTER.tentang} />
-        <Kolom judul="Akses" tautan={TAUTAN_FOOTER.akses} />
-        <Kolom judul="Legal" tautan={TAUTAN_FOOTER.legal} />
+        <Kolom
+          judul={f.kolom.tentang}
+          tautan={[
+            { label: f.tautan.tentang, href: "/tentang" },
+            { label: f.tautan.panduan, href: "/panduan" },
+          ]}
+        />
+        <Kolom
+          judul={f.kolom.akses}
+          tautan={[
+            { label: f.tautan.masukGuru, href: "/login" },
+            { label: f.tautan.daftar, href: "/register" },
+            { label: f.tautan.aksesUjian, href: "/akses-ujian" },
+            { label: f.tautan.lupaPassword, href: "/reset-password" },
+          ]}
+        />
+        <Kolom
+          judul={f.kolom.legal}
+          tautan={[
+            { label: f.tautan.privasi, href: "/privasi" },
+            { label: f.tautan.syarat, href: "/syarat" },
+          ]}
+        />
       </div>
       <div className="border-t border-white/15 px-8 py-5 text-center font-mono text-[11px] text-white/70">
-        © {SITUS.tahun} {SITUS.nama}. Seluruh hak cipta dilindungi.
+        {f.hakCipta(SITUS.tahun, SITUS.nama)}
       </div>
     </footer>
     </>

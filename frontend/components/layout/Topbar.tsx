@@ -7,27 +7,6 @@ import { useTeks } from "@/lib/teks";
 import { PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const routeNameMap: Record<string, string> = {
-  dashboard: "Dashboard",
-  materi: "Materi Ajar",
-  "kisi-kisi": "Kisi-kisi",
-  "butir-ditandai": "Butir Ditandai",
-  "butir-tertunda": "Butir Tertunda",
-  history: "History Debat",
-  "log-llm": "Log LLM",
-  paket: "Paket & Pemakaian",
-  marketplace: "Marketplace",
-  debat: "Debat Live",
-  "bank-soal": "Bank Soal",
-  arsip: "Arsip Soal",
-  "riwayat-diterima": "Riwayat Diterima",
-  "daftar-ujian": "Daftar Ujian",
-  "rakit-ujian": "Rakit Ujian",
-  generasi: "Generasi Soal",
-  ujian: "Detail Ujian",
-  laporan: "Laporan Ujian",
-};
-
 interface TopbarProps {
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
@@ -102,7 +81,7 @@ export default function Topbar({
       ? `#${seg.slice(0, 6)}...`
       : seg === "pengaturan"
         ? t.akun.pengaturan.judul
-        : routeNameMap[seg] || seg;
+        : t.shell.topbar.rute[seg] || seg;
     const href = "/" + segments.slice(0, idx + 1).join("/");
     const isLast = idx === segments.length - 1;
     return { label, href, isLast };
@@ -115,18 +94,18 @@ export default function Topbar({
           <button
             onClick={handleToggle}
             className="p-1.5 -ml-1 text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--line)]/40 rounded transition-colors focus-visible:outline-none"
-            aria-label="Buka bilah samping"
-            title="Buka bilah samping"
+            aria-label={t.shell.topbar.bukaBilahSamping}
+            title={t.shell.topbar.bukaBilahSamping}
           >
             <PanelLeftOpen size={18} strokeWidth={1.5} />
           </button>
         )}
 
         <nav
-          aria-label="Breadcrumb"
+          aria-label={t.shell.topbar.breadcrumb}
           className="flex items-center gap-1.5 text-xs text-[var(--ink-muted)] truncate"
         >
-          <span className="text-[var(--ink-muted)] hidden sm:inline">Pengajar</span>
+          <span className="text-[var(--ink-muted)] hidden sm:inline">{t.shell.topbar.pengajar}</span>
           {breadcrumbItems.map((item, idx) => (
             <span key={idx} className="flex items-center gap-1.5 truncate">
               <span className="text-[var(--line-strong)]">/</span>
@@ -149,9 +128,9 @@ export default function Topbar({
           <Link
             href={`/generasi/${activeGenId}`}
             className="flex items-center gap-2 px-2.5 py-1 text-xs border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors select-none font-medium"
-            title="Klik untuk kembali ke progres debat multi-agen yang sedang berlangsung"
+            title={t.shell.topbar.debatBerlangsungJudul}
           >
-            <span>Debat Berlangsung</span>
+            <span>{t.shell.topbar.debatBerlangsung}</span>
           </Link>
         )}
 
