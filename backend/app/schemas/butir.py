@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from pydantic import BaseModel, model_validator
 
+from app.core.galat import galat_validasi
+
 
 class ButirSoalResponse(BaseModel):
     id: uuid.UUID
@@ -50,20 +52,22 @@ class ButirSoalUpdate(BaseModel):
     @model_validator(mode="after")
     def validasi_isi(self):
         if self.pertanyaan is not None and not self.pertanyaan.strip():
-            raise ValueError("Pertanyaan tidak boleh kosong")
+            raise galat_validasi("validasi_pertanyaan_kosong", "Pertanyaan tidak boleh kosong")
         if self.pilihan is not None:
             if set(self.pilihan) != OPSI_JAWABAN or any(
                 not v.strip() for v in self.pilihan.values()
             ):
-                raise ValueError("Pilihan harus berisi opsi A, B, C, dan D yang terisi")
+                raise galat_validasi(
+                    "validasi_pilihan_tidak_lengkap", "Pilihan harus berisi opsi A, B, C, dan D yang terisi"
+                )
         if self.kunci_jawaban is not None and self.kunci_jawaban not in OPSI_JAWABAN:
-            raise ValueError("Kunci jawaban harus A, B, C, atau D")
+            raise galat_validasi("validasi_kunci_tidak_valid", "Kunci jawaban harus A, B, C, atau D")
         if self.level_bloom is not None and self.level_bloom not in LEVEL_BLOOM:
-            raise ValueError("Level Bloom tidak valid")
+            raise galat_validasi("validasi_bloom_tidak_valid", "Level Bloom tidak valid")
         if self.bobot_poin is not None and not 1 <= self.bobot_poin <= 100:
-            raise ValueError("Bobot poin harus antara 1 dan 100")
+            raise galat_validasi("validasi_bobot_tidak_valid", "Bobot poin harus antara 1 dan 100")
         if self.status is not None and self.status not in STATUS_KEPUTUSAN_GURU:
-            raise ValueError("Status tidak valid")
+            raise galat_validasi("validasi_status_tidak_valid", "Status tidak valid")
         return self
 
 

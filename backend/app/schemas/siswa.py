@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
+from app.core.galat import galat_validasi
+
 
 class SiswaMasukRequest(BaseModel):
     kode_akses: str
@@ -13,7 +15,7 @@ class SiswaMasukRequest(BaseModel):
     def rapikan_nama(cls, v: str) -> str:
         v = " ".join(v.split())
         if not v:
-            raise ValueError("Nama tidak boleh kosong")
+            raise galat_validasi("validasi_siswa_nama_kosong", "Nama tidak boleh kosong")
         return v
 
 

@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
+from pydantic_core import PydanticCustomError
 
 
 class Galat(HTTPException):
@@ -22,3 +23,13 @@ async def tangani_galat(request: Request, exc: Galat) -> JSONResponse:
         content={"detail": exc.detail, "kode": exc.kode, "param": exc.param},
         headers=exc.headers,
     )
+
+
+def galat_validasi(kode: str, pesan: str, **param) -> PydanticCustomError:
+    """Padanan `Galat` untuk validator Pydantic.
+
+    Dipakai dengan `raise galat_validasi(...)` di dalam validator. Respons 422 FastAPI
+    memuat `type` = kode dan `ctx` = param, sehingga frontend bisa menerjemahkannya.
+    `pesan` boleh memakai `{nama}` untuk param.
+    """
+    return PydanticCustomError(kode, pesan, param or None)

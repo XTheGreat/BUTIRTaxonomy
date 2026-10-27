@@ -20,8 +20,22 @@ export class ApiError extends Error {
 function bentukApiError(err: any, status: number): ApiError {
   const kode = typeof err?.kode === "string" ? err.kode : undefined;
   const param = err?.param && typeof err.param === "object" ? err.param : undefined;
-  const pesan = terjemahkanGalat(kode, param) || pesanGalat(err?.detail) || `HTTP ${status}`;
+  const pesan = Array.isArray(err?.detail)
+    ? pesanDaftarValidasi(err.detail) || `HTTP ${status}`
+    : terjemahkanGalat(kode, param) || pesanGalat(err?.detail) || `HTTP ${status}`;
   return new ApiError(pesan, status, kode, param);
+}
+
+// Error validasi 422: tiap butir membawa `type` (kode) dan `ctx` (param) bila dibuat lewat `galat_validasi`.
+function pesanDaftarValidasi(daftar: any[]): string {
+  return daftar
+    .map((d) => {
+      const terjemahan = terjemahkanGalat(d?.type, d?.ctx);
+      if (terjemahan) return terjemahan;
+      return typeof d?.msg === "string" ? d.msg.replace(/^Value error, /, "") : "";
+    })
+    .filter(Boolean)
+    .join(" ");
 }
 
 function pesanGalat(detail: unknown): string {

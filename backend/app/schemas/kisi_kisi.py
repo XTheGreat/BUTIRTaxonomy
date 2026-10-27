@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.core.galat import galat_validasi
+
 LEVEL_BLOOM = {"C1", "C2", "C3", "C4", "C5", "C6"}
 MAKS_BUTIR = 50
 
@@ -34,12 +36,14 @@ class KisiKisiCreate(BaseModel):
     def validate_bloom_total(self):
         for key, nilai in self.distribusi_bloom.items():
             if key not in LEVEL_BLOOM:
-                raise ValueError(f"Level Bloom tidak valid: {key}")
+                raise galat_validasi("validasi_kisi_bloom_tidak_valid", "Level Bloom tidak valid: {key}", key=key)
             if nilai < 0:
-                raise ValueError(f"Persentase {key} tidak boleh negatif")
+                raise galat_validasi("validasi_kisi_persen_negatif", "Persentase {key} tidak boleh negatif", key=key)
         total = sum(self.distribusi_bloom.values())
         if total != 100:
-            raise ValueError(f"Total distribusi Bloom harus 100%, saat ini {total}%")
+            raise galat_validasi(
+                "validasi_kisi_total_bloom", "Total distribusi Bloom harus 100%, saat ini {total}%", total=total
+            )
         return self
 
 

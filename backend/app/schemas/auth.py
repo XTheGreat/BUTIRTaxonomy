@@ -2,14 +2,16 @@ import uuid
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, field_validator
 
+from app.core.galat import galat_validasi
+
 
 def periksa_kekuatan_password(password: str) -> str:
     if len(password) < 8:
-        raise ValueError("Kata sandi minimal 8 karakter")
+        raise galat_validasi("validasi_sandi_pendek", "Kata sandi minimal 8 karakter")
     if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
-        raise ValueError("Kata sandi harus memuat huruf dan angka")
+        raise galat_validasi("validasi_sandi_huruf_angka", "Kata sandi harus memuat huruf dan angka")
     if len(password.encode("utf-8")) > 72:
-        raise ValueError("Kata sandi terlalu panjang (maksimal 72 byte)")
+        raise galat_validasi("validasi_sandi_panjang", "Kata sandi terlalu panjang (maksimal 72 byte)")
     return password
 
 

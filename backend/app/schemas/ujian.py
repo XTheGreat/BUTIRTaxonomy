@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.core.galat import galat_validasi
+
 
 class PaketUjianCreate(BaseModel):
     judul: str
@@ -24,11 +26,11 @@ class RakitOtomatisRequest(BaseModel):
     @model_validator(mode="after")
     def validasi_distribusi(self):
         if sum(self.distribusi_bloom.values()) != 100:
-            raise ValueError("Total distribusi Bloom harus 100%")
+            raise galat_validasi("validasi_ujian_total_bloom", "Total distribusi Bloom harus 100%")
         if any(k not in {"C1", "C2", "C3", "C4", "C5", "C6"} for k in self.distribusi_bloom):
-            raise ValueError("Level Bloom tidak valid")
+            raise galat_validasi("validasi_ujian_bloom_tidak_valid", "Level Bloom tidak valid")
         if any(v < 0 for v in self.distribusi_bloom.values()):
-            raise ValueError("Persentase Bloom tidak boleh negatif")
+            raise galat_validasi("validasi_ujian_persen_negatif", "Persentase Bloom tidak boleh negatif")
         return self
 
 

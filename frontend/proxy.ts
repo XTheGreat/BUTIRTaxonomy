@@ -4,10 +4,17 @@ import type { NextRequest } from "next/server";
 const POLA_BOT =
   /bot|crawl|spider|slurp|scrap|headless|lighthouse|pagespeed|gtmetrix|python|aiohttp|httpx|go-http-client|okhttp|libwww|wget|curl|axios|node-fetch|undici|java\/|httpclient|postman|insomnia|gptbot|chatgpt|claudebot|claude-web|claude-user|claude-searchbot|anthropic-ai|perplexity|ccbot|bytespider|amazon|facebookexternalhit|meta-external|applebot|duckassist|youbot|cohere|diffbot|imagesift|omgili|petalbot|semrush|ahrefs|mj12|dotbot|lightsite/i;
 
+const POLA_PAGESPEED = /lighthouse|pagespeed/gi;
+
+// Pelonggaran sementara untuk mengukur performa: set IZINKAN_PAGESPEED=1 di environment.
+// Hanya kata "lighthouse"/"pagespeed" yang dibuang dari pemeriksaan; bot lain tetap ditolak.
+const IZINKAN_PAGESPEED = process.env.IZINKAN_PAGESPEED === "1";
+
 export function proxy(request: NextRequest) {
   const agen = request.headers.get("user-agent") ?? "";
+  const agenDiperiksa = IZINKAN_PAGESPEED ? agen.replace(POLA_PAGESPEED, "") : agen;
 
-  if (!agen || POLA_BOT.test(agen)) {
+  if (!agen || POLA_BOT.test(agenDiperiksa)) {
     return new NextResponse("Akses otomatis tidak diizinkan.", {
       status: 403,
       headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex, nofollow, noarchive" },

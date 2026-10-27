@@ -1,6 +1,7 @@
 import asyncio
 import os
 import tempfile
+import uuid
 
 _DB_FILE = os.path.join(tempfile.mkdtemp(), "uji_galat.db")
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_DB_FILE}"
@@ -34,9 +35,24 @@ async def _jalankan():
             r = await c.post("/api/auth/reset-password", json={"token": "sampah", "new_password": "baru12345"})
             assert r.status_code == 400 and r.json()["kode"] == "tautan_reset_tidak_valid", r.text
 
-            # Galat yang belum dimigrasi tetap berbentuk lama: detail string, tanpa kode.
+            # Validator Pydantic: 422 memuat `type` = kode dan `msg` tetap kalimat Indonesia.
             r = await c.post("/api/auth/register", json={"nama": "Bo", "email": "bo@example.com", "password": "lemah"})
-            assert r.status_code == 422 and "kode" not in r.json(), r.text
+            assert r.status_code == 422, r.text
+            d = r.json()["detail"][0]
+            assert d["type"] == "validasi_sandi_pendek" and d["msg"] == "Kata sandi minimal 8 karakter", d
+
+            # Validator dengan param: nilai dikirim lewat `ctx` pada respons 422.
+            r = await c.post("/api/auth/login", json={"email": "ani@example.com", "password": "rahasia123"})
+            hdr = {"Authorization": f"Bearer {r.json()['access_token']}"}
+            r = await c.post(
+                "/api/kisi-kisi",
+                headers=hdr,
+                json={"jumlah_butir": 5, "distribusi_bloom": {"C1": 60}, "materi_ids": [str(uuid.uuid4())]},
+            )
+            assert r.status_code == 422, r.text
+            d = r.json()["detail"][0]
+            assert d["type"] == "validasi_kisi_total_bloom" and d["ctx"] == {"total": 60}, d
+            assert d["msg"] == "Total distribusi Bloom harus 100%, saat ini 60%", d
     finally:
         await engine.dispose()
 
