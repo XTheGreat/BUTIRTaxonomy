@@ -8,6 +8,7 @@ const sistem: typeof sistemId = {
     gagalUbah: "Failed to change the plan.",
     memuat: "Loading plan data...",
     namaPaket: (nama) => `${nama} plan`,
+    labelPaket: { gratis: "Free", pro: "Pro" } as Record<string, string>,
     bulan: (bulan) => `month ${bulan}`,
     lisensi: (nama) => `${nama} license`,
     akunAdmin: "Admin account: no limit",

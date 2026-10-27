@@ -184,9 +184,9 @@ const ujian: typeof id = {
       "Empirical evaluation of predicted versus actual difficulty and the discrimination index of each item.",
     kembali: "← Back to Exam Details",
     peringatanIndikatif: (total: number, min: number) =>
-      `Only ${total} participants so far, below the ${min} needed for a meaningful discrimination index. Treat the discrimination index and actual difficulty as early indications, not final values.`,
+      `Only ${total} ${total === 1 ? "participant" : "participants"} so far, below the ${min} needed for a meaningful discrimination index. Treat the discrimination index and actual difficulty as early indications, not final values.`,
     peringatanSangatSedikit: (total: number) =>
-      `Only ${total} participants so far, too few to compute the discrimination index (minimum 4). Only difficulty is shown, and even that is indicative.`,
+      `Only ${total} ${total === 1 ? "participant" : "participants"} so far, too few to compute the discrimination index (minimum 4). Only difficulty is shown, and even that is indicative.`,
     ringkasan: {
       totalPeserta: "Total Exam Participants",
       totalPesertaKet: "Participants who have completed the exam sheet",

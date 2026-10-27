@@ -6,6 +6,8 @@ const sistem = {
     gagalUbah: "Gagal mengubah paket.",
     memuat: "Memuat data paket...",
     namaPaket: (nama: string) => `Paket ${nama}`,
+    // Nama tampilan untuk id paket dari backend (`gratis`, `pro`).
+    labelPaket: { gratis: "Gratis", pro: "Pro" } as Record<string, string>,
     bulan: (bulan: string) => `bulan ${bulan}`,
     lisensi: (nama: string) => `Lisensi ${nama}`,
     akunAdmin: "Akun admin: tanpa batas",

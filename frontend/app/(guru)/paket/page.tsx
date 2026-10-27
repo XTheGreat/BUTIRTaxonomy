@@ -40,6 +40,7 @@ function Meter({ terpakai, batas }: { terpakai: number; batas: number | null }) 
 export default function PaketPage() {
   const { sistem, umum } = useTeks();
   const t = sistem.paket;
+  const labelPaket = (id: string) => t.labelPaket[id] ?? id;
   const { angka, rupiah } = useFormat();
   const batasTeks = (n: number | null, satuan: string) => (n === null ? umum.tanpaBatas : `${angka(n)} ${satuan}`);
   const [saya, setSaya] = useState<PaketPemakaian | null>(null);
@@ -105,7 +106,7 @@ export default function PaketPage() {
           <div className="space-y-8">
             <section className="border border-[var(--line)] bg-[var(--surface)] p-5">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-serif text-xl font-normal text-[var(--ink)]">{t.namaPaket(saya.nama_paket)}</h2>
+                <h2 className="font-serif text-xl font-normal text-[var(--ink)]">{t.namaPaket(labelPaket(saya.paket))}</h2>
                 <span className="font-mono text-[11px] text-[var(--ink-muted)]">
                   {t.bulan(saya.bulan)}
                 </span>
@@ -163,7 +164,7 @@ export default function PaketPage() {
                             key={p}
                             className={`px-3 py-2 font-medium capitalize ${p === saya.paket ? "text-[var(--accent)]" : ""}`}
                           >
-                            {p}
+                            {labelPaket(p)}
                             {p === saya.paket && t.perbandingan.paketAnda}
                           </th>
                         ))}
@@ -237,7 +238,7 @@ export default function PaketPage() {
                             >
                               {Object.keys(daftar ?? { gratis: 0, pro: 0 }).map((p) => (
                                 <option key={p} value={p}>
-                                  {p}
+                                  {labelPaket(p)}
                                 </option>
                               ))}
                             </select>
