@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -8,6 +8,7 @@ from app.models.paket_ujian import PaketUjian, PaketUjianButir
 from app.models.butir_soal import ButirSoal
 from app.models.jawaban_siswa import JawabanSiswa
 from app.core.deps import get_current_guru
+from app.core.galat import Galat
 from app.services.analytics import hitung_tingkat_kesukaran, hitung_daya_beda
 
 router = APIRouter(prefix="/api/ujian", tags=["laporan"])
@@ -25,9 +26,9 @@ async def get_laporan(
     result = await db.execute(select(PaketUjian).where(PaketUjian.id == ujian_id))
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "laporan_ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.guru_id != guru.id:
-        raise HTTPException(status_code=403, detail="Bukan ujian Anda")
+        raise Galat(403, "laporan_bukan_ujian_anda", "Bukan ujian Anda")
 
     pb_result = await db.execute(
         select(PaketUjianButir)

@@ -2,10 +2,11 @@ import hmac
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from app.core.galat import Galat
 from app.core.security import hash_token
 from app.database import get_db
 from app.models.paket_ujian import PaketUjian, PaketUjianButir
@@ -47,12 +48,12 @@ async def _autentikasi_peserta(
     if peserta:
         if _token_cocok(peserta, token):
             return peserta.nama_siswa
-        raise HTTPException(
-            status_code=403, detail="Sesi peserta tidak valid. Masuk kembali dari halaman ujian."
+        raise Galat(
+            403, "siswa_sesi_tidak_valid", "Sesi peserta tidak valid. Masuk kembali dari halaman ujian."
         )
     if await _jawaban_siswa(db, paket.id, nama_siswa):
         return nama_siswa
-    raise HTTPException(status_code=403, detail="Siswa belum masuk ke ujian ini")
+    raise Galat(403, "siswa_belum_masuk", "Siswa belum masuk ke ujian ini")
 
 
 async def _jawaban_siswa(db: AsyncSession, paket_id: uuid.UUID, nama_siswa: str):
@@ -94,15 +95,15 @@ async def siswa_masuk(
     )
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Kode akses tidak ditemukan")
+        raise Galat(404, "siswa_kode_akses_tidak_ditemukan", "Kode akses tidak ditemukan")
     if paket.status != "aktif":
-        raise HTTPException(status_code=400, detail="Ujian tidak aktif")
+        raise Galat(400, "siswa_ujian_tidak_aktif", "Ujian tidak aktif")
 
     now = datetime.now(timezone.utc)
     if paket.waktu_mulai and now < _aware(paket.waktu_mulai):
-        raise HTTPException(status_code=400, detail="Ujian belum dimulai")
+        raise Galat(400, "siswa_ujian_belum_dimulai", "Ujian belum dimulai")
     if paket.waktu_selesai and now > _aware(paket.waktu_selesai):
-        raise HTTPException(status_code=400, detail="Waktu ujian sudah berakhir")
+        raise Galat(400, "siswa_waktu_ujian_berakhir", "Waktu ujian sudah berakhir")
 
     butir_result = await db.execute(
         select(PaketUjianButir)
@@ -126,21 +127,24 @@ async def siswa_masuk(
             await db.flush()
         except IntegrityError:
             await db.rollback()
-            raise HTTPException(
-                status_code=409,
-                detail="Nama ini baru saja dipakai peserta lain. Coba lagi dengan nama yang berbeda.",
+            raise Galat(
+                409,
+                "siswa_nama_baru_dipakai",
+                "Nama ini baru saja dipakai peserta lain. Coba lagi dengan nama yang berbeda.",
             )
     elif peserta.token_hash is None:
         token_baru = secrets.token_urlsafe(24)
         peserta.token_hash = hash_token(token_baru)
     elif not _token_cocok(peserta, data.token):
-        raise HTTPException(
-            status_code=409,
-            detail=(
+        raise Galat(
+            409,
+            "siswa_nama_sudah_dipakai",
+            (
                 f"Nama \"{peserta.nama_siswa}\" sudah dipakai peserta lain di ujian ini. "
                 "Bila itu Anda dan berganti perangkat, minta guru mengizinkan masuk ulang. "
                 "Bila bukan, tambahkan kelas atau nomor absen pada nama Anda."
             ),
+            nama=peserta.nama_siswa,
         )
 
     nama = peserta.nama_siswa
@@ -152,8 +156,8 @@ async def siswa_masuk(
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(
-            status_code=409, detail="Nama ini baru saja dipakai peserta lain. Coba lagi dengan nama yang berbeda."
+        raise Galat(
+            409, "siswa_nama_baru_dipakai", "Nama ini baru saja dipakai peserta lain. Coba lagi dengan nama yang berbeda."
         )
 
     return SiswaMasukResponse(
@@ -178,9 +182,9 @@ async def get_soal_ujian(
     )
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "siswa_ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.status != "aktif":
-        raise HTTPException(status_code=400, detail="Ujian tidak aktif")
+        raise Galat(400, "siswa_ujian_tidak_aktif", "Ujian tidak aktif")
     nama_siswa = await _autentikasi_peserta(db, paket, nama_siswa, x_peserta_token)
 
     butir_result = await db.execute(
@@ -236,13 +240,13 @@ async def simpan_jawaban(
     )
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "siswa_ujian_tidak_ditemukan", "Ujian tidak ditemukan")
     if paket.status != "aktif":
-        raise HTTPException(status_code=400, detail="Ujian tidak aktif")
+        raise Galat(400, "siswa_ujian_tidak_aktif", "Ujian tidak aktif")
     if paket.waktu_selesai and datetime.now(timezone.utc) > _aware(
         paket.waktu_selesai
     ) + timedelta(seconds=TOLERANSI_DETIK):
-        raise HTTPException(status_code=400, detail="Waktu ujian sudah berakhir")
+        raise Galat(400, "siswa_waktu_ujian_berakhir", "Waktu ujian sudah berakhir")
     nama_siswa = await _autentikasi_peserta(db, paket, nama_siswa, x_peserta_token)
 
     jawaban_result = await db.execute(
@@ -254,10 +258,10 @@ async def simpan_jawaban(
     )
     jawaban = jawaban_result.scalar_one_or_none()
     if not jawaban:
-        raise HTTPException(status_code=404, detail="Butir tidak ada dalam ujian ini")
+        raise Galat(404, "siswa_butir_tidak_ada", "Butir tidak ada dalam ujian ini")
 
     if jawaban.submitted_at:
-        raise HTTPException(status_code=400, detail="Jawaban sudah di-submit")
+        raise Galat(400, "siswa_jawaban_sudah_disubmit", "Jawaban sudah di-submit")
 
     jawaban.jawaban_pilihan = data.jawaban_pilihan
     await db.commit()
@@ -276,7 +280,7 @@ async def submit_ujian(
     )
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "siswa_ujian_tidak_ditemukan", "Ujian tidak ditemukan")
 
     nama_siswa = await _autentikasi_peserta(db, paket, nama_siswa, x_peserta_token)
     jawaban_list = await _jawaban_siswa(db, paket.id, nama_siswa)
@@ -297,7 +301,7 @@ async def get_hasil(
     )
     paket = result.scalar_one_or_none()
     if not paket:
-        raise HTTPException(status_code=404, detail="Ujian tidak ditemukan")
+        raise Galat(404, "siswa_ujian_tidak_ditemukan", "Ujian tidak ditemukan")
 
     nama_siswa = await _autentikasi_peserta(db, paket, nama_siswa, x_peserta_token)
     jawaban_list = await _jawaban_siswa(db, paket.id, nama_siswa)
@@ -305,12 +309,13 @@ async def get_hasil(
         if paket.waktu_selesai and datetime.now(timezone.utc) > _aware(paket.waktu_selesai):
             await _kumpulkan(db, jawaban_list)
         else:
-            raise HTTPException(status_code=403, detail="Jawaban belum dikumpulkan")
+            raise Galat(403, "siswa_jawaban_belum_dikumpulkan", "Jawaban belum dikumpulkan")
 
     if not paket.hasil_dirilis:
-        raise HTTPException(
-            status_code=423,
-            detail="Jawaban Anda sudah terkumpul, tetapi hasil belum dirilis guru. Silakan cek kembali nanti.",
+        raise Galat(
+            423,
+            "siswa_hasil_belum_dirilis",
+            "Jawaban Anda sudah terkumpul, tetapi hasil belum dirilis guru. Silakan cek kembali nanti.",
         )
 
     total_soal = len(jawaban_list)
