@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { KUNCI_BAHASA, setBahasaAktif } from "./aktif";
-import { bahasaBawaan, daftarBahasa, kamusPerBahasa, type Bahasa, type Kamus } from "./kamus";
+import { bahasaBawaan, daftarBahasa, id, type Bahasa, type Kamus } from "./kamus";
+import { judulSitusDikenal, muatKamus } from "./kamusMuat";
 
 interface NilaiKonteks {
   bahasa: Bahasa;
@@ -13,7 +14,7 @@ interface NilaiKonteks {
 const Konteks = createContext<NilaiKonteks>({
   bahasa: bahasaBawaan,
   setBahasa: () => {},
-  teks: kamusPerBahasa[bahasaBawaan],
+  teks: id,
 });
 
 function bacaTersimpan(): Bahasa | null {
@@ -26,22 +27,41 @@ function bacaTersimpan(): Bahasa | null {
 }
 
 export function BahasaProvider({ children }: { children: React.ReactNode }) {
-  const [bahasa, setBahasaState] = useState<Bahasa>(bahasaBawaan);
+  // Bahasa dan kamusnya diganti bersamaan setelah kamus selesai dimuat, jadi tampilan
+  // tidak pernah memakai bahasa yang kamusnya belum ada.
+  const [terpilih, setTerpilih] = useState<{ bahasa: Bahasa; kamus: Kamus }>({ bahasa: bahasaBawaan, kamus: id });
+  const nomorPermintaan = useRef(0);
+
+  const pilih = useCallback((b: Bahasa, simpan: boolean) => {
+    const nomor = ++nomorPermintaan.current;
+    muatKamus(b).then(
+      (kamus) => {
+        if (nomor !== nomorPermintaan.current) return; // sudah ada pilihan yang lebih baru
+        setBahasaAktif(b);
+        setTerpilih({ bahasa: b, kamus });
+        if (simpan) {
+          try {
+            localStorage.setItem(KUNCI_BAHASA, b);
+          } catch {}
+        }
+      },
+      () => {
+        // Kamus gagal diunduh: tetap di bahasa sebelumnya dan tidak menyimpan pilihan.
+      },
+    );
+  }, []);
 
   // Dibaca setelah mount supaya HTML dari server dan render pertama klien sama.
   useEffect(() => {
     const tersimpan = bacaTersimpan();
-    if (tersimpan) {
-      setBahasaAktif(tersimpan);
-      setBahasaState(tersimpan);
-    }
-  }, []);
+    if (tersimpan && tersimpan !== bahasaBawaan) pilih(tersimpan, false);
+  }, [pilih]);
 
   useEffect(() => {
-    document.documentElement.lang = bahasa === "zh" ? "zh-CN" : bahasa;
+    document.documentElement.lang = terpilih.bahasa === "zh" ? "zh-CN" : terpilih.bahasa;
     // Judul bawaan situs ikut bahasa; judul khusus halaman (mis. halaman info) dibiarkan.
-    const judulBawaan = daftarBahasa.map((b) => kamusPerBahasa[b].umum.judulSitus);
-    const judulSekarang = kamusPerBahasa[bahasa].umum.judulSitus;
+    const judulBawaan = judulSitusDikenal();
+    const judulSekarang = terpilih.kamus.umum.judulSitus;
     const terapkan = () => {
       if (judulBawaan.includes(document.title) && document.title !== judulSekarang) {
         document.title = judulSekarang;
@@ -52,19 +72,13 @@ export function BahasaProvider({ children }: { children: React.ReactNode }) {
     const pengamat = new MutationObserver(terapkan);
     pengamat.observe(document.head, { childList: true, subtree: true, characterData: true });
     return () => pengamat.disconnect();
-  }, [bahasa]);
+  }, [terpilih]);
 
-  const setBahasa = useCallback((b: Bahasa) => {
-    setBahasaAktif(b);
-    setBahasaState(b);
-    try {
-      localStorage.setItem(KUNCI_BAHASA, b);
-    } catch {}
-  }, []);
+  const setBahasa = useCallback((b: Bahasa) => pilih(b, true), [pilih]);
 
   const nilai = useMemo(
-    () => ({ bahasa, setBahasa, teks: kamusPerBahasa[bahasa] }),
-    [bahasa, setBahasa],
+    () => ({ bahasa: terpilih.bahasa, setBahasa, teks: terpilih.kamus }),
+    [terpilih, setBahasa],
   );
 
   return <Konteks.Provider value={nilai}>{children}</Konteks.Provider>;

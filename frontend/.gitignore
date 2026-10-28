@@ -21,3 +21,6 @@ yarn-error.log*
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# build uji performa (NEXT_DIST_DIR=.next-ukur-*)
+/.next-ukur*/
