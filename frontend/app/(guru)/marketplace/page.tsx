@@ -281,8 +281,8 @@ export default function MarketplacePage() {
 
       {tab === "jual" && (
         <div className="space-y-8">
-          <form onSubmit={terbitkan} className="space-y-4 max-w-3xl">
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-4">
+          <form onSubmit={terbitkan} className="w-full min-w-0 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_160px] gap-4">
               <div className="flex flex-col gap-1">
                 <label htmlFor="mk-judul" className="text-xs text-[var(--ink-muted)]">{t.form.judul}</label>
                 <input id="mk-judul" required minLength={3} value={judul} onChange={(e) => setJudul(e.target.value)} className={inputCls} />

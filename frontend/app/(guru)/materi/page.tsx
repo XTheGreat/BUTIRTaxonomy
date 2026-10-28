@@ -12,9 +12,11 @@ import EmptyState from "@/components/ui/EmptyState";
 import { Upload } from "lucide-react";
 import { useBahasa, useTeks } from "@/lib/teks";
 import type { Kamus } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
 
 const FORMAT_DIDUKUNG = /\.(pdf|docx|txt|md|text)$/i;
 const MAKS_UKURAN_MB = 10;
+const MATERI_PER_HALAMAN = 7;
 
 function periksaBerkas(berkas: File, t: Kamus): string | null {
   if (!FORMAT_DIDUKUNG.test(berkas.name)) {
@@ -31,6 +33,7 @@ export default function MateriPage() {
   const { bahasa } = useBahasa();
   const tm = t.persiapan.materi;
   const [materiList, setMateriList] = useState<Materi[]>([]);
+  const [halaman, setHalaman] = useState(1);
   const [judul, setJudul] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,11 +44,58 @@ export default function MateriPage() {
   const [dragDiHalaman, setDragDiHalaman] = useState(false);
   const [dragDiZona, setDragDiZona] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jumlahHalaman = Math.max(1, Math.ceil(materiList.length / MATERI_PER_HALAMAN));
+  const halamanAktif = Math.min(halaman, jumlahHalaman);
+  const nomorHalaman = susunNomorHalaman(halamanAktif, jumlahHalaman);
+  const indeksAwal = (halamanAktif - 1) * MATERI_PER_HALAMAN;
+  const materiTerlihat = materiList.slice(indeksAwal, indeksAwal + MATERI_PER_HALAMAN);
+
+  function bukaHalaman(berikut: number) {
+    setHalaman(berikut);
+    document.getElementById("daftar-materi-terdaftar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function navigasiHalaman(className = "") {
+    if (jumlahHalaman <= 1) return null;
+    return (
+      <nav aria-label={tm.daftar.navigasiHalaman} className={`flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5 ${className}`}>
+        <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+          {tm.daftar.rentang(indeksAwal + 1, indeksAwal + materiTerlihat.length, materiList.length)}
+        </span>
+        <div className="flex items-center justify-end gap-1">
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={tm.daftar.sebelumnya} disabled={halamanAktif === 1} onClick={() => bukaHalaman(halamanAktif - 1)}>
+            ‹
+          </Button>
+          <div role="group" aria-label={tm.daftar.navigasiHalaman} className="flex items-center gap-0.5">
+            {nomorHalaman.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={tm.daftar.halaman(nomor, jumlahHalaman)}
+                aria-current={nomor === halamanAktif ? "page" : undefined}
+                onClick={() => bukaHalaman(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${nomor === halamanAktif ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"}`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">…</span>
+            ))}
+          </div>
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={tm.daftar.berikutnya} disabled={halamanAktif === jumlahHalaman} onClick={() => bukaHalaman(halamanAktif + 1)}>
+            ›
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   async function loadMateri() {
     try {
       const data = await apiFetch("/api/materi");
-      setMateriList(Array.isArray(data) ? data : []);
+      const materi = Array.isArray(data) ? data : [];
+      setMateriList(materi);
+      setHalaman((saatIni) => Math.min(saatIni, Math.max(1, Math.ceil(materi.length / MATERI_PER_HALAMAN))));
     } catch {}
     finally {
       setPageLoading(false);
@@ -134,6 +184,7 @@ export default function MateriPage() {
       });
       setJudul("");
       setFile(null);
+      setHalaman(1);
       if (fileInputRef.current) fileInputRef.current.value = "";
       await loadMateri();
     } catch (err: any) {
@@ -219,7 +270,6 @@ export default function MateriPage() {
               <div className="pointer-events-none flex flex-col items-center gap-3">
                 {dragDiHalaman || dragDiZona ? (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
                     <div className="font-serif text-lg text-[var(--accent-text)]">
                       {dragDiZona
                         ? tm.unggah.lepasDiZona
@@ -270,7 +320,7 @@ export default function MateriPage() {
         </form>
       </section>
 
-      <section className="space-y-3">
+      <section id="daftar-materi-terdaftar" className="space-y-3">
         <div className="flex items-baseline justify-between">
           <div>
             <h2 className="font-serif text-lg font-normal text-[var(--ink)] tracking-tight">
@@ -292,6 +342,7 @@ export default function MateriPage() {
             description={tm.daftar.kosongDeskripsi}
           />
         ) : (
+          <>
           <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-[var(--surface)] border-b border-[var(--line)]">
@@ -311,13 +362,13 @@ export default function MateriPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line)]">
-                {materiList.map((item, idx) => (
+                {materiTerlihat.map((item, idx) => (
                   <tr
                     key={item.id}
                     className="hover:bg-[var(--surface)]/60 transition-colors duration-[140ms]"
                   >
                     <td className="px-3 py-2.5 font-mono text-xs text-[var(--ink-muted)] tabular-nums">
-                      {idx + 1}
+                      {indeksAwal + idx + 1}
                     </td>
                     <td className="px-3 py-2.5">
                       <span className="font-medium text-[var(--ink)]">
@@ -347,7 +398,9 @@ export default function MateriPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
+        {!pageLoading && navigasiHalaman("mt-3")}
       </section>
 
       <ConfirmDialog

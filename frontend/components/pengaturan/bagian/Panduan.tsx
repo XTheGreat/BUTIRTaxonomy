@@ -29,7 +29,7 @@ function ContohLilin() {
   const label = "fill-[var(--ink-muted)] font-mono text-[10px]";
 
   return (
-    <svg role="img" aria-label={c.contoh} viewBox="0 0 340 170" className="h-auto w-full max-w-[340px]">
+    <svg role="img" aria-label={c.contoh} viewBox="0 0 340 170" className="h-auto w-full max-w-[340px] diagram-animasi diagram-reveal">
       <g stroke="var(--line)" strokeWidth="1">
         <line x1="10" x2="330" y1="40" y2="40" />
         <line x1="10" x2="330" y1="100" y2="100" />

@@ -78,14 +78,14 @@ export function RingkasanStatus({
         role="img"
         aria-label={STATUS_HISTORY.map((s) => `${hitung[s.key] ?? 0} ${t.status[s.key as keyof typeof t.status] ?? s.label}`).join(", ")}
       >
-        {STATUS_HISTORY.map((s) => {
+        {STATUS_HISTORY.map((s, index) => {
           const n = hitung[s.key] ?? 0;
           if (n === 0 || total === 0) return null;
           return (
             <span
               key={s.key}
-              style={{ flexGrow: n, backgroundColor: s.penanda }}
-              className="h-full"
+              style={{ flexGrow: n, backgroundColor: s.penanda, animationDelay: `${index * 55}ms` }}
+              className="diagram-animasi diagram-segment-reveal h-full"
             />
           );
         })}

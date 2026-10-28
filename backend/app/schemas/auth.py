@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.core.galat import galat_validasi
+from app.core.nama import normalisasi_nama, validasi_nama_pantas
 
 
 def periksa_kekuatan_password(password: str) -> str:
@@ -16,9 +17,19 @@ def periksa_kekuatan_password(password: str) -> str:
 
 
 class UserRegister(BaseModel):
-    nama: str
+    nama: str = Field(max_length=255)
     email: EmailStr
     password: str
+
+    @field_validator("nama")
+    @classmethod
+    def nama_pantas(cls, v: str) -> str:
+        v = normalisasi_nama(v)
+        if not v:
+            raise galat_validasi("validasi_nama_kosong", "Nama tidak boleh kosong")
+        if len(v) > 255:
+            raise galat_validasi("validasi_nama_panjang", "Nama terlalu panjang (maksimal 255 karakter)")
+        return validasi_nama_pantas(v)
 
     @field_validator("password")
     @classmethod
@@ -42,7 +53,7 @@ class ProfilUbah(BaseModel):
             raise galat_validasi("validasi_nama_kosong", "Nama tidak boleh kosong")
         if len(v) > 255:
             raise galat_validasi("validasi_nama_panjang", "Nama terlalu panjang (maksimal 255 karakter)")
-        return v
+        return validasi_nama_pantas(v)
 
 
 class PasswordUbah(BaseModel):
@@ -102,7 +113,17 @@ class KodeMinta(BaseModel):
 class KodeVerifikasi(BaseModel):
     email: EmailStr
     kode: str
-    nama: str | None = None
+    nama: str | None = Field(default=None, max_length=255)
+
+    @field_validator("nama")
+    @classmethod
+    def nama_pantas(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = normalisasi_nama(v)
+        if not v:
+            return None
+        return validasi_nama_pantas(v)
 
 
 class MetodeMasuk(BaseModel):

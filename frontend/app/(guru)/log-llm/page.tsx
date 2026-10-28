@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useFormat } from "@/lib/format";
 import { useTeks } from "@/lib/teks";
 import { LogLLMEntry, RingkasanLogLLM } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
+import GrafikRekapLogLLM from "@/components/ui/GrafikRekapLogLLM";
+import { susunNomorHalaman } from "@/lib/pagination";
 
+const LOG_PER_HALAMAN = 19;
 
 export default function LogLLMPage() {
   const t = useTeks().sistem.logLlm;
@@ -17,40 +20,109 @@ export default function LogLLMPage() {
   const [hari, setHari] = useState(30);
   const [ringkasan, setRingkasan] = useState<RingkasanLogLLM | null>(null);
   const [log, setLog] = useState<LogLLMEntry[]>([]);
+  const [totalLog, setTotalLog] = useState(0);
+  const [halamanLog, setHalamanLog] = useState(1);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPeran, setFilterPeran] = useState("");
   const [loading, setLoading] = useState(true);
+  const [memuatLog, setMemuatLog] = useState(true);
   const [galat, setGalat] = useState("");
-
-  const muat = useCallback(async () => {
-    setLoading(true);
-    setGalat("");
-    try {
-      const q = new URLSearchParams({ limit: "50" });
-      if (filterStatus) q.set("status", filterStatus);
-      if (filterPeran) q.set("peran", filterPeran);
-      const [r, l] = await Promise.all([
-        apiFetch(`/api/log-llm/ringkasan?hari=${hari}`),
-        apiFetch(`/api/log-llm?${q.toString()}`),
-      ]);
-      setRingkasan(r);
-      setLog(Array.isArray(l) ? l : []);
-    } catch (err: any) {
-      setGalat(err.message || t.gagalMuat);
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hari, filterStatus, filterPeran]);
+  const jumlahHalamanLog = Math.max(1, Math.ceil(totalLog / LOG_PER_HALAMAN));
+  const halamanLogAktif = Math.min(halamanLog, jumlahHalamanLog);
+  const nomorHalamanLog = susunNomorHalaman(halamanLogAktif, jumlahHalamanLog);
+  const awalLog = totalLog > 0 ? (halamanLogAktif - 1) * LOG_PER_HALAMAN + 1 : 0;
+  const akhirLog = Math.min(halamanLogAktif * LOG_PER_HALAMAN, totalLog);
 
   useEffect(() => {
-    muat();
-  }, [muat]);
+    const controller = new AbortController();
+    setLoading(true);
+    setGalat("");
+    apiFetch(`/api/log-llm/ringkasan?hari=${hari}`, { signal: controller.signal })
+      .then((hasil) => setRingkasan(hasil))
+      .catch((err: any) => {
+        if (!controller.signal.aborted) setGalat(err.message || t.gagalMuat);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [hari, t.gagalMuat]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const q = new URLSearchParams({
+      limit: String(LOG_PER_HALAMAN),
+      offset: String((halamanLogAktif - 1) * LOG_PER_HALAMAN),
+    });
+    if (filterStatus) q.set("status", filterStatus);
+    if (filterPeran) q.set("peran", filterPeran);
+    setMemuatLog(true);
+    setGalat("");
+    apiFetch(`/api/log-llm/halaman?${q.toString()}`, { signal: controller.signal })
+      .then((hasil) => {
+        setLog(Array.isArray(hasil?.items) ? hasil.items : []);
+        setTotalLog(typeof hasil?.total === "number" ? hasil.total : 0);
+      })
+      .catch((err: any) => {
+        if (!controller.signal.aborted) setGalat(err.message || t.gagalMuat);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setMemuatLog(false);
+      });
+    return () => controller.abort();
+  }, [halamanLogAktif, filterStatus, filterPeran, t.gagalMuat]);
 
   const persenGagal =
     ringkasan && ringkasan.total_permintaan > 0
       ? Math.round((100 * ringkasan.total_gagal) / ringkasan.total_permintaan)
       : 0;
+
+  function navigasiLog(className = "") {
+    if (jumlahHalamanLog <= 1) return null;
+    return (
+      <nav aria-label={t.terbaru.navigasiHalaman} className={`flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5 text-xs text-[var(--ink-muted)] ${className}`}>
+        <span>{t.terbaru.rentang(awalLog, akhirLog, totalLog)}</span>
+        <div className="flex items-center justify-end gap-1">
+          <button
+            type="button"
+            aria-label={t.terbaru.sebelumnya}
+            onClick={() => setHalamanLog(halamanLogAktif - 1)}
+            disabled={halamanLogAktif <= 1 || memuatLog}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center border border-[var(--line-strong)] bg-[var(--surface)] p-0 transition-colors duration-[140ms] hover:bg-[var(--canvas)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            ‹
+          </button>
+          <span className="sr-only" aria-live="polite">{t.terbaru.halaman(halamanLogAktif, jumlahHalamanLog)}</span>
+          <div role="group" aria-label={t.terbaru.navigasiHalaman} className="flex items-center gap-0.5">
+            {nomorHalamanLog.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={t.terbaru.halaman(nomor, jumlahHalamanLog)}
+                aria-current={nomor === halamanLogAktif ? "page" : undefined}
+                disabled={memuatLog}
+                onClick={() => setHalamanLog(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] disabled:cursor-not-allowed disabled:opacity-50 ${nomor === halamanLogAktif ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"}`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">…</span>
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-label={t.terbaru.berikutnya}
+            onClick={() => setHalamanLog(halamanLogAktif + 1)}
+            disabled={halamanLogAktif >= jumlahHalamanLog || memuatLog}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center border border-[var(--line-strong)] bg-[var(--surface)] p-0 transition-colors duration-[140ms] hover:bg-[var(--canvas)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            ›
+          </button>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <div>
@@ -187,39 +259,47 @@ export default function LogLLMPage() {
               {ringkasan.rincian.length === 0 ? (
                 <p className="text-xs text-[var(--ink-muted)]">{t.rekap.kosong}</p>
               ) : (
-                <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead className="bg-[var(--surface)] border-b border-[var(--line)]">
-                      <tr className="text-xs text-[var(--ink-muted)]">
-                        <th className="px-3 py-2 font-medium">{t.rekap.penyediaModel}</th>
-                        <th className="px-3 py-2 font-medium">{t.rekap.peran}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.permintaan}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.gagal}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.batasLaju}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.token}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.latensiRata}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.rekap.latensiMaks}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--line)] font-mono text-xs tabular-nums">
-                      {ringkasan.rincian.map((r) => (
-                        <tr key={`${r.provider}-${r.model}-${r.peran}`}>
-                          <td className="px-3 py-2">
-                            {r.provider} <span className="text-[var(--ink-muted)]">/ {r.model}</span>
-                            {r.lewat_fallback > 0 && <span className="ml-2 text-[var(--status-ditandai)]">{t.rekap.fallback(r.lewat_fallback)}</span>}
-                          </td>
-                          <td className="px-3 py-2 font-serif text-sm">{PERAN_LABEL[r.peran] ?? r.peran}</td>
-                          <td className="px-3 py-2 text-right">{angka(r.permintaan)}</td>
-                          <td className={`px-3 py-2 text-right ${r.gagal > 0 ? "text-[var(--status-ditolak)]" : ""}`}>{angka(r.gagal)}</td>
-                          <td className="px-3 py-2 text-right">{angka(r.rate_limit)}</td>
-                          <td className="px-3 py-2 text-right">{angka(r.token_total)}</td>
-                          <td className="px-3 py-2 text-right">{detik(r.latensi_rata_rata_ms)}</td>
-                          <td className="px-3 py-2 text-right">{detik(r.latensi_maks_ms)}</td>
+                <>
+                  <GrafikRekapLogLLM
+                    rincian={ringkasan.rincian}
+                    labelPeran={PERAN_LABEL}
+                    angka={angka}
+                    teks={t.rekap.grafik}
+                  />
+                  <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                      <thead className="bg-[var(--surface)] border-b border-[var(--line)]">
+                        <tr className="text-xs text-[var(--ink-muted)]">
+                          <th className="px-3 py-2 font-medium">{t.rekap.penyediaModel}</th>
+                          <th className="px-3 py-2 font-medium">{t.rekap.peran}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.permintaan}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.gagal}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.batasLaju}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.token}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.latensiRata}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.rekap.latensiMaks}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--line)] font-mono text-xs tabular-nums">
+                        {ringkasan.rincian.map((r) => (
+                          <tr key={`${r.provider}-${r.model}-${r.peran}`}>
+                            <td className="px-3 py-2">
+                              {r.provider} <span className="text-[var(--ink-muted)]">/ {r.model}</span>
+                              {r.lewat_fallback > 0 && <span className="ml-2 text-[var(--status-ditandai)]">{t.rekap.fallback(r.lewat_fallback)}</span>}
+                            </td>
+                            <td className="px-3 py-2 font-serif text-sm">{PERAN_LABEL[r.peran] ?? r.peran}</td>
+                            <td className="px-3 py-2 text-right">{angka(r.permintaan)}</td>
+                            <td className={`px-3 py-2 text-right ${r.gagal > 0 ? "text-[var(--status-ditolak)]" : ""}`}>{angka(r.gagal)}</td>
+                            <td className="px-3 py-2 text-right">{angka(r.rate_limit)}</td>
+                            <td className="px-3 py-2 text-right">{angka(r.token_total)}</td>
+                            <td className="px-3 py-2 text-right">{detik(r.latensi_rata_rata_ms)}</td>
+                            <td className="px-3 py-2 text-right">{detik(r.latensi_maks_ms)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </section>
 
@@ -230,7 +310,10 @@ export default function LogLLMPage() {
                   <select
                     aria-label={t.terbaru.saringStatus}
                     value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
+                    onChange={(e) => {
+                      setFilterStatus(e.target.value);
+                      setHalamanLog(1);
+                    }}
                     className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent-text)]"
                   >
                     <option value="">{t.terbaru.semuaStatus}</option>
@@ -243,7 +326,10 @@ export default function LogLLMPage() {
                   <select
                     aria-label={t.terbaru.saringPeran}
                     value={filterPeran}
-                    onChange={(e) => setFilterPeran(e.target.value)}
+                    onChange={(e) => {
+                      setFilterPeran(e.target.value);
+                      setHalamanLog(1);
+                    }}
                     className="bg-[var(--canvas)] text-[var(--ink)] border border-[var(--line-strong)] rounded px-2 py-1 focus:outline-none focus:border-[var(--accent-text)]"
                   >
                     <option value="">{t.terbaru.semuaPeran}</option>
@@ -256,49 +342,54 @@ export default function LogLLMPage() {
                 </div>
               </div>
 
-              {log.length === 0 ? (
+              {memuatLog && log.length === 0 ? (
+                <p className="text-xs text-[var(--ink-muted)]">{t.memuat}</p>
+              ) : log.length === 0 ? (
                 <p className="text-xs text-[var(--ink-muted)]">{t.terbaru.kosong}</p>
               ) : (
-                <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead className="bg-[var(--surface)] border-b border-[var(--line)]">
-                      <tr className="text-xs text-[var(--ink-muted)]">
-                        <th className="px-3 py-2 font-medium">{t.terbaru.waktu}</th>
-                        <th className="px-3 py-2 font-medium">{t.terbaru.peran}</th>
-                        <th className="px-3 py-2 font-medium">{t.terbaru.model}</th>
-                        <th className="px-3 py-2 font-medium">{t.terbaru.status}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.terbaru.latensi}</th>
-                        <th className="px-3 py-2 font-medium text-right">{t.terbaru.token}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--line)] font-mono text-xs tabular-nums">
-                      {log.map((b, i) => (
-                        <tr key={`${b.waktu}-${i}`}>
-                          <td className="px-3 py-2 whitespace-nowrap">{waktu(b.waktu)}</td>
-                          <td className="px-3 py-2 font-serif text-sm">
-                            {PERAN_LABEL[b.peran] ?? b.peran}
-                            {b.ronde ? <span className="ml-1 font-mono text-[11px] text-[var(--ink-muted)]">r{b.ronde}</span> : null}
-                          </td>
-                          <td className="px-3 py-2">
-                            {b.model}
-                            {b.fallback && <span className="ml-2 text-[var(--status-ditandai)]">fallback</span>}
-                          </td>
-                          <td className="px-3 py-2" title={b.galat ?? undefined}>
-                            <span className={b.status === "sukses" ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"}>
-                              {STATUS_LABEL[b.status] ?? b.status}
-                              {b.kode_http && b.status !== "sukses" ? ` ${b.kode_http}` : ""}
-                            </span>
-                            {b.percobaan_panggilan > 1 && (
-                              <span className="ml-1 text-[var(--ink-muted)]">{t.terbaru.percobaan(b.percobaan_panggilan)}</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-right">{detik(b.latensi_ms)}</td>
-                          <td className="px-3 py-2 text-right">{b.token_total === null ? "-" : angka(b.token_total)}</td>
+                <>
+                  <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                      <thead className="bg-[var(--surface)] border-b border-[var(--line)]">
+                        <tr className="text-xs text-[var(--ink-muted)]">
+                          <th className="px-3 py-2 font-medium">{t.terbaru.waktu}</th>
+                          <th className="px-3 py-2 font-medium">{t.terbaru.peran}</th>
+                          <th className="px-3 py-2 font-medium">{t.terbaru.model}</th>
+                          <th className="px-3 py-2 font-medium">{t.terbaru.status}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.terbaru.latensi}</th>
+                          <th className="px-3 py-2 font-medium text-right">{t.terbaru.token}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--line)] font-mono text-xs tabular-nums">
+                        {log.map((b, i) => (
+                          <tr key={`${b.waktu}-${i}`}>
+                            <td className="px-3 py-2 whitespace-nowrap">{waktu(b.waktu)}</td>
+                            <td className="px-3 py-2 font-serif text-sm">
+                              {PERAN_LABEL[b.peran] ?? b.peran}
+                              {b.ronde ? <span className="ml-1 font-mono text-[11px] text-[var(--ink-muted)]">r{b.ronde}</span> : null}
+                            </td>
+                            <td className="px-3 py-2">
+                              {b.model}
+                              {b.fallback && <span className="ml-2 text-[var(--status-ditandai)]">fallback</span>}
+                            </td>
+                            <td className="px-3 py-2" title={b.galat ?? undefined}>
+                              <span className={b.status === "sukses" ? "text-[var(--status-diterima)]" : "text-[var(--status-ditolak)]"}>
+                                {STATUS_LABEL[b.status] ?? b.status}
+                                {b.kode_http && b.status !== "sukses" ? ` ${b.kode_http}` : ""}
+                              </span>
+                              {b.percobaan_panggilan > 1 && (
+                                <span className="ml-1 text-[var(--ink-muted)]">{t.terbaru.percobaan(b.percobaan_panggilan)}</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-right">{detik(b.latensi_ms)}</td>
+                            <td className="px-3 py-2 text-right">{b.token_total === null ? "-" : angka(b.token_total)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {navigasiLog("mt-3")}
+                </>
               )}
             </section>
           </div>

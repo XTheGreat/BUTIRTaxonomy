@@ -10,11 +10,15 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import { useTeks } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
+
+const UJIAN_PER_HALAMAN = 13;
 
 export default function DaftarUjianPage() {
   const t = useTeks().ujian;
   const [ujianList, setUjianList] = useState<PaketUjian[]>([]);
   const [loading, setLoading] = useState(true);
+  const [halaman, setHalaman] = useState(1);
 
   useEffect(() => {
     apiFetch("/api/ujian")
@@ -22,6 +26,52 @@ export default function DaftarUjianPage() {
       .catch(() => setUjianList([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const jumlahHalaman = Math.max(1, Math.ceil(ujianList.length / UJIAN_PER_HALAMAN));
+  const halamanAktif = Math.min(halaman, jumlahHalaman);
+  const indeksAwal = (halamanAktif - 1) * UJIAN_PER_HALAMAN;
+  const ujianTerlihat = ujianList.slice(indeksAwal, indeksAwal + UJIAN_PER_HALAMAN);
+  const nomorHalaman = susunNomorHalaman(halamanAktif, jumlahHalaman);
+
+  function bukaHalaman(berikut: number) {
+    setHalaman(berikut);
+    document.getElementById("daftar-paket-ujian")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function navigasiHalaman(className = "") {
+    if (jumlahHalaman <= 1) return null;
+    return (
+      <nav aria-label={t.daftar.navigasiHalaman} className={`flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5 ${className}`}>
+        <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+          {t.daftar.rentang(indeksAwal + 1, indeksAwal + ujianTerlihat.length, ujianList.length)}
+        </span>
+        <div className="flex items-center justify-end gap-1">
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.daftar.sebelumnya} disabled={halamanAktif === 1} onClick={() => bukaHalaman(halamanAktif - 1)}>
+            ‹
+          </Button>
+          <div role="group" aria-label={t.daftar.navigasiHalaman} className="flex items-center gap-0.5">
+            {nomorHalaman.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={t.daftar.halaman(nomor, jumlahHalaman)}
+                aria-current={nomor === halamanAktif ? "page" : undefined}
+                onClick={() => bukaHalaman(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${nomor === halamanAktif ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"}`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">…</span>
+            ))}
+          </div>
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.daftar.berikutnya} disabled={halamanAktif === jumlahHalaman} onClick={() => bukaHalaman(halamanAktif + 1)}>
+            ›
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <div>
@@ -48,7 +98,8 @@ export default function DaftarUjianPage() {
           }
         />
       ) : (
-        <div className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
+        <>
+        <div id="daftar-paket-ujian" className="border border-[var(--line)] bg-[var(--canvas)] overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm">
             <thead className="sticky top-0 bg-[var(--surface)] z-10 border-b border-[var(--line)]">
               <tr>
@@ -79,13 +130,13 @@ export default function DaftarUjianPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--line)]">
-              {ujianList.map((ujian, idx) => (
+              {ujianTerlihat.map((ujian, idx) => (
                 <tr
                   key={ujian.id}
                   className="hover:bg-[var(--surface)]/60 transition-colors duration-[140ms]"
                 >
                   <td className="px-3 py-2.5 font-mono text-xs text-[var(--ink-muted)] tabular-nums">
-                    {idx + 1}
+                    {indeksAwal + idx + 1}
                   </td>
                   <td className="px-3 py-2.5">
                     <span className="font-serif text-sm text-[var(--ink)] font-medium">
@@ -142,6 +193,8 @@ export default function DaftarUjianPage() {
             </tbody>
           </table>
         </div>
+        {navigasiHalaman("mt-3")}
+        </>
       )}
     </div>
   );

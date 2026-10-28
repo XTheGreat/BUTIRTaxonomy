@@ -16,14 +16,18 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { FolderOpen } from "lucide-react";
 import { useTeks } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
 
 const BLOOM_LEVELS = ["C1", "C2", "C3", "C4", "C5", "C6"];
+const KISI_PER_HALAMAN = 5;
+const MATERI_RUJUKAN_PER_HALAMAN = 11;
 export default function KisiKisiPage() {
   const t = useTeks();
   const tk = t.persiapan.kisiKisi;
   const BLOOM_LABELS = tk.bloom;
   const router = useRouter();
   const [materiList, setMateriList] = useState<Materi[]>([]);
+  const [halamanMateriRujukan, setHalamanMateriRujukan] = useState(1);
   const [selectedMateri, setSelectedMateri] = useState<string[]>([]);
   const [jumlahButir, setJumlahButir] = useState(() => bacaPreferensi().jumlahButir);
   const [bloom, setBloom] = useState<Record<string, number>>(() => bacaPreferensi().distribusiBloom);
@@ -32,6 +36,7 @@ export default function KisiKisiPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [tersimpan, setTersimpan] = useState<KisiKisiRingkas[]>([]);
+  const [halamanTersimpan, setHalamanTersimpan] = useState(1);
   const [editId, setEditId] = useState<string | null>(null);
   const [pesan, setPesan] = useState("");
   const [aksiBaris, setAksiBaris] = useState<
@@ -77,6 +82,115 @@ export default function KisiKisiPage() {
   }, [aksiBaris]);
 
   const bloomTotal = Object.values(bloom).reduce((a, b) => a + b, 0);
+  const jumlahHalamanMateri = Math.max(1, Math.ceil(materiList.length / MATERI_RUJUKAN_PER_HALAMAN));
+  const halamanMateriAktif = Math.min(halamanMateriRujukan, jumlahHalamanMateri);
+  const indeksAwalMateri = (halamanMateriAktif - 1) * MATERI_RUJUKAN_PER_HALAMAN;
+  const materiRujukanTerlihat = materiList.slice(indeksAwalMateri, indeksAwalMateri + MATERI_RUJUKAN_PER_HALAMAN);
+  const jumlahHalamanTersimpan = Math.max(1, Math.ceil(tersimpan.length / KISI_PER_HALAMAN));
+  const halamanAktif = Math.min(halamanTersimpan, jumlahHalamanTersimpan);
+  const nomorHalamanTersimpan = susunNomorHalaman(halamanAktif, jumlahHalamanTersimpan);
+  const indeksAwalTersimpan = (halamanAktif - 1) * KISI_PER_HALAMAN;
+  const kisiTersimpanTerlihat = tersimpan.slice(indeksAwalTersimpan, indeksAwalTersimpan + KISI_PER_HALAMAN);
+
+  const navigasiMateriRujukan = jumlahHalamanMateri > 1 && (
+    <nav
+      aria-label={tk.materiRujukan.navigasiHalaman}
+      className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5"
+    >
+      <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+        {tk.materiRujukan.rentang(indeksAwalMateri + 1, indeksAwalMateri + materiRujukanTerlihat.length, materiList.length)}
+      </span>
+      <div className="flex items-center justify-end gap-1">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="!h-7 !w-7 !p-0 shrink-0"
+          aria-label={tk.materiRujukan.sebelumnya}
+          disabled={halamanMateriAktif === 1}
+          onClick={() => setHalamanMateriRujukan(halamanMateriAktif - 1)}
+        >
+          ‹
+        </Button>
+        <span className="min-w-24 text-center text-xs text-[var(--ink-muted)] tabular-nums" aria-live="polite">
+          {tk.materiRujukan.halaman(halamanMateriAktif, jumlahHalamanMateri)}
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="!h-7 !w-7 !p-0 shrink-0"
+          aria-label={tk.materiRujukan.berikutnya}
+          disabled={halamanMateriAktif === jumlahHalamanMateri}
+          onClick={() => setHalamanMateriRujukan(halamanMateriAktif + 1)}
+        >
+          ›
+        </Button>
+      </div>
+    </nav>
+  );
+
+  function bukaHalamanTersimpan(halaman: number) {
+    setHalamanTersimpan(halaman);
+    document.getElementById("kisi-tersimpan")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const navigasiTersimpan = jumlahHalamanTersimpan > 1 && (
+    <nav
+      aria-label={tk.tersimpan.navigasiHalaman}
+      className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5"
+    >
+      <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+        {tk.tersimpan.rentang(indeksAwalTersimpan + 1, indeksAwalTersimpan + kisiTersimpanTerlihat.length, tersimpan.length)}
+      </span>
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="!h-7 !w-7 !p-0 shrink-0"
+          aria-label={tk.tersimpan.sebelumnya}
+          disabled={halamanAktif === 1}
+          onClick={() => bukaHalamanTersimpan(halamanAktif - 1)}
+        >
+          ‹
+        </Button>
+        <div role="group" aria-label={tk.tersimpan.navigasiHalaman} className="flex items-center gap-0.5">
+          {nomorHalamanTersimpan.map((nomor, indeks) => typeof nomor === "number" ? (
+            <button
+              key={nomor}
+              type="button"
+              aria-label={tk.tersimpan.halaman(nomor, jumlahHalamanTersimpan)}
+              aria-current={nomor === halamanAktif ? "page" : undefined}
+              onClick={() => bukaHalamanTersimpan(nomor)}
+              className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${
+                nomor === halamanAktif
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+                  : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"
+              }`}
+            >
+              {nomor}
+            </button>
+          ) : (
+            <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">
+              …
+            </span>
+          ))}
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="!h-7 !w-7 !p-0 shrink-0"
+          aria-label={tk.tersimpan.berikutnya}
+          disabled={halamanAktif === jumlahHalamanTersimpan}
+          onClick={() => bukaHalamanTersimpan(halamanAktif + 1)}
+        >
+          ›
+        </Button>
+      </div>
+    </nav>
+  );
 
   function handleBloomChange(level: string, value: string) {
     const num = Math.max(0, Math.min(100, parseInt(value) || 0));
@@ -151,6 +265,7 @@ export default function KisiKisiPage() {
     setLoading(false);
     if (!id) return;
     await muatTersimpan();
+    setHalamanTersimpan(1);
     setPesan(editId ? tk.pesan.perubahanDisimpan : tk.pesan.disimpanSebagaiDraf);
     kosongkanForm();
     document.getElementById("kisi-tersimpan")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -254,22 +369,25 @@ export default function KisiKisiPage() {
               </p>
             </div>
           ) : (
-            <div className="border border-[var(--line)] bg-[var(--canvas)] divide-y divide-[var(--line)] max-h-48 overflow-y-auto rounded-lg">
-              {materiList.map((m) => (
-                <label
-                  key={m.id}
-                  className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--surface)] cursor-pointer select-none"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedMateri.includes(m.id)}
-                    onChange={() => toggleMateri(m.id)}
-                    className="accent-[var(--accent)] rounded"
-                  />
-                  <span className="text-[var(--ink)]">{m.judul}</span>
-                </label>
-              ))}
-            </div>
+            <>
+              <div className="border border-[var(--line)] bg-[var(--canvas)] divide-y divide-[var(--line)] max-h-48 overflow-y-auto rounded-lg">
+                {materiRujukanTerlihat.map((m) => (
+                  <label
+                    key={m.id}
+                    className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--surface)] cursor-pointer select-none"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedMateri.includes(m.id)}
+                      onChange={() => toggleMateri(m.id)}
+                      className="accent-[var(--accent)] rounded"
+                    />
+                    <span className="text-[var(--ink)]">{m.judul}</span>
+                  </label>
+                ))}
+              </div>
+              {navigasiMateriRujukan}
+            </>
           )}
         </div>
 
@@ -408,8 +526,9 @@ export default function KisiKisiPage() {
             {tk.tersimpan.kosong}
           </p>
         ) : (
-          <div className="border border-[var(--line)] bg-[var(--canvas)] divide-y divide-[var(--line)]">
-            {tersimpan.map((k) => {
+          <>
+          <div id="daftar-kisi-tersimpan" className="border border-[var(--line)] bg-[var(--canvas)] divide-y divide-[var(--line)]">
+            {kisiTersimpanTerlihat.map((k) => {
               const draf = k.butir_dibuat === 0;
               const status = draf ? "draft" : k.butir_berjalan > 0 ? "debating" : "selesai";
               return (
@@ -487,6 +606,8 @@ export default function KisiKisiPage() {
               );
             })}
           </div>
+          {navigasiTersimpan}
+          </>
         )}
       </section>
 

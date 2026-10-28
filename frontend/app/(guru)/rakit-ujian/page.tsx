@@ -19,8 +19,11 @@ import { KelompokBank, kelompokkan } from "@/lib/kelompokBank";
 import EmptyState from "@/components/ui/EmptyState";
 import MathText from "@/components/ui/MathText";
 import { useTeks } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
 
 const BLOOM_LEVELS = ["C1", "C2", "C3", "C4", "C5", "C6"];
+const KISI_KISI_PER_HALAMAN = 11;
+const ARSIP_PER_HALAMAN = 7;
 
 interface RakitInfo {
   butir_ids: string[];
@@ -53,6 +56,8 @@ export default function RakitUjianPage() {
   const [rakitLoading, setRakitLoading] = useState(false);
   const [arsipList, setArsipList] = useState<ArsipSoal[]>([]);
   const [sumber, setSumber] = useState<"bank" | "arsip">("bank");
+  const [halamanBank, setHalamanBank] = useState(1);
+  const [halamanArsip, setHalamanArsip] = useState(1);
   const [siap, setSiap] = useState(false);
 
   useEffect(() => {
@@ -81,7 +86,15 @@ export default function RakitUjianPage() {
         (!filter.hanyaTerpilih || selectedIds.includes(b.id))
     );
   }, [butirList, filter, selectedIds]);
-  const grup = useMemo(() => kelompokkan(butirTampil, kelompokList), [butirTampil, kelompokList]);
+  const grupTersaring = useMemo(() => kelompokkan(butirTampil, kelompokList), [butirTampil, kelompokList]);
+  const jumlahHalamanBank = Math.max(1, Math.ceil(grupTersaring.length / KISI_KISI_PER_HALAMAN));
+  const halamanBankAktif = Math.min(halamanBank, jumlahHalamanBank);
+  const indeksAwalBank = (halamanBankAktif - 1) * KISI_KISI_PER_HALAMAN;
+  const grup = grupTersaring.slice(indeksAwalBank, indeksAwalBank + KISI_KISI_PER_HALAMAN);
+  const nomorButirBank = useMemo(
+    () => new Map(grupTersaring.flatMap((kelompok) => kelompok.butir).map((butir, indeks) => [butir.id, indeks + 1])),
+    [grupTersaring],
+  );
   const totalBloom = Object.values(bloom).reduce((a, b) => a + b, 0);
   const tersedia = butirList.reduce<Record<string, number>>((acc, b) => {
     acc[b.level_bloom] = (acc[b.level_bloom] || 0) + 1;
@@ -99,6 +112,71 @@ export default function RakitUjianPage() {
         (!filter.hanyaTerpilih || selectedIds.includes(a.id))
     );
   }, [arsipList, filter, selectedIds]);
+  const jumlahHalamanArsip = Math.max(1, Math.ceil(arsipTampil.length / ARSIP_PER_HALAMAN));
+  const halamanArsipAktif = Math.min(halamanArsip, jumlahHalamanArsip);
+  const indeksAwalArsip = (halamanArsipAktif - 1) * ARSIP_PER_HALAMAN;
+  const arsipTerlihat = arsipTampil.slice(indeksAwalArsip, indeksAwalArsip + ARSIP_PER_HALAMAN);
+
+  function ubahHalaman(berikut: number) {
+    setHalamanBank((halaman) => sumber === "bank" ? berikut : halaman);
+    setHalamanArsip((halaman) => sumber === "arsip" ? berikut : halaman);
+    document.getElementById("pemilih-butir-ujian")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function navigasiSumber(
+    jumlahItem: number,
+    perHalaman: number,
+    halamanDiminta: number,
+    label: string,
+  ) {
+    const jumlahHalaman = Math.max(1, Math.ceil(jumlahItem / perHalaman));
+    const halamanAktif = Math.min(halamanDiminta, jumlahHalaman);
+    if (jumlahHalaman <= 1) return null;
+    const awal = (halamanAktif - 1) * perHalaman;
+    const akhir = Math.min(awal + perHalaman, jumlahItem);
+    const nomorHalaman = susunNomorHalaman(halamanAktif, jumlahHalaman);
+
+    return (
+      <nav
+        aria-label={label}
+        className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5"
+      >
+        <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+          {t.rakit.pilih.rentang(awal + 1, akhir, jumlahItem)}
+        </span>
+        <div className="flex items-center justify-end gap-1">
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.rakit.pilih.sebelumnya} disabled={halamanAktif === 1} onClick={() => ubahHalaman(halamanAktif - 1)}>
+            ‹
+          </Button>
+          <div role="group" aria-label={label} className="flex items-center gap-0.5">
+            {nomorHalaman.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={t.rakit.pilih.halaman(nomor, jumlahHalaman)}
+                aria-current={nomor === halamanAktif ? "page" : undefined}
+                onClick={() => ubahHalaman(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${
+                  nomor === halamanAktif
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+                    : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"
+                }`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">
+                …
+              </span>
+            ))}
+          </div>
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.rakit.pilih.berikutnya} disabled={halamanAktif === jumlahHalaman} onClick={() => ubahHalaman(halamanAktif + 1)}>
+            ›
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   async function handleRakitOtomatis() {
     setError("");
@@ -405,7 +483,7 @@ export default function RakitUjianPage() {
             )}
           </div>
 
-          <div className="border border-[var(--line)] bg-[var(--canvas)] p-5">
+          <div id="pemilih-butir-ujian" className="border border-[var(--line)] bg-[var(--canvas)] p-5">
             <div className="flex flex-col gap-3 pb-3 mb-3 border-b border-[var(--line)] sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="text-sm font-medium text-[var(--ink)] block">
@@ -460,7 +538,11 @@ export default function RakitUjianPage() {
 
             <FilterButir
               nilai={filter}
-              onUbah={setFilter}
+              onUbah={(nilai) => {
+                setFilter(nilai);
+                setHalamanBank(1);
+                setHalamanArsip(1);
+              }}
               kelompok={kelompokList}
               jumlahTampil={sumber === "arsip" ? arsipTampil.length : butirTampil.length}
               jumlahTotal={sumber === "arsip" ? arsipList.length : butirList.length}
@@ -468,6 +550,7 @@ export default function RakitUjianPage() {
             />
 
             {sumber === "arsip" && (
+              <>
               <div className="daftar-gulir divide-y divide-[var(--line)] border border-[var(--line)]">
                 {arsipTampil.length === 0 && (
                   <p className="px-4 py-8 text-center font-sans text-sm text-[var(--ink-muted)]">
@@ -484,7 +567,7 @@ export default function RakitUjianPage() {
                     )}
                   </p>
                 )}
-                {arsipTampil.map((a, i) => {
+                {arsipTerlihat.map((a, i) => {
                   const isPreview = previewId === a.id;
                   return (
                     <div key={a.id}>
@@ -497,7 +580,7 @@ export default function RakitUjianPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="mb-1 flex items-center gap-2">
-                            <span className="font-mono text-xs text-[var(--ink-muted)]">#{i + 1}</span>
+                            <span className="font-mono text-xs text-[var(--ink-muted)]">#{indeksAwalArsip + i + 1}</span>
                             <span className="truncate font-serif text-xs text-[var(--ink-muted)]">{a.kisi_kisi_label}</span>
                             <button
                               type="button"
@@ -537,6 +620,13 @@ export default function RakitUjianPage() {
                   );
                 })}
               </div>
+              {navigasiSumber(
+                arsipTampil.length,
+                ARSIP_PER_HALAMAN,
+                halamanArsipAktif,
+                t.rakit.pilih.navigasiArsip,
+              )}
+              </>
             )}
 
             <div className={`daftar-gulir space-y-3 sm:pr-1 ${sumber === "arsip" ? "hidden" : ""}`}>
@@ -589,7 +679,7 @@ export default function RakitUjianPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-mono text-xs text-[var(--ink-muted)]">
-                            #{i + 1}
+                            #{nomorButirBank.get(butir.id) ?? i + 1}
                           </span>
                           <BloomChip level={butir.level_bloom} target={butir.level_target} />
                           <button
@@ -638,6 +728,12 @@ export default function RakitUjianPage() {
                 );
               })}
             </div>
+            {sumber === "bank" && navigasiSumber(
+              grupTersaring.length,
+              KISI_KISI_PER_HALAMAN,
+              halamanBankAktif,
+              t.rakit.pilih.navigasiBank,
+            )}
           </div>
 
           {error && (

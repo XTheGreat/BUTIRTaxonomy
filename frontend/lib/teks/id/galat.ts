@@ -37,6 +37,7 @@ const galat = {
   validasi_siswa_nama_kosong: "Nama tidak boleh kosong",
   validasi_nama_kosong: "Nama tidak boleh kosong",
   validasi_nama_panjang: "Nama terlalu panjang (maksimal 255 karakter)",
+  validasi_nama_tidak_pantas: "Nama tidak boleh berisi kata kasar. Gunakan nama yang sesuai.",
   validasi_ujian_total_bloom: "Total distribusi Bloom harus 100%",
   validasi_ujian_bloom_tidak_valid: "Level Bloom tidak valid",
   validasi_ujian_persen_negatif: "Persentase Bloom tidak boleh negatif",

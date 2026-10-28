@@ -9,7 +9,7 @@ const KELEMBUTAN = 0.2;
 
 export default function KursorLingkaran() {
   const ref = useRef<HTMLDivElement>(null);
-  const [aktif, setAktif] = useState(true);
+  const [aktif, setAktif] = useState(false);
 
   // Dapat dimatikan lewat Pengaturan > Tampilan.
   useEffect(() => {

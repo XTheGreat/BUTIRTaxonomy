@@ -1,5 +1,6 @@
 import json
 from app.services.agents.base import panggil_llm
+from app.services.agents.mandiri import temukan_rujukan_materi
 from app.services.agents.skema import validasi_keputusan
 from app.services.agents.penyusun import FORMAT_RUMUS, pulihkan_teks_agen
 from app.config import get_settings
@@ -21,6 +22,10 @@ SYSTEM_PROMPT = (
     "(3) Jika Agen Penjawab Buta salah menjawab padahal seharusnya jelas (indikasi ambigu) "
     "→ condong ke 'revisi', turunkan prediksi_kesukaran_final. "
     "(4) Ini ronde ke-{ronde} dari maksimal {max_ronde}. "
+    "(5) Siswa mengerjakan ujian tanpa melihat materi. Jika pertanyaan atau opsi merujuk ke materi, teks, bab, "
+    "halaman, atau daftar isi (mis. 'menurut materi', 'berdasarkan daftar isi'), atau soal hanya menguji struktur "
+    "dokumen, JANGAN 'diterima' berapa pun skornya: putuskan 'revisi' dan minta soal ditulis ulang sebagai "
+    "pengetahuan yang berdiri sendiri. "
     "{level_instruksi}"
     "Draft: {draft_json}. "
     "Kritik: {kritikus_json}. "
@@ -72,4 +77,13 @@ async def jalankan(
         max_tokens=8000,
         validasi=lambda data: validasi_keputusan(pulihkan_teks_agen(data, ("alasan",))),
     )
+
+    # Pengaman di kode: model kadang tetap menerima soal yang merujuk ke materi walau sudah dilarang.
+    rujukan = temukan_rujukan_materi(draft)
+    if rujukan and result.get("verdict") == "diterima":
+        catatan = (
+            "Soal merujuk ke materi (" + "; ".join(f"'{r}'" for r in rujukan) + ") padahal siswa tidak melihat "
+            "materi saat ujian; tulis ulang sebagai pengetahuan yang berdiri sendiri. "
+        )
+        result = {**result, "verdict": "revisi", "alasan": (catatan + (result.get("alasan") or "")).strip()}
     return result

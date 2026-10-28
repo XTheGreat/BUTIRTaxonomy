@@ -1,12 +1,30 @@
 import json
+import logging
 from app.services.agents.base import panggil_llm
+from app.services.agents.mandiri import temukan_rujukan_materi
 from app.services.agents.skema import validasi_draft
+
+logger = logging.getLogger(__name__)
+
+# Berapa kali draf yang masih merujuk ke materi ditulis ulang otomatis sebelum diserahkan ke Kritikus.
+MAKS_PERBAIKAN_MANDIRI = 2
+
+ATURAN_MANDIRI = (
+    "ATURAN SOAL MANDIRI: siswa mengerjakan ujian TANPA melihat materi. Karena itu pertanyaan dan opsi "
+    "DILARANG menyebut atau merujuk ke materi, teks, bacaan, artikel, modul, buku, bab, halaman, daftar isi, "
+    "atau nomor pelajaran, dan dilarang memakai frasa seperti 'menurut materi', 'berdasarkan materi', "
+    "'sesuai materi', atau 'berdasarkan daftar isi'. Tulis pertanyaan sebagai pengetahuan yang berdiri sendiri. "
+    "Jika soal membutuhkan data, kasus, atau kutipan, tuliskan lengkap di dalam soal. "
+    "Jangan membuat soal tentang struktur dokumen (daftar isi, judul bab, nomor halaman, penulis, tahun terbit, "
+    "kata pengantar); abaikan bagian materi yang hanya berupa itu dan ambil konsep intinya. "
+)
 
 
 SYSTEM_PROMPT = (
     "Anda adalah Agen Penyusun dalam sistem BUTIR. "
     "Buat SATU butir soal pilihan ganda (4 opsi A-D) HANYA berdasarkan potongan materi berikut — "
     "jangan gunakan pengetahuan di luar materi ini. "
+    f"{ATURAN_MANDIRI}"
     "Target level kognitif Bloom: {target_level}. {panduan_level}"
     "{revisi_instruksi}"
     "{cakupan_instruksi}"
@@ -18,7 +36,7 @@ SYSTEM_PROMPT = (
 )
 
 PANDUAN_LEVEL = {
-    "C1": "C1 Mengingat: tanyakan fakta, istilah, atau definisi yang tertulis di materi.",
+    "C1": "C1 Mengingat: tanyakan fakta, istilah, atau definisi yang diajarkan dalam materi, tanpa menyebut materinya.",
     "C2": "C2 Memahami: minta siswa menjelaskan, menafsirkan, atau membandingkan konsep dengan kata-kata lain.",
     "C3": "C3 Menerapkan: beri situasi atau data baru, siswa memakai konsep atau rumus dari materi untuk menyelesaikannya.",
     "C4": (
@@ -89,20 +107,46 @@ async def jalankan(
             f"Guru meminta soal difokuskan pada cakupan berikut (selama masih ada di materi): {cakupan}. "
         )
 
-    system_prompt = SYSTEM_PROMPT.format(
-        target_level=target_level,
-        panduan_level=(PANDUAN_LEVEL.get(target_level, "") + " Soal harus benar-benar menuntut level ini, bukan level di bawahnya. ") if PANDUAN_LEVEL.get(target_level) else "",
-        revisi_instruksi=revisi_instruksi,
-        cakupan_instruksi=cakupan_instruksi,
-        chunk=chunk,
-        format_rumus=FORMAT_RUMUS,
+    panduan_level = (
+        (PANDUAN_LEVEL.get(target_level, "") + " Soal harus benar-benar menuntut level ini, bukan level di bawahnya. ")
+        if PANDUAN_LEVEL.get(target_level)
+        else ""
     )
 
-    result = await panggil_llm(
-        peran="penyusun",
-        system_prompt=system_prompt,
-        user_prompt="Buatkan satu butir soal sesuai instruksi di atas.",
-        max_tokens=12000,
-        validasi=validasi_draft,
-    )
-    return _pulihkan_draft(result)
+    hasil: dict = {}
+    for percobaan in range(1 + MAKS_PERBAIKAN_MANDIRI):
+        system_prompt = SYSTEM_PROMPT.format(
+            target_level=target_level,
+            panduan_level=panduan_level,
+            revisi_instruksi=revisi_instruksi,
+            cakupan_instruksi=cakupan_instruksi,
+            chunk=chunk,
+            format_rumus=FORMAT_RUMUS,
+        )
+        result = await panggil_llm(
+            peran="penyusun",
+            system_prompt=system_prompt,
+            user_prompt="Buatkan satu butir soal sesuai instruksi di atas.",
+            max_tokens=12000,
+            validasi=validasi_draft,
+        )
+        hasil = _pulihkan_draft(result)
+
+        rujukan = temukan_rujukan_materi(hasil)
+        if not rujukan:
+            return hasil
+        if percobaan >= MAKS_PERBAIKAN_MANDIRI:
+            # Batas penulisan ulang habis: draf terakhir diserahkan ke Kritikus dan Arbiter,
+            # yang juga memeriksa kemandirian soal.
+            logger.warning("Draf tetap merujuk ke materi (%s) setelah %s kali ditulis ulang", rujukan, percobaan)
+            break
+        logger.warning("Draf merujuk ke materi (%s); menulis ulang (%s/%s)", rujukan, percobaan + 1, MAKS_PERBAIKAN_MANDIRI)
+        # Putaran berikutnya diberi tahu apa yang salah.
+        revisi_instruksi = (
+            (f"Ini ronde revisi. Perbaiki sesuai catatan berikut: {catatan_revisi}. " if catatan_revisi else "")
+            + "Draf sebelumnya melanggar aturan soal mandiri karena memuat rujukan ke materi: "
+            + "; ".join(f"'{r}'" for r in rujukan)
+            + ". Tulis ulang soal lengkap tanpa rujukan apa pun ke materi, teks, bab, halaman, atau daftar isi, "
+            "sehingga bisa dijawab siswa yang tidak melihat materi. "
+        )
+    return hasil

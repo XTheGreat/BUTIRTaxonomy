@@ -19,6 +19,28 @@ from app.services.agents.penyedia import (
 router = APIRouter(prefix="/api/log-llm", tags=["log-llm"])
 
 
+def _serialisasi_log(b: LogLLM) -> dict:
+    return {
+        "waktu": b.waktu,
+        "butir_id": b.butir_id,
+        "percobaan_butir": b.percobaan_butir,
+        "ronde": b.ronde,
+        "peran": b.peran,
+        "kelompok": b.kelompok,
+        "provider": b.provider,
+        "model": b.model,
+        "fallback": b.fallback,
+        "percobaan_panggilan": b.percobaan_panggilan,
+        "status": b.status,
+        "kode_http": b.kode_http,
+        "latensi_ms": b.latensi_ms,
+        "token_prompt": b.token_prompt,
+        "token_jawaban": b.token_jawaban,
+        "token_total": b.token_total,
+        "galat": b.galat,
+    }
+
+
 def _penugasan() -> list[dict]:
     hasil = []
     for peran in PERAN:
@@ -77,28 +99,38 @@ async def daftar_log(
     if provider:
         query = query.where(LogLLM.provider == provider)
     baris = (await db.execute(query.order_by(LogLLM.waktu.desc()).limit(limit))).scalars().all()
-    return [
-        {
-            "waktu": b.waktu,
-            "butir_id": b.butir_id,
-            "percobaan_butir": b.percobaan_butir,
-            "ronde": b.ronde,
-            "peran": b.peran,
-            "kelompok": b.kelompok,
-            "provider": b.provider,
-            "model": b.model,
-            "fallback": b.fallback,
-            "percobaan_panggilan": b.percobaan_panggilan,
-            "status": b.status,
-            "kode_http": b.kode_http,
-            "latensi_ms": b.latensi_ms,
-            "token_prompt": b.token_prompt,
-            "token_jawaban": b.token_jawaban,
-            "token_total": b.token_total,
-            "galat": b.galat,
-        }
-        for b in baris
-    ]
+    return [_serialisasi_log(b) for b in baris]
+
+
+@router.get("/halaman")
+async def daftar_log_berhalaman(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    status: str | None = Query(None),
+    peran: str | None = Query(None),
+    provider: str | None = Query(None),
+    guru: User = Depends(get_current_guru),
+    db: AsyncSession = Depends(get_db),
+):
+    filters = [LogLLM.guru_id == guru.id]
+    if status:
+        filters.append(LogLLM.status == status)
+    if peran:
+        filters.append(LogLLM.peran == peran)
+    if provider:
+        filters.append(LogLLM.provider == provider)
+
+    total = int(await db.scalar(select(func.count(LogLLM.id)).where(*filters)) or 0)
+    baris = (
+        await db.execute(
+            select(LogLLM)
+            .where(*filters)
+            .order_by(LogLLM.waktu.desc(), LogLLM.id.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+    ).scalars().all()
+    return {"items": [_serialisasi_log(b) for b in baris], "total": total}
 
 
 @router.get("/ringkasan")

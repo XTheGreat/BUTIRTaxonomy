@@ -34,6 +34,7 @@ const galat: typeof galatId = {
   validasi_siswa_nama_kosong: "Name cannot be empty",
   validasi_nama_kosong: "Name cannot be empty",
   validasi_nama_panjang: "Name is too long (maximum 255 characters)",
+  validasi_nama_tidak_pantas: "Names cannot contain profanity. Please use an appropriate name.",
   validasi_ujian_total_bloom: "The Bloom distribution must total 100%",
   validasi_ujian_bloom_tidak_valid: "Invalid Bloom level",
   validasi_ujian_persen_negatif: "The Bloom percentage cannot be negative",

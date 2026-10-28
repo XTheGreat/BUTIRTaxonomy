@@ -34,7 +34,10 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
   const t = useTeks().komponen.bloom;
   const cx = 90;
   const cy = 90;
-  const radius = 78;
+  const radius = 62;
+  const ketebalanCincin = 32;
+  const keliling = 2 * Math.PI * radius;
+  let jedaAnimasi = 0;
 
   function getCoordinates(percent: number) {
     const angle = percent * 2 * Math.PI - Math.PI / 2;
@@ -66,7 +69,7 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
           width="180"
           height="180"
           viewBox="0 0 180 180"
-          className="select-none transform transition-transform"
+          className="select-none"
         >
           {total === 0 ? (
             <circle
@@ -75,11 +78,22 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
               r={radius}
               fill="transparent"
               stroke="var(--line)"
-              strokeWidth="16"
+              strokeWidth={ketebalanCincin}
             />
           ) : (
             slices.map((slice) => {
               if (slice.value === 0) return null;
+              const sliceSpan = slice.endPct - slice.startPct;
+              const panjangBusur = keliling * sliceSpan;
+              const durasiAnimasi = Math.max(150, Math.round(sliceSpan * 900));
+              const delayAnimasi = jedaAnimasi;
+              jedaAnimasi += durasiAnimasi;
+              const style = {
+                "--pie-slice-length": `${panjangBusur}px`,
+                animationDelay: `${delayAnimasi}ms`,
+                animationDuration: `${durasiAnimasi}ms`,
+              } as React.CSSProperties;
+
               if (slice.value === effectiveTotal) {
                 return (
                   <circle
@@ -87,36 +101,57 @@ export default function BloomPieChart({ bloom, total }: BloomPieChartProps) {
                     cx={cx}
                     cy={cy}
                     r={radius}
-                    fill={slice.color}
+                    fill="none"
+                    stroke={slice.color}
+                    strokeWidth={ketebalanCincin}
+                    strokeDasharray={`${panjangBusur} ${keliling}`}
+                    className="diagram-animasi diagram-pie-slice transition-opacity duration-140 hover:opacity-90"
+                    style={style}
                   />
                 );
               }
 
               const [startX, startY] = getCoordinates(slice.startPct);
               const [endX, endY] = getCoordinates(slice.endPct);
-              const sliceSpan = slice.endPct - slice.startPct;
               const largeArcFlag = sliceSpan > 0.5 ? 1 : 0;
 
-              const pathData = [
-                `M ${cx} ${cy}`,
-                `L ${startX} ${startY}`,
-                `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-                `Z`,
-              ].join(" ");
+              const pathData = `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
 
               return (
                 <path
                   key={slice.level}
                   d={pathData}
-                  fill={slice.color}
-                  stroke="var(--surface)"
-                  strokeWidth="2"
-                  className="transition-all duration-200 hover:opacity-90"
+                  fill="none"
+                  stroke={slice.color}
+                  strokeWidth={ketebalanCincin}
+                  strokeDasharray={`${panjangBusur} ${keliling}`}
+                  strokeLinecap="butt"
+                  className="diagram-animasi diagram-pie-slice transition-opacity duration-140 hover:opacity-90"
+                  style={style}
                 >
                   <title>{`${slice.level} (${t.tingkat[slice.level]}): ${slice.value}%`}</title>
                 </path>
               );
             })
+          )}
+
+          {total > 0 && slices.filter((slice) => slice.value > 0).length > 1 && (
+            <g aria-hidden="true" pointerEvents="none" stroke="var(--canvas)" strokeWidth="2">
+              {slices.filter((slice) => slice.value > 0).map((slice) => {
+                const angle = slice.startPct * 2 * Math.PI - Math.PI / 2;
+                const innerRadius = radius - ketebalanCincin / 2;
+                const outerRadius = radius + ketebalanCincin / 2;
+                return (
+                  <line
+                    key={`pemisah-${slice.level}`}
+                    x1={cx + innerRadius * Math.cos(angle)}
+                    y1={cy + innerRadius * Math.sin(angle)}
+                    x2={cx + outerRadius * Math.cos(angle)}
+                    y2={cy + outerRadius * Math.sin(angle)}
+                  />
+                );
+              })}
+            </g>
           )}
 
           <circle cx={cx} cy={cy} r="46" fill="var(--surface)" />

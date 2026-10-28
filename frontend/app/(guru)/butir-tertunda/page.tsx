@@ -15,9 +15,12 @@ import RondeIndicator from "@/components/ui/RondeIndicator";
 import EmptyState from "@/components/ui/EmptyState";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useTeks } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
 
 const sedangDiproses = (status: string) =>
   status === "draft" || status === "debating";
+const PERLU_DIULANG_PER_HALAMAN = 7;
+const RIWAYAT_PER_HALAMAN = 11;
 
 function HasilPercobaan({ hasil }: { hasil: string }) {
   const t = useTeks().telaah;
@@ -46,7 +49,9 @@ export default function ButirTertundaPage() {
   const t = useTeks().telaah;
   const [tab, setTab] = useState<"tertunda" | "riwayat">("tertunda");
   const [items, setItems] = useState<ButirTertunda[]>([]);
+  const [halamanPerluDiulang, setHalamanPerluDiulang] = useState(1);
   const [diulang, setDiulang] = useState<ButirTertunda[]>([]);
+  const [halamanRiwayatPengulangan, setHalamanRiwayatPengulangan] = useState(1);
   const [diulangLoading, setDiulangLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -148,13 +153,93 @@ export default function ButirTertundaPage() {
   }
 
   const jumlahTertunda = items.filter((b) => b.status === "tertunda").length;
+  const jumlahHalamanPerluDiulang = Math.max(1, Math.ceil(items.length / PERLU_DIULANG_PER_HALAMAN));
+  const halamanPerluDiulangAktif = Math.min(halamanPerluDiulang, jumlahHalamanPerluDiulang);
+  const indeksAwalPerluDiulang = (halamanPerluDiulangAktif - 1) * PERLU_DIULANG_PER_HALAMAN;
+  const itemsPerluDiulangTerlihat = items.slice(indeksAwalPerluDiulang, indeksAwalPerluDiulang + PERLU_DIULANG_PER_HALAMAN);
+  const jumlahHalamanRiwayat = Math.max(1, Math.ceil(diulang.length / RIWAYAT_PER_HALAMAN));
+  const halamanRiwayatAktif = Math.min(halamanRiwayatPengulangan, jumlahHalamanRiwayat);
+  const indeksAwalRiwayat = (halamanRiwayatAktif - 1) * RIWAYAT_PER_HALAMAN;
+  const itemsRiwayatTerlihat = diulang.slice(indeksAwalRiwayat, indeksAwalRiwayat + RIWAYAT_PER_HALAMAN);
+
+  function navigasiPaginasi(
+    jumlahItem: number,
+    perHalaman: number,
+    halamanDiminta: number,
+    aturHalaman: (halaman: number) => void,
+    label: string,
+  ) {
+    const jumlahHalaman = Math.max(1, Math.ceil(jumlahItem / perHalaman));
+    const halamanAktif = Math.min(halamanDiminta, jumlahHalaman);
+    if (jumlahHalaman <= 1) return null;
+    const awal = (halamanAktif - 1) * perHalaman;
+    const akhir = Math.min(awal + perHalaman, jumlahItem);
+    const nomorHalaman = susunNomorHalaman(halamanAktif, jumlahHalaman);
+
+    return (
+      <nav
+        aria-label={label}
+        className="mt-3 flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5"
+      >
+        <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+          {t.tertunda.rentang(awal + 1, akhir, jumlahItem)}
+        </span>
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className="!h-7 !w-7 !p-0 shrink-0"
+            aria-label={t.tertunda.sebelumnya}
+            disabled={halamanAktif === 1}
+            onClick={() => aturHalaman(halamanAktif - 1)}
+          >
+            ‹
+          </Button>
+          <div role="group" aria-label={label} className="flex items-center gap-0.5">
+            {nomorHalaman.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={t.tertunda.halaman(nomor, jumlahHalaman)}
+                aria-current={nomor === halamanAktif ? "page" : undefined}
+                onClick={() => aturHalaman(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${
+                  nomor === halamanAktif
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
+                    : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"
+                }`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">
+                …
+              </span>
+            ))}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className="!h-7 !w-7 !p-0 shrink-0"
+            aria-label={t.tertunda.berikutnya}
+            disabled={halamanAktif === jumlahHalaman}
+            onClick={() => aturHalaman(halamanAktif + 1)}
+          >
+            ›
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   const columns: Column<ButirTertunda>[] = [
     {
       key: "no",
       header: "#",
       className: "font-mono text-xs text-[var(--ink-muted)] tabular-nums",
-      render: (_b, i) => i + 1,
+      render: (_b, i) => (tab === "tertunda" ? indeksAwalPerluDiulang : indeksAwalRiwayat) + i + 1,
     },
     {
       key: "kisi_kisi_label",
@@ -295,7 +380,9 @@ export default function ButirTertundaPage() {
         <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <h3 className="font-serif text-[15px] font-medium text-[var(--ink)]">{t.tertunda.riwayatPercobaan}</h3>
           <span aria-hidden="true" className="h-4 w-px bg-[var(--line-strong)]" />
-          <span className="font-mono text-sm tabular-nums text-[var(--ink)]">#{nomor + 1}</span>
+          <span className="font-mono text-sm tabular-nums text-[var(--ink)]">
+            #{(tab === "tertunda" ? indeksAwalPerluDiulang : indeksAwalRiwayat) + nomor + 1}
+          </span>
         </div>
         {riwayatLoading && riwayat.length === 0 ? (
           <p className="font-mono text-xs text-[var(--ink-muted)]">{t.tertunda.memuatRiwayat}</p>
@@ -405,25 +492,43 @@ export default function ButirTertundaPage() {
             description={t.tertunda.kosongDeskripsi}
           />
         ) : (
-          <Table
-            data={items}
-            columns={columns}
-            expandedKey={riwayatId}
-            renderExpanded={renderRiwayat}
-          />
+          <>
+            <Table
+              data={itemsPerluDiulangTerlihat}
+              columns={columns}
+              expandedKey={riwayatId}
+              renderExpanded={renderRiwayat}
+            />
+            {navigasiPaginasi(
+              items.length,
+              PERLU_DIULANG_PER_HALAMAN,
+              halamanPerluDiulangAktif,
+              setHalamanPerluDiulang,
+              t.tertunda.navigasiPerluDiulang,
+            )}
+          </>
         )
       ) : diulangLoading && diulang.length === 0 ? (
         <div className="border border-[var(--line)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--ink-muted)] font-mono">
           {t.tertunda.memuatRiwayatPengulangan}
         </div>
       ) : (
-        <Table
-          data={diulang}
-          columns={diulangColumns}
-          expandedKey={riwayatId}
-          renderExpanded={renderRiwayat}
-          emptyMessage={t.tertunda.belumAdaDiulang}
-        />
+        <>
+          <Table
+            data={itemsRiwayatTerlihat}
+            columns={diulangColumns}
+            expandedKey={riwayatId}
+            renderExpanded={renderRiwayat}
+            emptyMessage={t.tertunda.belumAdaDiulang}
+          />
+          {navigasiPaginasi(
+            diulang.length,
+            RIWAYAT_PER_HALAMAN,
+            halamanRiwayatAktif,
+            setHalamanRiwayatPengulangan,
+            t.tertunda.navigasiRiwayatPengulangan,
+          )}
+        </>
       )}
 
       <ConfirmDialog

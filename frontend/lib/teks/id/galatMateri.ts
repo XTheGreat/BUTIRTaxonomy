@@ -38,11 +38,12 @@ const galatMateri = {
 
   // arsip
   arsip_butir_tidak_ditemukan: "Butir tidak ditemukan",
-  arsip_butir_belum_diterima: "Soal hanya bisa diarsipkan dari butir yang sudah diterima, lewat Riwayat Diterima.",
+  arsip_butir_belum_terminal: "Soal hanya bisa diarsipkan dari Riwayat Diterima atau Riwayat Ditolak.",
+  arsip_ronde_final_tidak_bisa_diarsipkan: "Ronde terakhir yang diterima atau ditolak tidak bisa diarsipkan.",
   arsip_ronde_sudah_di_bank_soal:
     "Ronde yang menghasilkan butir diterima tidak bisa diarsipkan karena sudah ada di Bank Soal.",
   arsip_soal_ronde_tidak_ditemukan: "Soal pada ronde ini tidak ditemukan",
-  arsip_ronde_diterima_arbiter: "Ronde ini diterima Arbiter, jadi tidak bisa diarsipkan.",
+  arsip_ronde_bukan_revisi: "Hanya ronde yang meminta revisi sebelum ronde terakhir yang bisa diarsipkan.",
   arsip_soal_sudah_diarsipkan: "Soal pada ronde ini sudah ada di Arsip.",
   arsip_soal_tidak_ditemukan: "Soal arsip tidak ditemukan",
   arsip_soal_dipakai_paket_ujian: "Soal ini sudah dipakai dalam paket ujian dan tidak bisa dihapus.",

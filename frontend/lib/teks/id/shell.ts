@@ -12,6 +12,7 @@ const shell = {
     logoKeDashboard: "BUTIR — ke dashboard",
     tutupNavigasi: "Tutup navigasi",
     tutupBilahSamping: "Tutup bilah samping",
+    ubahLebar: "Ubah lebar bilah samping",
     navigasiUtama: "Navigasi utama",
     grup: {
       persiapan: "Persiapan",
@@ -33,6 +34,7 @@ const shell = {
       paketPemakaian: "Paket & Pemakaian",
       logLlm: "Log LLM",
       riwayatDiterima: "Riwayat Diterima",
+      riwayatDitolak: "Riwayat Ditolak",
       arsipSoal: "Arsip Soal",
     },
   },
@@ -56,6 +58,7 @@ const shell = {
       "bank-soal": "Bank Soal",
       arsip: "Arsip Soal",
       "riwayat-diterima": "Riwayat Diterima",
+      "riwayat-ditolak": "Riwayat Ditolak",
       "daftar-ujian": "Daftar Ujian",
       "rakit-ujian": "Rakit Ujian",
       generasi: "Generasi Soal",

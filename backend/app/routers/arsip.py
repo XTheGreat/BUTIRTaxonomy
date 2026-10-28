@@ -55,17 +55,17 @@ async def simpan_ke_arsip(data: ArsipSimpan, guru: User = Depends(get_current_gu
     if not baris or baris[0].status == "arsip":
         raise Galat(404, "arsip_butir_tidak_ditemukan", "Butir tidak ditemukan")
     butir, kisi = baris
-    if butir.status != "diterima":
+    if butir.status not in ("diterima", "ditolak"):
         raise Galat(
             409,
-            "arsip_butir_belum_diterima",
-            "Soal hanya bisa diarsipkan dari butir yang sudah diterima, lewat Riwayat Diterima.",
+            "arsip_butir_belum_terminal",
+            "Soal hanya bisa diarsipkan dari Riwayat Diterima atau Riwayat Ditolak.",
         )
     if data.ronde >= butir.ronde_saat_ini:
         raise Galat(
             409,
-            "arsip_ronde_sudah_di_bank_soal",
-            "Ronde yang menghasilkan butir diterima tidak bisa diarsipkan karena sudah ada di Bank Soal.",
+            "arsip_ronde_final_tidak_bisa_diarsipkan",
+            "Ronde terakhir yang diterima atau ditolak tidak bisa diarsipkan.",
         )
 
     logs = (
@@ -83,8 +83,12 @@ async def simpan_ke_arsip(data: ArsipSimpan, guru: User = Depends(get_current_gu
     draf = terakhir.get("penyusun")
     if not draf or not draf.get("pertanyaan"):
         raise Galat(404, "arsip_soal_ronde_tidak_ditemukan", "Soal pada ronde ini tidak ditemukan")
-    if (terakhir.get("arbiter") or {}).get("verdict") == "diterima":
-        raise Galat(409, "arsip_ronde_diterima_arbiter", "Ronde ini diterima Arbiter, jadi tidak bisa diarsipkan.")
+    if (terakhir.get("arbiter") or {}).get("verdict") != "revisi":
+        raise Galat(
+            409,
+            "arsip_ronde_bukan_revisi",
+            "Hanya ronde yang meminta revisi sebelum ronde terakhir yang bisa diarsipkan.",
+        )
 
     sudah = (
         await db.execute(

@@ -131,7 +131,12 @@ export default function FormPreferensi() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit">{p.simpan}</Button>
-        <Button type="button" variant="ghost" onClick={kembalikan}>
+        <Button
+          type="button"
+          variant="ghost"
+          className="!text-[var(--accent-text)] underline underline-offset-4 decoration-[var(--accent-text)]"
+          onClick={kembalikan}
+        >
           {p.kembalikan}
         </Button>
         {status && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Layers,
   PanelLeftClose,
+  XCircle,
   type LucideIcon,
 } from "lucide-react";
 import HistoryDebat from "@/components/layout/HistoryDebat";
@@ -29,6 +30,15 @@ import { useTeks, type Kamus } from "@/lib/teks";
 
 type KunciMenu = keyof Kamus["shell"]["sidebar"]["menu"];
 type KunciGrup = keyof Kamus["shell"]["sidebar"]["grup"];
+
+const KUNCI_LEBAR_SIDEBAR = "butir_lebar_sidebar";
+const LEBAR_SIDEBAR_BAWAAN = 240;
+const LEBAR_SIDEBAR_MIN = 200;
+const LEBAR_SIDEBAR_MAKS = 400;
+
+function batasiLebarSidebar(lebar: number) {
+  return Math.max(LEBAR_SIDEBAR_MIN, Math.min(LEBAR_SIDEBAR_MAKS, lebar));
+}
 
 interface NavItem {
   href: string;
@@ -81,6 +91,7 @@ const navGroups: NavGroup[] = [
     group: "arsip",
     items: [
       { href: "/riwayat-diterima", label: "riwayatDiterima", icon: History },
+      { href: "/riwayat-ditolak", label: "riwayatDitolak", icon: XCircle },
       { href: "/arsip", label: "arsipSoal", icon: BookmarkCheck },
     ],
   },
@@ -102,6 +113,65 @@ export default function Sidebar({
   const [markedCount, setMarkedCount] = useState<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [terbuka, setTerbuka] = useState<Record<string, boolean>>({});
+  const [lebarSidebar, setLebarSidebar] = useState(LEBAR_SIDEBAR_BAWAAN);
+  const [sedangUbahLebar, setSedangUbahLebar] = useState(false);
+  const lebarRef = useRef(LEBAR_SIDEBAR_BAWAAN);
+  const titikAwalRef = useRef(0);
+  const lebarAwalRef = useRef(LEBAR_SIDEBAR_BAWAAN);
+
+  function simpanLebar(lebar: number) {
+    const dibatasi = batasiLebarSidebar(lebar);
+    lebarRef.current = dibatasi;
+    setLebarSidebar(dibatasi);
+    try {
+      localStorage.setItem(KUNCI_LEBAR_SIDEBAR, String(dibatasi));
+    } catch {}
+  }
+
+  useEffect(() => {
+    try {
+      const tersimpan = Number(localStorage.getItem(KUNCI_LEBAR_SIDEBAR));
+      if (Number.isFinite(tersimpan) && tersimpan > 0) {
+        const dibatasi = batasiLebarSidebar(tersimpan);
+        lebarRef.current = dibatasi;
+        setLebarSidebar(dibatasi);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!sedangUbahLebar) return;
+
+    const cursorSebelumnya = document.body.style.cursor;
+    const seleksiSebelumnya = document.body.style.userSelect;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    function geser(event: PointerEvent) {
+      const dibatasi = batasiLebarSidebar(lebarAwalRef.current + event.clientX - titikAwalRef.current);
+      lebarRef.current = dibatasi;
+      setLebarSidebar(dibatasi);
+    }
+
+    function selesai() {
+      try {
+        localStorage.setItem(KUNCI_LEBAR_SIDEBAR, String(lebarRef.current));
+      } catch {}
+      setSedangUbahLebar(false);
+    }
+
+    window.addEventListener("pointermove", geser);
+    window.addEventListener("pointerup", selesai);
+    window.addEventListener("pointercancel", selesai);
+
+    return () => {
+      window.removeEventListener("pointermove", geser);
+      window.removeEventListener("pointerup", selesai);
+      window.removeEventListener("pointercancel", selesai);
+      document.body.style.cursor = cursorSebelumnya;
+      document.body.style.userSelect = seleksiSebelumnya;
+    };
+  }, [sedangUbahLebar]);
 
   const grupAktif = navGroups.find((g) =>
     g.items.some((i) => i.href !== "/dashboard" && pathname.startsWith(i.href)),
@@ -133,7 +203,10 @@ export default function Sidebar({
   }, [pathname]);
 
   const navInner = (
-    <div className="w-[240px] h-full flex flex-col border-r border-[var(--line)] bg-[var(--canvas)] select-none">
+    <div
+      className="h-full flex flex-col border-r border-[var(--line)] bg-[var(--canvas)] select-none"
+      style={{ width: `min(${lebarSidebar}px, calc(100vw - 2rem))` }}
+    >
       <div className="shrink-0 px-5 py-4 border-b border-[var(--line)] bg-[var(--canvas)] flex items-center justify-between gap-3">
         <Link
           href="/dashboard"
@@ -204,7 +277,7 @@ export default function Sidebar({
                     }`}
                   >
                     <Icon
-                      size={17}
+                      size={15}
                       strokeWidth={1.6}
                       aria-hidden="true"
                       className={`shrink-0 transition-colors duration-[140ms] ${
@@ -264,13 +337,49 @@ export default function Sidebar({
   return (
     <>
       <aside
-        className={`hidden md:block sticky top-0 h-dvh shrink-0 transition-all duration-300 ease-in-out overflow-hidden z-30 ${
-          isOpen
-            ? "w-[240px] opacity-100"
-            : "w-0 opacity-0 pointer-events-none"
-        }`}
+        className={`hidden md:block sticky top-0 h-dvh shrink-0 overflow-hidden z-30 ${
+          sedangUbahLebar ? "transition-none" : "transition-[width,opacity] duration-300 ease-in-out"
+        } ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ width: isOpen ? lebarSidebar : 0 }}
       >
         {navInner}
+        {isOpen && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={t.shell.sidebar.ubahLebar}
+            aria-valuemin={LEBAR_SIDEBAR_MIN}
+            aria-valuemax={LEBAR_SIDEBAR_MAKS}
+            aria-valuenow={lebarSidebar}
+            aria-valuetext={`${lebarSidebar}px`}
+            tabIndex={0}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              titikAwalRef.current = event.clientX;
+              lebarAwalRef.current = lebarSidebar;
+              setSedangUbahLebar(true);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                simpanLebar(lebarSidebar - 16);
+              } else if (event.key === "ArrowRight") {
+                event.preventDefault();
+                simpanLebar(lebarSidebar + 16);
+              } else if (event.key === "Home") {
+                event.preventDefault();
+                simpanLebar(LEBAR_SIDEBAR_MIN);
+              } else if (event.key === "End") {
+                event.preventDefault();
+                simpanLebar(LEBAR_SIDEBAR_MAKS);
+              }
+            }}
+            className={`absolute inset-y-0 right-0 z-40 w-2 touch-none cursor-col-resize after:absolute after:inset-y-0 after:left-[3px] after:w-px after:bg-transparent after:content-[''] hover:after:bg-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-text)] ${
+              sedangUbahLebar ? "after:bg-[var(--accent)]" : ""
+            }`}
+            title={t.shell.sidebar.ubahLebar}
+          />
+        )}
       </aside>
 
       <div

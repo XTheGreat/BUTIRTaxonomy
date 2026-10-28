@@ -41,11 +41,12 @@ const galatMateri: typeof galatMateriId = {
 
   // arsip
   arsip_butir_tidak_ditemukan: "Item not found",
-  arsip_butir_belum_diterima: "A question can only be archived from an accepted item, via Accepted History.",
+  arsip_butir_belum_terminal: "A question can only be archived from Accepted History or Rejected History.",
+  arsip_ronde_final_tidak_bisa_diarsipkan: "The final accepted or rejected round cannot be archived.",
   arsip_ronde_sudah_di_bank_soal:
     "The round that produced the accepted item cannot be archived because it is already in the Question Bank.",
   arsip_soal_ronde_tidak_ditemukan: "The question for this round was not found",
-  arsip_ronde_diterima_arbiter: "This round was accepted by the Arbiter, so it cannot be archived.",
+  arsip_ronde_bukan_revisi: "Only revision rounds before the final round can be archived.",
   arsip_soal_sudah_diarsipkan: "The question for this round is already in the Archive.",
   arsip_soal_tidak_ditemukan: "Archived question not found",
   arsip_soal_dipakai_paket_ujian: "This question is already used in an exam package and cannot be deleted.",

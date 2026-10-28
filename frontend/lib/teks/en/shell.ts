@@ -14,6 +14,7 @@ const shell: typeof id = {
     logoKeDashboard: "BUTIR — to dashboard",
     tutupNavigasi: "Close navigation",
     tutupBilahSamping: "Close sidebar",
+    ubahLebar: "Resize sidebar",
     navigasiUtama: "Main navigation",
     grup: {
       persiapan: "Preparation",
@@ -35,6 +36,7 @@ const shell: typeof id = {
       paketPemakaian: "Plan & Usage",
       logLlm: "LLM Log",
       riwayatDiterima: "Accepted History",
+      riwayatDitolak: "Rejected History",
       arsipSoal: "Question Archive",
     },
   },
@@ -58,6 +60,7 @@ const shell: typeof id = {
       "bank-soal": "Question Bank",
       arsip: "Question Archive",
       "riwayat-diterima": "Accepted History",
+      "riwayat-ditolak": "Rejected History",
       "daftar-ujian": "Exam List",
       "rakit-ujian": "Assemble Exam",
       generasi: "Question Generation",

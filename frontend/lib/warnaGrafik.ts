@@ -8,4 +8,5 @@ export const WARNA_GRAFIK = {
   ditandai: "#F0B90B",
   ditolak: "#F6465D",
   tertunda: "#848E9C",
+  biru: "#2F6B8A",
 } as const;

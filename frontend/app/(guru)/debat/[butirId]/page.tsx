@@ -179,7 +179,8 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
   const jumlahPesan = useRef(0);
   const berpikirKey = useRef("");
   const [idAwal, setIdAwal] = useState<Set<string> | null>(null);
-  const dariRiwayat = useSearchParams().get("dari") === "riwayat-diterima";
+  const sumberRiwayat = useSearchParams().get("dari");
+  const dariRiwayat = sumberRiwayat === "riwayat-diterima" || sumberRiwayat === "riwayat-ditolak";
   const [diarsipkan, setDiarsipkan] = useState<Set<number>>(new Set());
   const [sedangSimpan, setSedangSimpan] = useState<number | null>(null);
   const [galatArsip, setGalatArsip] = useState("");
@@ -286,7 +287,7 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
       {!data ? (
         !galat && <p className="font-mono text-xs text-[var(--ink-muted)]">{d.memuat}</p>
       ) : (
-        <div className="max-w-3xl space-y-8">
+        <div className="w-full space-y-8">
           {data.menunggu_giliran && (
             <div className="pesan-muncul flex items-center gap-3 border border-dashed border-[var(--line-strong)] bg-[var(--surface)] px-4 py-4 text-sm text-[var(--ink-muted)]">
               <TigaTitik />
@@ -302,9 +303,9 @@ export default function DebatLivePage({ params }: { params: Promise<{ butirId: s
             const bisaArsip =
               !!draf?.pertanyaan &&
               dariRiwayat &&
-              data.status === "diterima" &&
+              (data.status === "diterima" || data.status === "ditolak") &&
               r < data.ronde_saat_ini &&
-              putusan !== "diterima";
+              putusan === "revisi";
             return (
               <section key={r} aria-label={t.umum.ronde(r)} className="space-y-4">
                 <div className="flex items-center gap-3">

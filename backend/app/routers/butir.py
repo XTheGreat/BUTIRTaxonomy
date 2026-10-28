@@ -204,6 +204,22 @@ async def list_butir_diterima(
     return await _respons_tertunda(db, baris)
 
 
+@router.get("/ditolak", response_model=list[ButirTertundaResponse])
+async def list_butir_ditolak(
+    guru: User = Depends(get_current_guru),
+    db: AsyncSession = Depends(get_db),
+):
+    baris = (
+        await db.execute(
+            select(ButirSoal, KisiKisi)
+            .join(KisiKisi, KisiKisi.id == ButirSoal.kisi_kisi_id)
+            .where(KisiKisi.guru_id == guru.id, ButirSoal.status == "ditolak")
+            .order_by(ButirSoal.updated_at.desc())
+        )
+    ).all()
+    return await _respons_tertunda(db, baris)
+
+
 @router.get("/diulang", response_model=list[ButirTertundaResponse])
 async def list_butir_diulang(
     guru: User = Depends(get_current_guru),

@@ -15,6 +15,9 @@ import EditButirDialog from "@/components/ui/EditButirDialog";
 import KelompokLipat, { useBukaTutup } from "@/components/ui/KelompokLipat";
 import { KelompokBank, kelompokkan } from "@/lib/kelompokBank";
 import { useTeks } from "@/lib/teks";
+import { susunNomorHalaman } from "@/lib/pagination";
+
+const KISI_KISI_PER_HALAMAN = 11;
 
 export default function BankSoalPage() {
   const t = useTeks().telaah;
@@ -26,6 +29,7 @@ export default function BankSoalPage() {
   const [pesanHapus, setPesanHapus] = useState("");
   const [denganKunci, setDenganKunci] = useState(true);
   const [mengekspor, setMengekspor] = useState<"pdf" | "docx" | "json" | null>(null);
+  const [halaman, setHalaman] = useState(1);
 
   async function loadBank() {
     try {
@@ -46,6 +50,51 @@ export default function BankSoalPage() {
 
   const { ada: kelompokTerbuka, toggle: bukaTutup } = useBukaTutup();
   const grup = useMemo(() => kelompokkan(butirList, kelompokList), [butirList, kelompokList]);
+  const jumlahHalaman = Math.max(1, Math.ceil(grup.length / KISI_KISI_PER_HALAMAN));
+  const halamanAktif = Math.min(halaman, jumlahHalaman);
+  const nomorHalaman = susunNomorHalaman(halamanAktif, jumlahHalaman);
+  const indeksAwal = (halamanAktif - 1) * KISI_KISI_PER_HALAMAN;
+  const grupTerlihat = grup.slice(indeksAwal, indeksAwal + KISI_KISI_PER_HALAMAN);
+
+  function bukaHalaman(berikut: number) {
+    setHalaman(berikut);
+    document.getElementById("bank-soal-tervalidasi")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function navigasiHalaman(className = "") {
+    if (jumlahHalaman <= 1) return null;
+    return (
+      <nav aria-label={t.bankSoal.navigasiHalaman} className={`flex flex-wrap items-center justify-between gap-3 border-y border-[var(--line)] py-2.5 ${className}`}>
+        <span className="text-xs text-[var(--ink-muted)] tabular-nums">
+          {t.bankSoal.rentang(indeksAwal + 1, indeksAwal + grupTerlihat.length, grup.length)}
+        </span>
+        <div className="flex items-center justify-end gap-1">
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.bankSoal.sebelumnya} disabled={halamanAktif === 1} onClick={() => bukaHalaman(halamanAktif - 1)}>
+            ‹
+          </Button>
+          <div role="group" aria-label={t.bankSoal.navigasiHalaman} className="flex items-center gap-0.5">
+            {nomorHalaman.map((nomor, indeks) => typeof nomor === "number" ? (
+              <button
+                key={nomor}
+                type="button"
+                aria-label={t.bankSoal.halaman(nomor, jumlahHalaman)}
+                aria-current={nomor === halamanAktif ? "page" : undefined}
+                onClick={() => bukaHalaman(nomor)}
+                className={`inline-flex h-7 min-w-6 items-center justify-center border px-1 font-mono text-xs tabular-nums transition-colors duration-[140ms] ${nomor === halamanAktif ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--line-strong)] bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]"}`}
+              >
+                {nomor}
+              </button>
+            ) : (
+              <span key={`${nomor}-${indeks}`} className="px-1 text-xs text-[var(--ink-muted)]" aria-hidden="true">…</span>
+            ))}
+          </div>
+          <Button type="button" size="sm" variant="secondary" className="!h-7 !w-7 !p-0 shrink-0" aria-label={t.bankSoal.berikutnya} disabled={halamanAktif === jumlahHalaman} onClick={() => bukaHalaman(halamanAktif + 1)}>
+            ›
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   async function handleDelete(id: string) {
     if (!confirm(t.bankSoal.konfirmasiHapus)) return;
@@ -130,8 +179,9 @@ export default function BankSoalPage() {
           }
         />
       ) : (
-        <div className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
-          {grup.map((g) => (
+        <>
+        <div id="bank-soal-tervalidasi" className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
+          {grupTerlihat.map((g) => (
             <KelompokLipat
               key={g.kelompok.id}
               kelompok={g.kelompok}
@@ -316,6 +366,8 @@ export default function BankSoalPage() {
             </KelompokLipat>
           ))}
         </div>
+        {navigasiHalaman("mt-3")}
+        </>
       )}
 
       <EditButirDialog

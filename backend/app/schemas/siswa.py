@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.galat import galat_validasi
+from app.core.nama import validasi_nama_pantas
 
 
 class SiswaMasukRequest(BaseModel):
@@ -16,7 +17,7 @@ class SiswaMasukRequest(BaseModel):
         v = " ".join(v.split())
         if not v:
             raise galat_validasi("validasi_siswa_nama_kosong", "Nama tidak boleh kosong")
-        return v
+        return validasi_nama_pantas(v)
 
 
 class SiswaMasukResponse(BaseModel):

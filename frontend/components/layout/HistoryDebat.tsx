@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, History } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { formatWaktu } from "@/lib/format";
 import { HistoryDebatTerakhir } from "@/lib/types";
@@ -56,12 +56,6 @@ export default function HistoryDebat() {
     >
       <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--line)] bg-[var(--canvas)]">
         <div className="flex items-center gap-1.5">
-          <History
-            size={14}
-            strokeWidth={1.75}
-            className="text-[var(--accent-text)]"
-            aria-hidden="true"
-          />
           <h2 className="font-serif text-[13px] font-medium text-[var(--ink)]">
             {t.shell.historyDebat.judul}
           </h2>

@@ -18,7 +18,7 @@ export const TAMPILAN_BAWAAN: Tampilan = {
   tema: "terang",
   ukuranTeks: "normal",
   kurangiGerak: false,
-  kursorKhusus: true,
+  kursorKhusus: false,
 };
 
 export const DAFTAR_UKURAN: UkuranTeks[] = ["kecil", "normal", "besar"];

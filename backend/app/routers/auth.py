@@ -10,6 +10,7 @@ from sqlalchemy import delete, func, select
 from app.config import get_settings
 from app.core.deps import get_current_guru
 from app.core.galat import Galat
+from app.core.nama import nama_tidak_pantas, normalisasi_nama
 from app.database import get_db
 from app.models.kode_masuk import KodeMasuk
 from app.models.token_dicabut import TokenDicabut
@@ -197,8 +198,13 @@ async def _cari_atau_buat(db: AsyncSession, email: str, nama: str) -> User:
     user = (await db.execute(select(User).where(func.lower(User.email) == email))).scalar_one_or_none()
     if user:
         return user
+    nama = normalisasi_nama(nama or "") or email.split("@", 1)[0]
+    if nama_tidak_pantas(nama):
+        nama = email.split("@", 1)[0]
+        if nama_tidak_pantas(nama):
+            nama = "Pengguna"
     user = User(
-        nama=(nama or "").strip() or email.split("@")[0],
+        nama=nama,
         email=email,
         password_hash=hash_password(secrets.token_urlsafe(24)),
         peran="admin" if email_admin(email) else "guru",

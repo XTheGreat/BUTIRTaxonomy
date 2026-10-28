@@ -18,11 +18,14 @@ from app.models.materi import Materi, MateriChunk
 from app.services.cakupan import kata_kunci, pilih_potongan, skor_potongan
 
 POTONGAN = [
-    "Hukum Newton pertama menyatakan benda diam tetap diam bila tidak ada gaya luar.",
+    "Hukum Newton pertama menyatakan benda diam tetap diam bila tidak ada gaya luar. "
+    "Sebaliknya benda yang bergerak lurus beraturan tetap bergerak dengan kecepatan tetap selama tidak ada gaya luar yang bekerja.",
     "Hukum Newton kedua: percepatan benda sebanding dengan gaya dan berbanding terbalik dengan massa. "
     "Pada bidang miring gaya penyebab gerak adalah komponen berat sejajar bidang.",
-    "Fotosintesis terjadi di kloroplas dan menghasilkan glukosa serta oksigen.",
-    "Bidang miring adalah pesawat sederhana yang mengurangi gaya yang diperlukan untuk mengangkat beban.",
+    "Fotosintesis terjadi di kloroplas dan menghasilkan glukosa serta oksigen. "
+    "Proses ini membutuhkan cahaya matahari, air, dan karbon dioksida yang diserap tumbuhan dari udara sekitarnya.",
+    "Bidang miring adalah pesawat sederhana yang mengurangi gaya yang diperlukan untuk mengangkat beban. "
+    "Contohnya tanjakan yang dipakai untuk menaikkan barang berat ke atas truk dengan tenaga lebih kecil.",
 ]
 
 

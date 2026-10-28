@@ -328,3 +328,109 @@ h1, h2, h3, h4, h5, h6 {
 @media (min-width: 640px) {
   .daftar-gulir { max-height: 560px; overflow-y: auto; }
 }
+
+@keyframes grafik-reveal {
+  from { clip-path: inset(0 100% 0 0); opacity: 0.55; }
+  to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+.diagram-reveal {
+  animation: grafik-reveal 520ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+@keyframes grafik-pie-slice-fill {
+  from { stroke-dashoffset: var(--pie-slice-length); }
+  to { stroke-dashoffset: 0; }
+}
+.diagram-pie-slice {
+  animation: grafik-pie-slice-fill 300ms ease-out both;
+}
+
+@keyframes grafik-batang-naik {
+  from { transform: scaleY(0); opacity: 0.45; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+.diagram-column-reveal {
+  transform-origin: center bottom;
+  animation: grafik-batang-naik 480ms ease-out both;
+}
+
+@keyframes grafik-segmen-masuk {
+  from { transform: scaleX(0); opacity: 0.5; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+.diagram-segment-reveal {
+  transform-origin: left center;
+  animation: grafik-segmen-masuk 420ms ease-out both;
+}
+
+@keyframes grafik-corong-masuk {
+  from { transform: scaleY(0.18); opacity: 0.35; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+.diagram-funnel-enter {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: grafik-corong-masuk 420ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+@keyframes grafik-pai-masuk {
+  from { transform: scale(0.72); opacity: 0.25; }
+  to { transform: scale(1); opacity: 1; }
+}
+.diagram-pie-enter {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: grafik-pai-masuk 440ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+@keyframes grafik-radar-masuk {
+  from { transform: scale(0.12); opacity: 0.15; }
+  to { transform: scale(1); opacity: 1; }
+}
+.diagram-radar-enter {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: grafik-radar-masuk 720ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+@keyframes grafik-lilin-masuk {
+  from { transform: scaleY(0.08); opacity: 0.35; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+.diagram-candle-reveal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: grafik-lilin-masuk 360ms ease-out both;
+}
+
+@keyframes grafik-garis-gambar {
+  to { stroke-dashoffset: 0; }
+}
+.diagram-line-draw {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation: grafik-garis-gambar 820ms ease-out both;
+}
+
+@keyframes grafik-titik-muncul {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.diagram-point-reveal {
+  animation: grafik-titik-muncul 220ms ease-out both;
+}
+
+@keyframes grafik-tooltip-masuk {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.diagram-tooltip-reveal {
+  animation: grafik-tooltip-masuk 140ms ease-out both;
+}
+
+html[data-gerak="kurang"] .diagram-animasi {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagram-animasi { animation: none !important; }
+}

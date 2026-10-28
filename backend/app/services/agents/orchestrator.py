@@ -14,6 +14,7 @@ from app.models.riwayat_percobaan import RiwayatPercobaan
 from app.services.agents import penyusun, kritikus, penjawab_buta, arbiter
 from app.services.agents.base import AgentCallFailed, konteks_llm
 from app.services.cakupan import pilih_potongan
+from app.services.chunking import potongan_bermakna
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -397,6 +398,15 @@ async def jalankan_generasi(kisi_kisi_id: uuid.UUID):
                 if not chunks:
                     logger.error(f"No chunks found for kisi-kisi {kisi_kisi_id}")
                     return
+
+                # Daftar isi, halaman judul, dan potongan terlalu pendek tidak dipakai membuat soal;
+                # bila seluruh materi ternyata hanya berisi itu, semuanya tetap dipakai.
+                bermakna = [c for c in chunks if potongan_bermakna(c.content)]
+                if len(bermakna) < len(chunks):
+                    logger.info(
+                        f"Kisi-kisi {kisi_kisi_id}: {len(chunks) - len(bermakna)} potongan non-isi dilewati"
+                    )
+                chunks = bermakna or list(chunks)
 
                 target_levels = distribute_bloom_levels(kk.jumlah_butir, kk.distribusi_bloom)
                 terpilih, cocok = pilih_potongan(list(chunks), kk.cakupan_bab)

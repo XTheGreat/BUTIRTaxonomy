@@ -26,8 +26,8 @@ class Settings(BaseSettings):
     BANKAI_API_KEY_PRIMER: str = ""
     BANKAI_BASE_URL: str = "https://bankai.web.id/api"
     BANKAI_MODEL_PENYUSUN: str = "deepseek-v4-flash"
-    BANKAI_MODEL_KRITIKUS: str = "glm-5.3-flash"
-    BANKAI_MODEL_PENJAWAB_BUTA: str = "glm-5.3-flash"
+    BANKAI_MODEL_KRITIKUS: str = "glm-5.3-flashx-mod"
+    BANKAI_MODEL_PENJAWAB_BUTA: str = "glm-5.3-flashx-mod"
     BANKAI_MODEL_ARBITER: str = "deepseek-v4-flash"
 
     VPSMURAH_API_KEY: str = ""
@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     ADVANCE_API_KEY: str = ""
     ADVANCE_BASE_URL: str = "https://api.advance.my.id/v1"
     ADVANCE_MODEL_PENYUSUN: str = "deepseek-v4-pro"
-    ADVANCE_MODEL_KRITIKUS: str = "glm-5.3-flash"
-    ADVANCE_MODEL_PENJAWAB_BUTA: str = "glm-5.3-flash"
+    ADVANCE_MODEL_KRITIKUS: str = "glm-5.3-flashx-mod"
+    ADVANCE_MODEL_PENJAWAB_BUTA: str = "glm-5.3-flashx-mod"
     ADVANCE_MODEL_ARBITER: str = "deepseek-v4-pro"
 
     OPENAI_API_KEY_1: str = ""
