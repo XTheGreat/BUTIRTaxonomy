@@ -144,7 +144,7 @@ export default function Sidebar({
             src="/ButirLogoSidebar.png"
             width={532}
             height={107}
-            unoptimized
+            sizes="150px"
             alt="BUTIR"
             className="h-auto w-[150px]"
           />

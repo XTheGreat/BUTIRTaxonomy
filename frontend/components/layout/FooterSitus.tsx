@@ -62,7 +62,7 @@ export default function FooterSitus() {
             src="/ButirLogoPutih.png"
             width={552}
             height={109}
-            unoptimized
+            sizes="340px"
             alt={SITUS.nama}
             className="h-auto w-full max-w-[340px]"
           />

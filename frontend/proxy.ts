@@ -26,6 +26,9 @@ export function proxy(request: NextRequest) {
   return respons;
 }
 
+// Berkas gambar statis dikecualikan: pengoptimal next/image mengambil sumbernya lewat permintaan
+// internal tanpa user-agent browser, dan akan gagal ("not a valid image") bila diblokir di sini.
+// Yang dilindungi tetap halaman dan API, bukan aset gambar publik.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|icon.png|icon.svg).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|icon.png|icon.svg|.*\\.(?:png|jpe?g|webp|avif|gif|svg|ico)$).*)"],
 };
